@@ -196,7 +196,7 @@ export default function SmartShoppingGrid({
       })
       flyersRef.current = []
     }
-  }, [items, cartListRef, canStart])
+  }, [items, cartListRef, canStart, onItemAdded, onAnimationComplete])
 
   return (
     <section
