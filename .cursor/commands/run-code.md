@@ -1,0 +1,1 @@
+Run the project (using its main entrypoint or dev server), verify it starts and behaves correctly, and iteratively fix any runtime errors or obvious issues until it runs cleanly.
