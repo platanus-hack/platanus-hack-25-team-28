@@ -34,14 +34,48 @@ jobs:
           echo "✓ Secrets are configured"
           echo "Repository: ${{ secrets.PERSONAL_REPO_PATH }}"
 
+      - name: Setup Git credentials
+        run: |
+          # Store the personal token in Git credential store
+          mkdir -p ~/.git
+          echo "https://x-access-token:${{ secrets.PERSONAL_REPO_TOKEN }}@github.com" > ~/.git-credentials
+          chmod 600 ~/.git-credentials
+          # Configure Git to use the credential store
+          git config --global credential.helper store
+          # Disable any other credential helpers
+          git config --global --unset-all credential.https://github.com.helper || true
+
       - name: Add personal repo as remote
         run: |
-          git remote add personal https://x-access-token:${{ secrets.PERSONAL_REPO_TOKEN }}@github.com/${{ secrets.PERSONAL_REPO_PATH }}.git
+          git remote add personal https://github.com/${{ secrets.PERSONAL_REPO_PATH }}.git
+          echo "✓ Remote added: https://github.com/${{ secrets.PERSONAL_REPO_PATH }}.git"
 
       - name: Test repository access
         run: |
-          git ls-remote personal --heads production || echo "Warning: Could not access production branch, will attempt to create it"
+          echo "Testing repository access..."
+          if git ls-remote personal --heads production 2>&1; then
+            echo "✓ Successfully accessed repository"
+          else
+            echo "⚠️  Warning: Could not access production branch, will attempt to create it"
+          fi
 
       - name: Push to production branch
         run: |
-          git push personal HEAD:production --force
+          echo "Pushing to production branch..."
+          echo "Current commit: $(git rev-parse HEAD)"
+          git push personal HEAD:production --force 2>&1 || {
+            EXIT_CODE=$?
+            echo ""
+            echo "❌ Git push failed with exit code: $EXIT_CODE"
+            echo ""
+            echo "Debugging information:"
+            git remote -v
+            echo ""
+            echo "Common issues:"
+            echo "1. PERSONAL_REPO_TOKEN might not have 'repo' scope"
+            echo "2. PERSONAL_REPO_PATH might be incorrect (format: username/repo-name)"
+            echo "3. Token might not have access to the repository"
+            echo "4. Repository might not exist or be private"
+            exit $EXIT_CODE
+          }
+          echo "✓ Successfully pushed to production branch"
