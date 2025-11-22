@@ -39,7 +39,7 @@ export default function Home() {
   // Use separate refs for desktop and mobile to avoid collision
   const desktopCartRef = useRef<CartSidebarRef>(null)
   const mobileCartRef = useRef<CartSidebarRef>(null)
-  
+
   const recommendProducts = useAction(api.recommendations.recommendProducts)
 
   // Check if sidebar is ready
@@ -56,14 +56,15 @@ export default function Home() {
 
     try {
       const result = await recommendProducts({ userPrompt })
-      
-      const newItems: CartItem[] = result.selectedProducts.map(p => ({
+
+      const newItems: CartItem[] = result.selectedProducts.map((p) => ({
         id: p.id,
         name: p.name,
         price: p.minPrice || 0,
         quantity: 1,
-        image: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
-        category: p.category
+        image:
+          "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
+        category: p.category,
       }))
 
       setAllProducts(newItems)
@@ -104,7 +105,7 @@ export default function Home() {
 
   const handleUpdateCart = (newItems: CartItem[]) => {
     // Add new items to the cart
-    setCartItems(prev => {
+    setCartItems((prev) => {
       // We could check for duplicates here
       return [...prev, ...newItems]
     })
@@ -135,9 +136,9 @@ export default function Home() {
               />
             ) : (
               <div className="animate-in fade-in slide-in-from-bottom-4 h-screen p-6 duration-700 ease-out">
-                <ChatInterface 
-                  initialPrompt={prompt} 
-                  cartItems={cartItems} 
+                <ChatInterface
+                  initialPrompt={prompt}
+                  cartItems={cartItems}
                   onUpdateCart={handleUpdateCart}
                 />
               </div>

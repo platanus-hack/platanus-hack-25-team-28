@@ -64,7 +64,7 @@ export default function ChatInterface({
     // Simulate AI thinking and response
     // For the initial load, we assume the parent component (page.tsx) already fetched the products
     // so we just show the summary message.
-    
+
     const aiMsg: Message = {
       id: (Date.now() + 1).toString(),
       role: "assistant",
@@ -89,55 +89,66 @@ export default function ChatInterface({
     setIsTyping(true)
 
     // Call the API
-    const history = messages.map(m => ({ role: m.role as "user" | "assistant", content: m.content }))
-    
+    const history = messages.map((m) => ({
+      role: m.role as "user" | "assistant",
+      content: m.content,
+    }))
+
     recommendProducts({
       userPrompt: input,
-      conversationHistory: history
-    }).then((result) => {
-      const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: result.recommendation || "Aquí tienes los productos recomendados.",
-      }
-      setMessages((prev) => [...prev, aiMsg])
-      setIsTyping(false)
-
-      // Update cart if products were returned
-      if (result.selectedProducts && result.selectedProducts.length > 0 && onUpdateCart) {
-        // Convert to CartItem format
-        const newItems: CartItem[] = result.selectedProducts.map(p => ({
-          id: p.id,
-          name: p.name,
-          price: p.minPrice || 0,
-          quantity: p.quantity || 1,
-          image: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop", // Placeholder or fetch real image if available
-          category: p.category
-        }))
-        // We might want to merge with existing items or replace?
-        // For now, let's append or replace based on logic. 
-        // The prompt might be "add milk", so we should probably append.
-        // But if the user says "replace everything", we should replace.
-        // The current backend logic returns a list of "selectedProducts" based on the query.
-        // It doesn't explicitly say "append" or "replace".
-        // Let's assume we append for now, or maybe the user wants to see *only* these products?
-        // Given the "SmartShoppingGrid" context, maybe we should just add them.
-        
-        // Actually, let's just pass the new items to the parent and let it decide?
-        // Or just call onUpdateCart with the new list.
-        // Let's append for now.
-        onUpdateCart(newItems)
-      }
-    }).catch(err => {
-      console.error("Error fetching recommendations:", err)
-      setIsTyping(false)
-      const errorMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "Lo siento, hubo un error al procesar tu solicitud.",
-      }
-      setMessages((prev) => [...prev, errorMsg])
+      conversationHistory: history,
     })
+      .then((result) => {
+        const aiMsg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content:
+            result.recommendation || "Aquí tienes los productos recomendados.",
+        }
+        setMessages((prev) => [...prev, aiMsg])
+        setIsTyping(false)
+
+        // Update cart if products were returned
+        if (
+          result.selectedProducts &&
+          result.selectedProducts.length > 0 &&
+          onUpdateCart
+        ) {
+          // Convert to CartItem format
+          const newItems: CartItem[] = result.selectedProducts.map((p) => ({
+            id: p.id,
+            name: p.name,
+            price: p.minPrice || 0,
+            quantity: p.quantity || 1,
+            image:
+              "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop", // Placeholder or fetch real image if available
+            category: p.category,
+          }))
+          // We might want to merge with existing items or replace?
+          // For now, let's append or replace based on logic.
+          // The prompt might be "add milk", so we should probably append.
+          // But if the user says "replace everything", we should replace.
+          // The current backend logic returns a list of "selectedProducts" based on the query.
+          // It doesn't explicitly say "append" or "replace".
+          // Let's assume we append for now, or maybe the user wants to see *only* these products?
+          // Given the "SmartShoppingGrid" context, maybe we should just add them.
+
+          // Actually, let's just pass the new items to the parent and let it decide?
+          // Or just call onUpdateCart with the new list.
+          // Let's append for now.
+          onUpdateCart(newItems)
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching recommendations:", err)
+        setIsTyping(false)
+        const errorMsg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: "Lo siento, hubo un error al procesar tu solicitud.",
+        }
+        setMessages((prev) => [...prev, errorMsg])
+      })
   }
 
   return (
