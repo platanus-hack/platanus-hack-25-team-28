@@ -61,60 +61,34 @@ export default function NavBar() {
   };
 
   return (
-<<<<<<< Current (Your changes)
-    <nav className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md supports-[backdrop-filter]:bg-white/60">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="bg-accent-primary/10 p-2 rounded-lg">
-            <ShoppingBasket className="w-5 h-5 text-accent-primary" />
-          </div>
-          <span className="text-xl font-bold text-text-main">
-            Carrito IA
-          </span>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full h-10 w-10 border border-gray-200 p-0 overflow-hidden hover:ring-2 hover:ring-accent-primary/20 transition-all"
-          >
-             <img
-                src="https://api.dicebear.com/9.x/avataaars/svg?seed=Felix"
-                alt="Avatar"
-                className="h-full w-full object-cover bg-gray-100"
-             />
-          </Button>
-=======
-    <nav 
-      ref={navRef} 
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 transition-colors duration-300"
-    >
-      <div ref={logoRef} className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-        <div className="w-8 h-8 bg-accent-primary rounded-lg flex items-center justify-center text-white">
-          <ShoppingCart size={18} strokeWidth={2.5} />
-        </div>
-        <span className="text-xl font-bold tracking-tight text-text-main">carrito IA</span>
-      </div>
+<nav 
+  ref={navRef} 
+  className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 transition-colors duration-300"
+>
+  <div ref={logoRef} className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+    <div className="w-8 h-8 bg-accent-primary rounded-lg flex items-center justify-center text-white">
+      <ShoppingCart size={18} strokeWidth={2.5} />
+    </div>
+    <span className="text-xl font-bold tracking-tight text-text-main">carrito IA</span>
+  </div>
 
-      <div className="hidden md:flex items-center gap-8">
-        <button onClick={() => scrollToSection('experiencia')} className="text-sm font-medium text-text-muted hover:text-text-main transition-colors">
-          Experiencia
-        </button>
-        <button onClick={() => scrollToSection('como-funciona')} className="text-sm font-medium text-text-muted hover:text-text-main transition-colors">
-          Cómo funciona
-        </button>
-        <button onClick={() => scrollToSection('futuro-ia')} className="text-sm font-medium text-text-muted hover:text-text-main transition-colors">
-          Futuro IA
-        </button>
-      </div>
+  <div className="hidden md:flex items-center gap-8">
+    <button onClick={() => scrollToSection('experiencia')} className="text-sm font-medium text-text-muted hover:text-text-main transition-colors">
+      Experiencia
+    </button>
+    <button onClick={() => scrollToSection('como-funciona')} className="text-sm font-medium text-text-muted hover:text-text-main transition-colors">
+      Cómo funciona
+    </button>
+    <button onClick={() => scrollToSection('futuro-ia')} className="text-sm font-medium text-text-muted hover:text-text-main transition-colors">
+      Futuro IA
+    </button>
+  </div>
 
-      <div className="hidden md:flex">
-        <div className="px-3 py-1 rounded-full border border-accent-primary/30 bg-accent-primary/5 text-accent-primary text-xs font-semibold tracking-wide">
-          Próximamente: IA que optimiza tu compra
->>>>>>> Incoming (Background Agent changes)
-        </div>
-      </div>
-    </nav>
+  <div className="hidden md:flex">
+    <div className="px-3 py-1 rounded-full border border-accent-primary/30 bg-accent-primary/5 text-accent-primary text-xs font-semibold tracking-wide">
+      Próximamente: IA que optimiza tu compra
+    </div>
+    </div>
+</nav>
   );
 }
