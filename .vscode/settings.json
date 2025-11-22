@@ -1,0 +1,26 @@
+{
+  // Code actions on save
+  "editor.codeActionsOnSave": {
+    "source.addMissingImports.ts": "always",
+    "source.organizeImports": "always",
+    "source.removeUnusedImports": "always",
+    "source.sort.json": "always", // <= this trailing comma causes an error.
+    "source.sortImports": "always"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // Format on save
+  "editor.formatOnSave": true,
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  // Autosave behavior
+  "files.autoSave": "afterDelay",
+  "json.format.enable": true,
+  "json.schemaDownload.enable": true,
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  // TypeScript settings
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
