@@ -1,36 +1,26 @@
-# Deployment Setup
+# Deployment Guide
 
-This workflow syncs the `production` branch from this hackathon repo to your personal repo `samaluk/super-tracker`.
+We use a manual deployment process to sync changes from the hackathon repo to the personal repo (connected to Vercel).
 
-## Quick Setup
+## Prerequisites
 
-1. **Install GitHub CLI** (if not installed):
+- You must have write access to `samaluk/super-tracker`.
+- You must have Git configured locally.
+
+## How to Deploy
+
+1. **Merge your changes** to the `production` branch in the hackathon repo (via PR).
+2. **Run the deployment script** locally:
+
    ```bash
-   brew install gh
+   ./deploy-manual.sh
    ```
 
-2. **Log in**:
-   ```bash
-   gh auth login
-   ```
+   This script will:
+   - Fetch the latest `production` code from the hackathon repo.
+   - Push it to the `production` branch of your personal repo (`samaluk/super-tracker`).
+   - Vercel will automatically trigger a deployment.
 
-3. **Run the configuration script**:
-   ```bash
-   ./configure-deployment.sh
-   ```
-   It will ask for a Personal Access Token (PAT). Create one [here](https://github.com/settings/tokens/new?scopes=repo&description=Vercel+Deployment+Sync) with `repo` scope.
+## Troubleshooting
 
-## Manual Setup (Alternative)
-
-If you can't use the script, set these secrets in the hackathon repo:
-
-- **`PERSONAL_REPO_PATH`**: `samaluk/super-tracker`
-- **`PERSONAL_REPO_TOKEN`**: Your PAT with `repo` scope
-
-## Deployment Flow
-
-1. Create a PR to the `production` branch.
-2. Merge the PR.
-3. The workflow will automatically sync code to your personal repo.
-4. Vercel (connected to your personal repo) will deploy.
-
+- **Permission denied**: Ensure your local Git is authenticated and has access to the personal repo.
