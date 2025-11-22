@@ -9,6 +9,7 @@
     "predev": "convex dev --until-success && convex dashboard",
     "build": "next build",
     "start": "next start",
+    "deploy": "sh deploy-manual.sh",
     "lint": "eslint . --ignore-pattern \"convex/_generated/**\""
   },
   "dependencies": {
