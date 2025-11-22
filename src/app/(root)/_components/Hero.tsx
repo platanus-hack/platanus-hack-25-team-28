@@ -2,14 +2,15 @@
 
 import { formatCurrency } from "@/utils/cartUtils"
 import gsap from "gsap"
-import { ArrowRight, ShoppingBag, Sparkles } from "lucide-react"
+import { ArrowRight, Loader2, ShoppingBag, Sparkles } from "lucide-react"
 import React, { useEffect, useRef, useState } from "react"
 
 interface HeroProps {
   onFillCart: (prompt: string) => void
+  isLoading?: boolean
 }
 
-export default function Hero({ onFillCart }: HeroProps) {
+export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
   const [prompt, setPrompt] = useState("")
   const containerRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
@@ -18,7 +19,7 @@ export default function Hero({ onFillCart }: HeroProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!prompt.trim()) return
+    if (!prompt.trim() || isLoading) return
 
     // Pulse animation
     gsap.to(inputRef.current, {
@@ -120,13 +121,24 @@ export default function Hero({ onFillCart }: HeroProps) {
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Quiero armar un carro para un asado para 6 personas..."
                 className="flex-1 border-none bg-transparent px-4 py-3 text-lg text-text-main placeholder:text-gray-400 focus:outline-none"
+                disabled={isLoading}
               />
               <button
                 type="submit"
-                className="flex transform items-center gap-2 rounded-xl bg-accent-primary px-6 py-3 font-semibold text-white shadow-md transition-colors duration-100 hover:bg-blue-700 hover:shadow-lg active:scale-95"
+                disabled={isLoading}
+                className="flex min-w-[140px] transform items-center justify-center gap-2 rounded-xl bg-accent-primary px-6 py-3 font-semibold text-white shadow-md transition-colors duration-100 hover:bg-blue-700 hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-80"
               >
-                <span className="hidden sm:inline">Llenar carro</span>
-                <ArrowRight className="h-5 w-5" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span className="hidden sm:inline">Pensando...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="hidden sm:inline">Llenar carro</span>
+                    <ArrowRight className="h-5 w-5" />
+                  </>
+                )}
               </button>
             </form>
 
