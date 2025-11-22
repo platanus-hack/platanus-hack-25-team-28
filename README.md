@@ -24,6 +24,15 @@ If you're reading this README on GitHub and want to use this template, run:
 npm create convex@latest -- -t nextjs
 ```
 
+## Editor Setup
+
+This repository includes workspace settings in `.vscode/` to standardize editor behavior across contributors. When you open the project in VS Code or Cursor, you'll be prompted to install recommended extensions and accept workspace settings. These settings enable:
+
+- **Autosave** on focus change
+- **Format on save** using Prettier
+- **ESLint fixes** on save
+- **Import organization** on save
+
 ## Learn more
 
 To learn more about developing your project with Convex, check out:
