@@ -57,7 +57,7 @@ export default function Home() {
     try {
       const result = await recommendProducts({ userPrompt })
 
-      const newItems: CartItem[] = result.selectedProducts.map((p) => ({
+      const newItems: any = result.selectedProducts.map((p) => ({
         id: p.id,
         name: p.name,
         price: p.minPrice || 0,

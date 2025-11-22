@@ -115,7 +115,7 @@ export default function ChatInterface({
           onUpdateCart
         ) {
           // Convert to CartItem format
-          const newItems: CartItem[] = result.selectedProducts.map((p) => ({
+          const newItems: any = result.selectedProducts.map((p) => ({
             id: p.id,
             name: p.name,
             price: p.minPrice || 0,
