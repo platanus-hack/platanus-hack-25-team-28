@@ -1,12 +1,16 @@
 "use client"
 
+import { ConversationView } from "@/components/conversation-view"
 import { ProductCard } from "@/components/product-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useQuery } from "convex/react"
 import Image from "next/image"
-import { api } from "../convex/_generated/api"
+import { useState } from "react"
+import { api } from "../../convex/_generated/api"
 
 export default function Home() {
+  const [showConversation, setShowConversation] = useState(true)
+
   return (
     <>
       <header className="sticky top-0 z-10 flex flex-row items-center justify-between border-b border-slate-200 bg-background/80 p-4 shadow-sm backdrop-blur-md dark:border-slate-700">
@@ -33,9 +37,15 @@ export default function Home() {
             SuperTracker
           </h1>
         </div>
+        <button
+          onClick={() => setShowConversation(!showConversation)}
+          className="rounded-lg bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600"
+        >
+          {showConversation ? "Browse Products" : "Conversation"}
+        </button>
       </header>
       <main className="flex flex-col gap-8 p-8">
-        <ProductGrid />
+        {showConversation ? <ConversationView /> : <ProductGrid />}
       </main>
     </>
   )
