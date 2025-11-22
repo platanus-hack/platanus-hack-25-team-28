@@ -1,0 +1,108 @@
+[
+  {
+    "sku": "LID001",
+    "name": "Carne Molida Premium 500g",
+    "price": 5990,
+    "category": "Carnes y Aves",
+    "imageUrl": "https://images.unsplash.com/photo-1603048297172-c9254474500a?w=400"
+  },
+  {
+    "sku": "LID002",
+    "name": "Pollo Entero Fresco 1.5kg",
+    "price": 4990,
+    "category": "Carnes y Aves",
+    "imageUrl": "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=400"
+  },
+  {
+    "sku": "LID003",
+    "name": "Cerveza Escudo 6 Pack",
+    "price": 6990,
+    "category": "Bebidas",
+    "imageUrl": "https://images.unsplash.com/photo-1608270586620-248524c67fe9?w=400"
+  },
+  {
+    "sku": "LID004",
+    "name": "Leche Colun Entera 1L",
+    "price": 1290,
+    "category": "Lácteos y Desayuno",
+    "imageUrl": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400"
+  },
+  {
+    "sku": "LID005",
+    "name": "Pan de Molde Bimbo Integral",
+    "price": 1990,
+    "category": "Lácteos y Desayuno",
+    "imageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400"
+  },
+  {
+    "sku": "LID006",
+    "name": "Detergente Omo 3kg",
+    "price": 5990,
+    "category": "Limpieza",
+    "imageUrl": "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=400"
+  },
+  {
+    "sku": "LID007",
+    "name": "Arroz Grado 1 1kg",
+    "price": 1290,
+    "category": "Abarrotes",
+    "imageUrl": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400"
+  },
+  {
+    "sku": "LID008",
+    "name": "Aceite de Girasol 1L",
+    "price": 2490,
+    "category": "Abarrotes",
+    "imageUrl": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400"
+  },
+  {
+    "sku": "LID009",
+    "name": "Tomates Frescos 1kg",
+    "price": 1990,
+    "category": "Frutas y Verduras",
+    "imageUrl": "https://images.unsplash.com/photo-1546470427-e26207bf4349?w=400"
+  },
+  {
+    "sku": "LID010",
+    "name": "Cebolla 1kg",
+    "price": 990,
+    "category": "Frutas y Verduras",
+    "imageUrl": "https://images.unsplash.com/photo-1618512496249-3d41e0b6b0c4?w=400"
+  },
+  {
+    "sku": "LID011",
+    "name": "Papas 2kg",
+    "price": 1990,
+    "category": "Frutas y Verduras",
+    "imageUrl": "https://images.unsplash.com/photo-1518977822534-7049a61ee0c2?w=400"
+  },
+  {
+    "sku": "LID012",
+    "name": "Yogurt Natural Colun 1kg",
+    "price": 2990,
+    "category": "Lácteos y Desayuno",
+    "imageUrl": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400"
+  },
+  {
+    "sku": "LID013",
+    "name": "Queso Gouda 250g",
+    "price": 3990,
+    "category": "Lácteos y Desayuno",
+    "imageUrl": "https://images.unsplash.com/photo-1618164436266-65f82e4f4b0a?w=400"
+  },
+  {
+    "sku": "LID014",
+    "name": "Pasta Spaghetti 500g",
+    "price": 1290,
+    "category": "Abarrotes",
+    "imageUrl": "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400"
+  },
+  {
+    "sku": "LID015",
+    "name": "Salsa de Tomate 340g",
+    "price": 990,
+    "category": "Abarrotes",
+    "imageUrl": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400"
+  }
+]
+

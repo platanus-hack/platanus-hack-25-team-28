@@ -1,7 +1,20 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+:root {
+  /* Custom Palette */
+  --bg-page: #F5F5F7;
+  --bg-elevated: #FFFFFF;
+  --text-main: #020617;
+  --text-muted: #6B7280;
+  --accent-primary: #2563EB;
+  --accent-success: #22C55E;
+  --accent-warning: #F97316;
+
+  /* Base Tailwind mappings */
+  --background: var(--bg-page);
+  --foreground: var(--text-main);
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -117,6 +130,23 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans), system-ui, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
   }
+  
+}
+
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
 }
