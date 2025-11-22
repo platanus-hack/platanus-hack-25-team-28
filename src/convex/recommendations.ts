@@ -108,7 +108,7 @@ export const recommendProducts = action({
         category: p.category,
         minPrice: p.minPrice,
         maxPrice: p.maxPrice,
-        quantity: p.quantity
+        quantity: p.quantity,
       })),
     }
   },
