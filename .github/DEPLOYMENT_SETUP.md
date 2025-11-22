@@ -17,7 +17,10 @@ This workflow automatically syncs your hackathon repo to a personal repo's `prod
 In your **hackathon repository**, go to Settings → Secrets and variables → Actions, and add:
 
 - **`PERSONAL_REPO_TOKEN`**: The personal access token you just created
-- **`PERSONAL_REPO_PATH`**: Your personal repo path in format `username/repo-name` (e.g., `yourusername/super-tracker`)
+- **`PERSONAL_REPO_PATH`**: Your personal repo path in format `username/repo-name` (e.g., `smaluk/super-tracker`)
+  - ⚠️ **Important**: Do NOT include `https://github.com/` or `.git` - just the path!
+  - ✅ Correct: `smaluk/super-tracker`
+  - ❌ Wrong: `https://github.com/smaluk/super-tracker` or `smaluk/super-tracker.git`
 
 ### 3. Create a Production Branch
 
@@ -65,6 +68,11 @@ The workflow will automatically:
 ## Troubleshooting
 
 - **Workflow doesn't trigger**: Make sure the PR is merged (not just closed) and targets the `production` branch
-- **Workflow fails**: Check that your PAT has the correct permissions
+- **"repository not found" error**:
+  - Verify `PERSONAL_REPO_PATH` is set correctly (format: `username/repo-name`, no `https://` or `.git`)
+  - Ensure the repository exists and the PAT has access to it
+  - Check that the PAT has the `repo` scope enabled
+  - Verify the repository name is spelled correctly (case-sensitive)
+- **Workflow fails**: Check that your PAT has the correct permissions (`repo` scope)
 - **Vercel not deploying**: Verify the branch name matches in Vercel settings
-- **Permission denied**: Ensure the PAT has access to the personal repo
+- **Permission denied**: Ensure the PAT has access to the personal repo and the `repo` scope is enabled
