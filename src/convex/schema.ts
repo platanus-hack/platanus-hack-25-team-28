@@ -38,10 +38,13 @@ export default defineSchema({
     tags: v.array(v.string()), // e.g. ["sugar-free", "soda"]
     description: v.optional(v.string()),
     imageId: v.optional(v.id("_storage")),
-  }).searchIndex("search_name", {
-    searchField: "name",
-    filterFields: ["category", "brand"],
-  }),
+    imageUrl: v.optional(v.string()),
+  })
+    .searchIndex("search_name", {
+      searchField: "name",
+      filterFields: ["category", "brand"],
+    })
+    .index("by_name_brand", ["name", "brand"]),
 
   // 3. StoreProducts: The critical junction table (Price & Inventory)
   // Maps a Product to a Store with a specific price.
