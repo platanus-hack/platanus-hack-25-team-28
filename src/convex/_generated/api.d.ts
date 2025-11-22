@@ -11,6 +11,7 @@
 import type * as functions_legacy from "../functions/legacy.js";
 import type * as functions_products from "../functions/products.js";
 import type * as importData from "../importData.js";
+import type * as jumbo from "../jumbo.js";
 import type * as myFunctions from "../myFunctions.js";
 import type * as products from "../products.js";
 import type * as rag_agents_promptAgent from "../rag/agents/promptAgent.js";
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   "functions/legacy": typeof functions_legacy;
   "functions/products": typeof functions_products;
   importData: typeof importData;
+  jumbo: typeof jumbo;
   myFunctions: typeof myFunctions;
   products: typeof products;
   "rag/agents/promptAgent": typeof rag_agents_promptAgent;
