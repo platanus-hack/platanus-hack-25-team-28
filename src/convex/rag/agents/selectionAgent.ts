@@ -1,7 +1,7 @@
 import { ChatAnthropic } from "@langchain/anthropic"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
+import { formatTemplate, getRecommendationPromptConfig } from "../promptLoader"
 import { EnrichedProduct, RecommendationResult } from "../types"
-import { getRecommendationPromptConfig, formatTemplate } from "../promptLoader"
 
 export class SelectionAgent {
   private llm: ChatAnthropic
@@ -19,7 +19,9 @@ export class SelectionAgent {
     products: EnrichedProduct[]
   ): Promise<RecommendationResult> {
     const promptConfig = getRecommendationPromptConfig()
-    const systemPrompt = promptConfig.system
+    const systemPrompt =
+      promptConfig.system +
+      "\nIMPORTANT: When selecting products, you MUST specify the quantity for each product based on the user's request. If not specified, default to 1. Your response for selectedProductIds must be an array of objects: { id: string, quantity: number }."
 
     const productsContext = products
       .map(
@@ -51,25 +53,44 @@ export class SelectionAgent {
 
     try {
       const parsed = JSON.parse(jsonMatch[0])
-      const selectedIds = Array.isArray(parsed.selectedProductIds)
+      const selectedItems = Array.isArray(parsed.selectedProductIds)
         ? parsed.selectedProductIds
         : []
 
-      const selectedProducts = products.filter((p) =>
-        selectedIds.includes(p._id)
-      )
+      // Handle both old format (string[]) and new format ({id, quantity}[])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const normalizedSelection = selectedItems.map((item: any) => {
+        if (typeof item === "string") {
+          return { id: item, quantity: 1 }
+        }
+        return { id: item.id, quantity: item.quantity || 1 }
+      })
+
+      const selectedProducts = products
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .filter((p) => normalizedSelection.some((s: any) => s.id === p._id))
+        .map((p) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const selection = normalizedSelection.find((s: any) => s.id === p._id)
+          return {
+            ...p,
+            quantity: selection ? selection.quantity : 1,
+          }
+        })
 
       return {
         recommendation:
           parsed.recommendation || "Aquí tienes tu recomendación.",
         selectedProducts:
-          selectedProducts.length > 0 ? selectedProducts : products,
+          selectedProducts.length > 0
+            ? selectedProducts
+            : products.map((p) => ({ ...p, quantity: 1 })),
       }
     } catch (e) {
       console.error("Error parsing selection agent response", e)
       return {
         recommendation: content,
-        selectedProducts: products,
+        selectedProducts: products.map((p) => ({ ...p, quantity: 1 })),
       }
     }
   }

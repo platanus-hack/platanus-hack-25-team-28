@@ -43,9 +43,13 @@ export type LLMProvider = {
   ): Promise<RecommendationResult>
 }
 
+export type SelectedProduct = EnrichedProduct & {
+  quantity: number
+}
+
 export type RecommendationResult = {
   recommendation: string
-  selectedProducts: EnrichedProduct[]
+  selectedProducts: SelectedProduct[]
 }
 
 export type RecommendationRequest = {
