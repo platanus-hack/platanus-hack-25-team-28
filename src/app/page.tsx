@@ -1,41 +1,41 @@
 "use client"
 
-import CartSidebar from "@/components/CartSidebar";
-import ChatInterface from "@/components/ChatInterface";
-import Footer from "@/components/Footer";
-import Hero from "@/components/Hero";
-import ProductReveal from "@/components/ProductReveal";
-import { CartItem } from "@/types";
-import { buildMockCart } from "@/utils/cartUtils";
-import clsx from "clsx";
-import { useState } from "react";
+import CartSidebar from "@/components/CartSidebar"
+import ChatInterface from "@/components/ChatInterface"
+import Footer from "@/components/Footer"
+import Hero from "@/components/Hero"
+import ProductReveal from "@/components/ProductReveal"
+import { CartItem } from "@/types"
+import { buildMockCart } from "@/utils/cartUtils"
+import clsx from "clsx"
+import { useState } from "react"
 
-type ViewStep = "hero" | "productReveal" | "chat";
+type ViewStep = "hero" | "productReveal" | "chat"
 
 export default function Home() {
-  const [viewStep, setViewStep] = useState<ViewStep>("hero");
-  const [prompt, setPrompt] = useState("");
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [showCart, setShowCart] = useState(false);
+  const [viewStep, setViewStep] = useState<ViewStep>("hero")
+  const [prompt, setPrompt] = useState("")
+  const [cart, setCart] = useState<CartItem[]>([])
+  const [showCart, setShowCart] = useState(false)
 
   const handleSearch = (userPrompt: string) => {
-    setPrompt(userPrompt);
+    setPrompt(userPrompt)
     // Build cart immediately
-    const newCart = buildMockCart();
-    setCart(newCart);
+    const newCart = buildMockCart()
+    setCart(newCart)
     // Go to reveal view
-    setViewStep("productReveal");
-  };
+    setViewStep("productReveal")
+  }
 
   const handleFunnelComplete = () => {
     // Ensure cart is populated (fallback)
     if (cart.length === 0) {
-      const newCart = buildMockCart();
-      setCart(newCart);
+      const newCart = buildMockCart()
+      setCart(newCart)
     }
-    setViewStep("chat");
-    setShowCart(true);
-  };
+    setViewStep("chat")
+    setShowCart(true)
+  }
 
   // Legacy callback if ChatInterface still uses it, but we handle cart earlier now.
   // We can leave it empty or use it to ensure cart is open.
@@ -44,7 +44,7 @@ export default function Home() {
   // };
 
   return (
-    <main className="flex h-screen w-full flex-col bg-bg-page overflow-hidden fixed inset-0">
+    <main className="fixed inset-0 flex h-screen w-full flex-col overflow-hidden bg-bg-page">
       {viewStep === "hero" && (
         <div className="flex-1 overflow-y-auto">
           <Hero onFillCart={handleSearch} />
@@ -61,18 +61,15 @@ export default function Home() {
       )}
 
       {viewStep === "chat" && (
-        <div className="flex flex-1 h-screen overflow-hidden">
+        <div className="flex h-screen flex-1 overflow-hidden">
           {/* Chat Area */}
           <div className="relative flex h-full flex-1 flex-col">
             <div className="flex-1 overflow-hidden">
-              <ChatInterface
-                initialPrompt={prompt}
-                cartItems={cart}
-              />
+              <ChatInterface initialPrompt={prompt} cartItems={cart} />
             </div>
 
             {/* Optional footer inside chat view */}
-            <div className="p-4 text-center text-xs text-text-muted border-t border-gray-200 bg-bg-page">
+            <div className="border-t border-gray-200 bg-bg-page p-4 text-center text-xs text-text-muted">
               Supermarket AI Beta
             </div>
           </div>
@@ -82,18 +79,18 @@ export default function Home() {
             className={clsx(
               "z-30 h-full overflow-hidden border-l border-gray-200 bg-white shadow-2xl transition-all duration-500 ease-in-out",
               // Mobile: Fixed overlay. Desktop: Flex item that expands.
-              "fixed right-0 top-0 bottom-0 lg:static",
+              "fixed top-0 right-0 bottom-0 lg:static",
               showCart
                 ? "w-[85vw] translate-x-0 lg:w-[350px] lg:translate-x-0"
                 : "w-[85vw] translate-x-full lg:w-0 lg:translate-x-0 lg:border-none"
             )}
           >
-            <div className="w-full h-full relative">
+            <div className="relative h-full w-full">
               {/* Mobile Close Button */}
               <button
                 onClick={() => setShowCart(false)}
                 className={clsx(
-                  "lg:hidden absolute top-4 right-4 z-50 p-2 bg-white rounded-full shadow-md text-text-main hover:bg-gray-100",
+                  "absolute top-4 right-4 z-50 rounded-full bg-white p-2 text-text-main shadow-md hover:bg-gray-100 lg:hidden",
                   !showCart && "hidden"
                 )}
               >

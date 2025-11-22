@@ -16,11 +16,16 @@ export class PromptAgent {
 
   private formatHistory(history: ConversationMessage[]): string {
     return history
-      .map((m) => `${m.role === "user" ? "Usuario" : "Asistente"}: ${m.content}`)
+      .map(
+        (m) => `${m.role === "user" ? "Usuario" : "Asistente"}: ${m.content}`
+      )
       .join("\n")
   }
 
-  async analyze(userMessage: string, history: ConversationMessage[] = []): Promise<PromptAnalysis> {
+  async analyze(
+    userMessage: string,
+    history: ConversationMessage[] = []
+  ): Promise<PromptAnalysis> {
     const promptConfig = getPromptAgentConfig()
     const systemPrompt = promptConfig.system
     const userPrompt = formatTemplate(promptConfig.user_template || "", {
@@ -28,7 +33,10 @@ export class PromptAgent {
       user_message: userMessage,
     })
 
-    const response = await this.llm.invoke([new SystemMessage(systemPrompt), new HumanMessage(userPrompt)])
+    const response = await this.llm.invoke([
+      new SystemMessage(systemPrompt),
+      new HumanMessage(userPrompt),
+    ])
     const content = response.content as string
     const jsonMatch = content.match(/\{[\s\S]*\}/)
 
@@ -45,7 +53,11 @@ export class PromptAgent {
     const categories = Array.isArray(parsed.categories) ? parsed.categories : []
     const keywords = Array.isArray(parsed.keywords) ? parsed.keywords : []
 
-    const enrichedCategories = expandCategories(categories, keywords, userMessage)
+    const enrichedCategories = expandCategories(
+      categories,
+      keywords,
+      userMessage
+    )
 
     return {
       cleanedPrompt: parsed.cleanedPrompt || userMessage,
@@ -56,9 +68,22 @@ export class PromptAgent {
   }
 }
 
-const BEVERAGE_HINTS = ["pisco", "piscola", "cola", "coca", "bebida", "bebidas", "trago", "licor"]
+const BEVERAGE_HINTS = [
+  "pisco",
+  "piscola",
+  "cola",
+  "coca",
+  "bebida",
+  "bebidas",
+  "trago",
+  "licor",
+]
 
-function expandCategories(categories: string[], keywords: string[], userMessage: string): string[] {
+function expandCategories(
+  categories: string[],
+  keywords: string[],
+  userMessage: string
+): string[] {
   const lowerText = userMessage.toLowerCase()
   const lowerKeywords = keywords.map((k) => k.toLowerCase())
   const set = new Set(categories)

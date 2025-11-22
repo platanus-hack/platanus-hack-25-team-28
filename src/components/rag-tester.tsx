@@ -13,7 +13,10 @@ export function RAGTester() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const createJob = useAction(api.myFunctions.createRecommendationJob)
-  const job = useQuery(api.myFunctions.getRecommendationJob, jobId ? { jobId } : "skip")
+  const job = useQuery(
+    api.myFunctions.getRecommendationJob,
+    jobId ? { jobId } : "skip"
+  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,14 +44,17 @@ export function RAGTester() {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-6">
+    <div className="mx-auto w-full max-w-2xl p-6">
       <Card className="p-6">
-        <h1 className="text-2xl font-bold mb-6">RAG Recommendation Tester</h1>
+        <h1 className="mb-6 text-2xl font-bold">RAG Recommendation Tester</h1>
 
         {!jobId ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="prompt" className="block text-sm font-medium mb-2">
+              <label
+                htmlFor="prompt"
+                className="mb-2 block text-sm font-medium"
+              >
                 Enter your request:
               </label>
               <textarea
@@ -56,7 +62,7 @@ export function RAGTester() {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="e.g., I want to create a barbeque with 15 friends"
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-white"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                 rows={4}
               />
             </div>
@@ -70,8 +76,8 @@ export function RAGTester() {
           </form>
         ) : (
           <div className="space-y-6">
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-              <p className="text-sm text-slate-600 dark:text-slate-300 mb-1">
+            <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+              <p className="mb-1 text-sm text-slate-600 dark:text-slate-300">
                 Your Request:
               </p>
               <p className="font-medium">{prompt}</p>
@@ -91,7 +97,7 @@ export function RAGTester() {
 
               {job?.status === "processing" && (
                 <div className="flex items-center gap-2">
-                  <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
                   <span className="text-sm text-slate-600 dark:text-slate-400">
                     Analyzing and retrieving recommendations...
                   </span>
@@ -101,58 +107,72 @@ export function RAGTester() {
               {job?.status === "completed" && job.result && (
                 <div className="space-y-4">
                   <div className="border-t pt-4">
-                    <h3 className="font-semibold mb-3">Analysis</h3>
+                    <h3 className="mb-3 font-semibold">Analysis</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <p className="text-slate-600 dark:text-slate-400">Categories:</p>
+                        <p className="text-slate-600 dark:text-slate-400">
+                          Categories:
+                        </p>
                         <p className="font-medium">
                           {job.result.analysis.categories.join(", ") || "None"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-slate-600 dark:text-slate-400">Keywords:</p>
+                        <p className="text-slate-600 dark:text-slate-400">
+                          Keywords:
+                        </p>
                         <p className="font-medium">
                           {job.result.analysis.keywords.join(", ") || "None"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-slate-600 dark:text-slate-400">Occasion:</p>
-                        <p className="font-medium">{job.result.analysis.occasion}</p>
+                        <p className="text-slate-600 dark:text-slate-400">
+                          Occasion:
+                        </p>
+                        <p className="font-medium">
+                          {job.result.analysis.occasion}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-slate-600 dark:text-slate-400">Quantity:</p>
-                        <p className="font-medium">{job.result.analysis.quantity_hint}</p>
+                        <p className="text-slate-600 dark:text-slate-400">
+                          Quantity:
+                        </p>
+                        <p className="font-medium">
+                          {job.result.analysis.quantity_hint}
+                        </p>
                       </div>
                     </div>
                   </div>
 
                   <div className="border-t pt-4">
-                    <h3 className="font-semibold mb-3">Recommendation</h3>
-                    <p className="text-slate-700 dark:text-slate-300 mb-4 leading-relaxed">
+                    <h3 className="mb-3 font-semibold">Recommendation</h3>
+                    <p className="mb-4 leading-relaxed text-slate-700 dark:text-slate-300">
                       {job.result.recommendation.recommendation}
                     </p>
 
                     <div>
-                      <p className="text-sm font-medium mb-2 text-slate-600 dark:text-slate-400">
+                      <p className="mb-2 text-sm font-medium text-slate-600 dark:text-slate-400">
                         Selected Products:
                       </p>
                       <div className="space-y-2">
-                        {job.result.recommendation.selectedProducts.map((product) => (
-                          <div
-                            key={product._id}
-                            className="flex items-start gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded"
-                          >
-                            <span className="inline-block h-2 w-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>
-                            <div>
-                              <p className="font-medium text-slate-900 dark:text-white">
-                                {product.name}
-                              </p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">
-                                {product.category}
-                              </p>
+                        {job.result.recommendation.selectedProducts.map(
+                          (product) => (
+                            <div
+                              key={product._id}
+                              className="flex items-start gap-2 rounded bg-slate-50 p-2 dark:bg-slate-800"
+                            >
+                              <span className="mt-1.5 inline-block h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"></span>
+                              <div>
+                                <p className="font-medium text-slate-900 dark:text-white">
+                                  {product.name}
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {product.category}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          )
+                        )}
                       </div>
                     </div>
                   </div>
@@ -160,7 +180,7 @@ export function RAGTester() {
               )}
 
               {job?.status === "failed" && (
-                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+                <div className="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
                   <p className="text-sm font-medium text-red-600 dark:text-red-400">
                     Error: {job.error || "Unknown error"}
                   </p>
@@ -181,16 +201,25 @@ export function RAGTester() {
 function StatusBadge({ status }: { status?: string }) {
   const statusConfig = {
     pending: { bg: "bg-yellow-100", text: "text-yellow-800", label: "Pending" },
-    processing: { bg: "bg-blue-100", text: "text-blue-800", label: "Processing" },
-    completed: { bg: "bg-green-100", text: "text-green-800", label: "Completed" },
+    processing: {
+      bg: "bg-blue-100",
+      text: "text-blue-800",
+      label: "Processing",
+    },
+    completed: {
+      bg: "bg-green-100",
+      text: "text-green-800",
+      label: "Completed",
+    },
     failed: { bg: "bg-red-100", text: "text-red-800", label: "Failed" },
   }
 
-  const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
+  const config =
+    statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
 
   return (
     <span
-      className={`px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
+      className={`rounded-full px-3 py-1 text-xs font-medium ${config.bg} ${config.text}`}
     >
       {config.label}
     </span>

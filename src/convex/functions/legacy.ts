@@ -7,10 +7,7 @@ export const listNumbers = query({
     count: v.number(),
   },
   handler: async (ctx, args) => {
-    const numbers = await ctx.db
-      .query("numbers")
-      .order("desc")
-      .take(args.count)
+    const numbers = await ctx.db.query("numbers").order("desc").take(args.count)
     return {
       viewer: (await ctx.auth.getUserIdentity())?.name ?? null,
       numbers: numbers.reverse().map((number) => number.value),

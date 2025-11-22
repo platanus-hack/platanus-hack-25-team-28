@@ -43,6 +43,12 @@ Entrega la recomendación en texto breve: lista de productos y explicación cort
   }
 }
 
-export function formatTemplate(template: string, values: Record<string, string>): string {
-  return Object.entries(values).reduce((acc, [key, value]) => acc.replaceAll(`{${key}}`, value), template)
+export function formatTemplate(
+  template: string,
+  values: Record<string, string>
+): string {
+  return Object.entries(values).reduce(
+    (acc, [key, value]) => acc.replaceAll(`{${key}}`, value),
+    template
+  )
 }

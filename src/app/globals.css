@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg-page: #F5F5F7;
-  --color-bg-elevated: #FFFFFF;
+  --color-bg-page: #f5f5f7;
+  --color-bg-elevated: #ffffff;
   --color-text-main: #020617;
-  --color-text-muted: #6B7280;
-  --color-accent-primary: #2563EB;
-  --color-accent-success: #22C55E;
-  --color-accent-warning: #F97316;
+  --color-text-muted: #6b7280;
+  --color-accent-primary: #2563eb;
+  --color-accent-success: #22c55e;
+  --color-accent-warning: #f97316;
 }
 
 :root {
-  --bg-page: #F5F5F7;
-  --bg-elevated: #FFFFFF;
+  --bg-page: #f5f5f7;
+  --bg-elevated: #ffffff;
   --text-main: #020617;
-  --text-muted: #6B7280;
-  --accent-primary: #2563EB;
-  --accent-success: #22C55E;
-  --accent-warning: #F97316;
+  --text-muted: #6b7280;
+  --accent-primary: #2563eb;
+  --accent-success: #22c55e;
+  --accent-warning: #f97316;
 }
 
 @layer base {
@@ -26,7 +26,7 @@
     color: var(--text-main);
     antialiased: true;
   }
-  
+
   html {
     scroll-behavior: smooth;
   }
@@ -51,6 +51,9 @@
 }
 
 /* GSAP Helper Classes if needed */
-.gsap-marker-scroller-start, .gsap-marker-scroller-end, .gsap-marker-start, .gsap-marker-end {
+.gsap-marker-scroller-start,
+.gsap-marker-scroller-end,
+.gsap-marker-start,
+.gsap-marker-end {
   opacity: 0 !important; /* Hide debug markers */
 }

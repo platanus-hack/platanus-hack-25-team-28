@@ -22,7 +22,10 @@ export function retrieveSimilarProducts(
   return scores.sort((a, b) => b.score - a.score).slice(0, k)
 }
 
-export function filterByBudget(results: SimilarityResult[], budget: number): SimilarityResult[] {
+export function filterByBudget(
+  results: SimilarityResult[],
+  budget: number
+): SimilarityResult[] {
   return results.filter((r) => {
     const price = r.product.minPrice ?? r.product.prices?.[0]?.currentPrice ?? 0
     return price <= budget

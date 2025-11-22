@@ -5,7 +5,11 @@ import { PromptAgent } from "./rag/agents/promptAgent"
 import { OpenAIEmbeddingProvider } from "./rag/providers/openaiEmbedding"
 import { OpenAILLMProvider } from "./rag/providers/openaiLlm"
 import { RAGRecommender } from "./rag/recommender"
-import { EnrichedProduct, EnrichedPrice, RecommendationRequest } from "./rag/types"
+import {
+  EnrichedProduct,
+  EnrichedPrice,
+  RecommendationRequest,
+} from "./rag/types"
 
 export const recommendProducts = action({
   args: {
@@ -78,8 +82,12 @@ export const listEnrichedProducts = query({
         promotions: sp.promotions,
       }))
 
-      const minPrice = prices.length ? Math.min(...prices.map((p) => p.currentPrice)) : undefined
-      const maxPrice = prices.length ? Math.max(...prices.map((p) => p.currentPrice)) : undefined
+      const minPrice = prices.length
+        ? Math.min(...prices.map((p) => p.currentPrice))
+        : undefined
+      const maxPrice = prices.length
+        ? Math.max(...prices.map((p) => p.currentPrice))
+        : undefined
 
       enriched.push({
         ...product,

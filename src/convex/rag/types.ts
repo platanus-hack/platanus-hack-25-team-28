@@ -34,7 +34,10 @@ export type EmbeddingProvider = {
 }
 
 export type LLMProvider = {
-  generateRecommendation(userQuery: string, products: EnrichedProduct[]): Promise<RecommendationResult>
+  generateRecommendation(
+    userQuery: string,
+    products: EnrichedProduct[]
+  ): Promise<RecommendationResult>
 }
 
 export type RecommendationResult = {

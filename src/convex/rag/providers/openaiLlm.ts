@@ -1,6 +1,11 @@
 import { ChatOpenAI } from "@langchain/openai"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
-import { EnrichedPrice, EnrichedProduct, LLMProvider, RecommendationResult } from "../types"
+import {
+  EnrichedPrice,
+  EnrichedProduct,
+  LLMProvider,
+  RecommendationResult,
+} from "../types"
 import { formatTemplate, getRecommendationPromptConfig } from "../promptLoader"
 
 export class OpenAILLMProvider implements LLMProvider {
@@ -14,7 +19,10 @@ export class OpenAILLMProvider implements LLMProvider {
     })
   }
 
-  async generateRecommendation(userQuery: string, products: EnrichedProduct[]): Promise<RecommendationResult> {
+  async generateRecommendation(
+    userQuery: string,
+    products: EnrichedProduct[]
+  ): Promise<RecommendationResult> {
     const promptConfig = getRecommendationPromptConfig()
     const systemPrompt = promptConfig.system
     const userPrompt = formatTemplate(promptConfig.user_template || "", {
@@ -22,7 +30,10 @@ export class OpenAILLMProvider implements LLMProvider {
       products_context: this.formatProducts(products),
     })
 
-    const response = await this.llm.invoke([new SystemMessage(systemPrompt), new HumanMessage(userPrompt)])
+    const response = await this.llm.invoke([
+      new SystemMessage(systemPrompt),
+      new HumanMessage(userPrompt),
+    ])
     const content = response.content as string
 
     return {
@@ -39,8 +50,15 @@ export class OpenAILLMProvider implements LLMProvider {
         const priceRange = p.minPrice
           ? `$${p.minPrice.toFixed(0)}–$${p.maxPrice?.toFixed(0) ?? p.minPrice.toFixed(0)}`
           : "precio no disponible"
-        const inStock = p.prices?.some((price: EnrichedPrice) => price.inStock) ? "En stock" : "Sin stock"
-        const stores = p.prices?.map((price: EnrichedPrice) => `${price.storeName} ($${price.currentPrice})`).join(", ")
+        const inStock = p.prices?.some((price: EnrichedPrice) => price.inStock)
+          ? "En stock"
+          : "Sin stock"
+        const stores = p.prices
+          ?.map(
+            (price: EnrichedPrice) =>
+              `${price.storeName} ($${price.currentPrice})`
+          )
+          .join(", ")
 
         return `- ${p.name} ${p.brand ? `(${p.brand})` : ""} | ${p.category} | ${priceRange} | ${inStock} | ${stores || "sin tienda"}`
       })
