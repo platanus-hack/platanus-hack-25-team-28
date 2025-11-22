@@ -37,15 +37,15 @@ jobs:
       - name: Push to production branch
         run: |
           echo "Pushing to production branch..."
-
+          
           # Unset any previous credential helpers to avoid conflicts
           git config --global --unset credential.helper || true
           git config --system --unset credential.helper || true
-
+          
           # Construct the authenticated URL
           # We use x-access-token as the username for PATs
           REMOTE_URL="https://x-access-token:${{ secrets.PERSONAL_REPO_TOKEN }}@github.com/${{ secrets.PERSONAL_REPO_PATH }}.git"
-
+          
           # Push directly to the URL
           git push "$REMOTE_URL" HEAD:production --force 2>&1 || {
             EXIT_CODE=$?
