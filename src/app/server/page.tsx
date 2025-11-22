@@ -1,4 +1,4 @@
-import { api } from "@/src/convex/_generated/api"
+import { api } from "@/convex/_generated/api"
 import { preloadQuery, preloadedQueryResult } from "convex/nextjs"
 import Image from "next/image"
 import Home from "./inner"

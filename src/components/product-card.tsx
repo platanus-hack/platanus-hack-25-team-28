@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Doc } from "@/src/convex/_generated/dataModel"
+import { Doc } from "@/convex/_generated/dataModel"
 import { ShoppingCart } from "lucide-react"
 
 interface ProductCardProps {
