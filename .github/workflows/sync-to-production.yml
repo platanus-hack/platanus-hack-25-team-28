@@ -34,9 +34,21 @@ jobs:
           echo "✓ Secrets are configured"
           echo "Repository: ${{ secrets.PERSONAL_REPO_PATH }}"
 
+      - name: Configure Git credentials
+        run: |
+          # Use store credential helper to store our personal token
+          git config --global credential.helper store
+          # Store the token for github.com
+          echo "https://x-access-token:${{ secrets.PERSONAL_REPO_TOKEN }}@github.com" > ~/.git-credentials
+          chmod 600 ~/.git-credentials
+
       - name: Add personal repo as remote
         run: |
-          git remote add personal https://x-access-token:${{ secrets.PERSONAL_REPO_TOKEN }}@github.com/${{ secrets.PERSONAL_REPO_PATH }}.git
+          git remote add personal https://github.com/${{ secrets.PERSONAL_REPO_PATH }}.git
+
+      - name: Test repository access
+        run: |
+          git ls-remote personal --heads production || echo "Warning: Could not access production branch, will attempt to create it"
 
       - name: Test repository access
         run: |
