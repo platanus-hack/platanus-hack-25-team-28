@@ -90,4 +90,102 @@ export default defineSchema({
     valid_from: v.number(), // Timestamp
     valid_to: v.optional(v.number()), // Timestamp, null if current
   }).index("by_store_product", ["storeProductId", "valid_from"]),
+
+  recommendation_jobs: defineTable({
+    userPrompt: v.string(),
+    budget: v.optional(v.number()),
+    limit: v.optional(v.number()),
+    storeId: v.optional(v.id("stores")),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("processing"),
+      v.literal("completed"),
+      v.literal("failed")
+    ),
+    result: v.optional(
+      v.object({
+        analysis: v.object({
+          categories: v.array(v.string()),
+          keywords: v.array(v.string()),
+          quantity_hint: v.string(),
+          occasion: v.string(),
+        }),
+        recommendation: v.object({
+          recommendation: v.string(),
+          selectedProducts: v.array(
+            v.object({
+              _id: v.id("products"),
+              name: v.string(),
+              category: v.string(),
+            })
+          ),
+        }),
+      })
+    ),
+    error: v.optional(v.string()),
+    startedAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+  }).index("by_status", ["status"]),
+
+  conversation_sessions: defineTable({
+    userId: v.optional(v.string()),
+    topic: v.string(),
+    status: v.union(v.literal("active"), v.literal("archived")),
+    messages: v.array(
+      v.object({
+        id: v.string(),
+        role: v.union(v.literal("user"), v.literal("assistant")),
+        content: v.string(),
+        timestamp: v.number(),
+        analysis: v.optional(
+          v.object({
+            intent: v.string(),
+            sentiment: v.string(),
+            entities: v.array(v.string()),
+          })
+        ),
+      })
+    ),
+    feedbackHistory: v.array(
+      v.object({
+        productId: v.id("products"),
+        productName: v.string(),
+        feedback: v.union(v.literal("liked"), v.literal("disliked"), v.literal("interested")),
+        reason: v.optional(v.string()),
+        timestamp: v.number(),
+      })
+    ),
+    currentRecommendations: v.array(v.string()),
+    satisfactionLevel: v.number(),
+    refinementCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    lastMessageAt: v.number(),
+  })
+    .index("by_status", ["status"])
+    .index("by_user", ["userId"])
+    .index("by_last_message", ["lastMessageAt"]),
+
+  shopping_carts: defineTable({
+    sessionId: v.id("conversation_sessions"),
+    items: v.array(
+      v.object({
+        productId: v.id("products"),
+        productName: v.string(),
+        brand: v.optional(v.string()),
+        category: v.string(),
+        quantity: v.number(),
+        unit: v.string(),
+        pricePerUnit: v.number(),
+        currency: v.string(),
+        totalPrice: v.number(),
+        addedAt: v.number(),
+      })
+    ),
+    totalAmount: v.number(),
+    currency: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_session", ["sessionId"]),
 })
