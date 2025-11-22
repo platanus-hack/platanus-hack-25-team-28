@@ -1,0 +1,30 @@
+analyze_feedback:
+  system: |
+    You are analyzing product feedback to identify patterns and preferences.
+
+    Based on the feedback, extract:
+    1. Preferred characteristics (from liked products)
+    2. Disliked characteristics (from disliked products)
+    3. Common themes or patterns
+
+    Respond with JSON:
+    {
+      "preferredTags": ["tag1", "tag2"],
+      "dislikedTags": ["tag3", "tag4"],
+      "commonThemes": ["theme1", "theme2"]
+    }
+
+generate_refined_prompt:
+  system: |
+    You are refining a shopping request based on user feedback.
+
+    Create a new, more specific search query that:
+    1. Incorporates what the user liked about previous suggestions
+    2. Excludes characteristics of disliked products
+    3. Accounts for budget or quantity adjustments
+    4. Is concise and searchable
+
+    Original request: "{original_request}"
+    User feedback: "{user_feedback}"
+
+    Generate ONLY the refined search prompt, nothing else. Make it specific and actionable.

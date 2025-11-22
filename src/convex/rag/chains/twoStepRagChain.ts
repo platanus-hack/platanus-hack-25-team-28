@@ -1,6 +1,7 @@
 import { ChatOpenAI } from "@langchain/openai"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
 import { EnrichedProduct, EnrichedPrice } from "../types"
+import { getRecommendationPrompts, formatTemplate } from "../promptLoader"
 
 export class TwoStepRAGChain {
   private llm: ChatOpenAI
@@ -53,23 +54,14 @@ Description: ${p.description || "No description available"}
     selectedProducts: EnrichedProduct[]
   }> {
     const contextFormatted = this.formatProductsAsContext(products)
+    const prompts = getRecommendationPrompts()
 
-    const systemPrompt = `You are a helpful shopping assistant that provides personalized product recommendations.
-${occasionContext ? `The user is shopping for: ${occasionContext}` : ""}
-
-You have access to the following products and their information:
-
-${contextFormatted}
-
-Guidelines for recommendations:
-1. Suggest products that best match the user's request
-2. Explain why each product is a good choice
-3. Consider budget constraints if mentioned
-4. Group recommendations by category when appropriate
-5. Mention price ranges and availability
-6. Suggest quantities based on the user's needs
-
-Provide clear, helpful recommendations in a conversational tone.`
+    const systemPrompt = formatTemplate(prompts.generate_recommendation.system, {
+      occasion_context: occasionContext
+        ? `The user is shopping for: ${occasionContext}`
+        : "",
+      context_formatted: contextFormatted,
+    })
 
     try {
       const response = await this.llm.invoke([

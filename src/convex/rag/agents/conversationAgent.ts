@@ -1,6 +1,7 @@
 import { ChatOpenAI } from "@langchain/openai"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
 import { ConversationMessage } from "../types"
+import { getChatPrompts, formatTemplate } from "../promptLoader"
 
 export type IntentAnalysis = {
   intent: "request" | "feedback" | "clarification" | "general"
@@ -37,38 +38,14 @@ export class ConversationAgent {
     const historyContext = this.formatConversationHistory(
       conversationHistory.slice(-6)
     )
+    const prompts = getChatPrompts()
 
-    const systemPrompt = `You are a shopping assistant that analyzes customer messages to understand their intent, sentiment, and needs.
+    const systemPrompt = prompts.analyze_user_message.system
 
-Analyze the latest customer message in context of the conversation history.
-
-Respond with valid JSON matching this schema:
-{
-  "intent": "request|feedback|clarification|general",
-  "sentiment": "positive|neutral|negative",
-  "entities": ["entity1", "entity2"],
-  "followUpQuestion": "optional follow-up question if needed",
-  "suggestsRefinement": true|false
-}
-
-Intent meanings:
-- "request": Customer is asking for new product recommendations
-- "feedback": Customer is providing feedback on suggested products (likes/dislikes/preferences)
-- "clarification": Customer is asking for more details about products or recommendations
-- "general": General conversation or acknowledgment
-
-Sentiment: How the customer feels (positive = satisfied, neutral = indifferent, negative = unsatisfied)
-
-Entities: Extract relevant product types, preferences, or constraints mentioned
-
-followUpQuestion: If appropriate, suggest a clarifying question to better understand their needs
-
-suggestsRefinement: True if customer's feedback suggests previous recommendations should be adjusted`
-
-    const userPrompt = `Conversation history:
-${historyContext}
-
-Analyze the customer's latest message: "${userMessage}"`
+    const userPrompt = formatTemplate(prompts.analyze_user_message.user_template, {
+      history_context: historyContext,
+      user_message: userMessage,
+    })
 
     try {
       const response = await this.llm.invoke([
@@ -132,25 +109,15 @@ Analyze the customer's latest message: "${userMessage}"`
       }
     }
 
-    const systemPrompt = `You are a friendly and helpful shopping assistant engaged in a natural conversation with a customer.
+    const prompts = getChatPrompts()
+    const systemPrompt = formatTemplate(prompts.generate_response.system, {
+      contextual_tip: contextualTip,
+    })
 
-Your role:
-1. Understand what the customer needs or is feedback on
-2. Acknowledge their previous concerns or preferences
-3. Ask clarifying questions if needed
-4. Provide helpful suggestions or explanations
-5. Be conversational and warm, not robotic
-
-${contextualTip}
-
-Keep responses concise (2-3 sentences typically), natural, and focused on helping the customer find what they need.`
-
-    const userPrompt = `Conversation history:
-${historyContext}
-
-Customer's message: "${userMessage}"
-
-Respond naturally to continue this conversation.`
+    const userPrompt = formatTemplate(prompts.generate_response.user_template, {
+      history_context: historyContext,
+      user_message: userMessage,
+    })
 
     try {
       const response = await this.llm.invoke([

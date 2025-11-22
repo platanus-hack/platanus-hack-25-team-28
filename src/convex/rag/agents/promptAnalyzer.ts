@@ -1,5 +1,6 @@
 import { ChatOpenAI } from "@langchain/openai"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
+import { getAnalysisPrompts, formatTemplate } from "../promptLoader"
 
 export type AnalysisResult = {
   categories: string[]
@@ -33,26 +34,14 @@ export class PromptAnalyzerAgent {
   }
 
   async analyzePrompt(userPrompt: string): Promise<AnalysisResult> {
-    const systemPrompt = `You are a shopping assistant that analyzes customer requests and extracts relevant information.
+    const prompts = getAnalysisPrompts()
+    const systemPrompt = formatTemplate(prompts.analyze_prompt.system, {
+      available_categories: AVAILABLE_CATEGORIES.join(", "),
+    })
 
-Your task is to:
-1. Identify the MAIN product categories the customer needs from this list: ${AVAILABLE_CATEGORIES.join(", ")}
-2. Extract key ingredients, products, or items they might want
-3. Estimate the quantity/scale they need (e.g., "for 15 people", "single meal", "party supplies")
-4. Identify the occasion or use case
-
-IMPORTANT: Only suggest categories that are relevant to the user's request. If a category doesn't apply, don't include it.
-
-Respond with valid JSON matching this schema:
-{
-  "categories": ["Category1", "Category2"],
-  "keywords": ["keyword1", "keyword2"],
-  "quantity_hint": "description of quantity needed",
-  "occasion": "type of event or use"
-}`
-
-    const userMessage = `Analyze this shopping request and extract relevant categories and details:
-"${userPrompt}"`
+    const userMessage = formatTemplate(prompts.analyze_prompt.user_template, {
+      user_prompt: userPrompt,
+    })
 
     try {
       const response = await this.llm.invoke([

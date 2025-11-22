@@ -1,6 +1,7 @@
 import { Product, ProductFeedback } from "../types"
 import { ChatOpenAI } from "@langchain/openai"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
+import { getRefinementPrompts, formatTemplate } from "../promptLoader"
 
 export type RefinementRequest = {
   originalRequest: string
@@ -36,19 +37,8 @@ export class RecommendationRefinerAgent {
     const liked = feedbackHistory.filter((f) => f.feedback === "liked")
     const disliked = feedbackHistory.filter((f) => f.feedback === "disliked")
 
-    const systemPrompt = `You are analyzing product feedback to identify patterns and preferences.
-
-Based on the feedback, extract:
-1. Preferred characteristics (from liked products)
-2. Disliked characteristics (from disliked products)
-3. Common themes or patterns
-
-Respond with JSON:
-{
-  "preferredTags": ["tag1", "tag2"],
-  "dislikedTags": ["tag3", "tag4"],
-  "commonThemes": ["theme1", "theme2"]
-}`
+    const prompts = getRefinementPrompts()
+    const systemPrompt = prompts.analyze_feedback.system
 
     const feedbackText = `Liked products: ${liked.map((f) => f.productName).join(", ") || "None"}
 Disliked products: ${disliked.map((f) => f.productName).join(", ") || "None"}`
@@ -93,18 +83,11 @@ Disliked products: ${disliked.map((f) => f.productName).join(", ") || "None"}`
   }
 
   async generateRefinedPrompt(request: RefinementRequest): Promise<string> {
-    const systemPrompt = `You are refining a shopping request based on user feedback.
-
-Create a new, more specific search query that:
-1. Incorporates what the user liked about previous suggestions
-2. Excludes characteristics of disliked products
-3. Accounts for budget or quantity adjustments
-4. Is concise and searchable
-
-Original request: "${request.originalRequest}"
-User feedback: "${request.userFeedback}"
-
-Generate ONLY the refined search prompt, nothing else. Make it specific and actionable.`
+    const prompts = getRefinementPrompts()
+    const systemPrompt = formatTemplate(prompts.generate_refined_prompt.system, {
+      original_request: request.originalRequest,
+      user_feedback: request.userFeedback,
+    })
 
     const context = []
     if (request.likedProducts.length > 0) {
