@@ -24,9 +24,24 @@ echo "   You can generate one here: https://github.com/settings/tokens/new?scope
 echo ""
 read -p "Paste your PAT here: " TOKEN
 
+# Trim whitespace
+TOKEN=$(echo "$TOKEN" | tr -d '[:space:]')
+
 if [ -z "$TOKEN" ]; then
     echo "❌ Token cannot be empty."
     exit 1
+fi
+
+# Verify the token works
+echo "🔍 Verifying token..."
+if ! curl -s -H "Authorization: token $TOKEN" https://api.github.com/user/repos | grep -q "$PERSONAL_REPO"; then
+    echo "⚠️  Warning: Could not verify token access to $PERSONAL_REPO."
+    echo "   Please double-check that the token has 'repo' scope and you have access to the repo."
+    read -p "Continue anyway? (y/N) " -n 1 -r
+    echo ""
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
 fi
 
 echo ""

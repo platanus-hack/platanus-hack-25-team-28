@@ -34,6 +34,26 @@ jobs:
           echo "✓ Secrets are configured"
           echo "Repository: ${{ secrets.PERSONAL_REPO_PATH }}"
 
+      - name: Verify Token and Repository Access
+        run: |
+          echo "Verifying access to https://github.com/${{ secrets.PERSONAL_REPO_PATH }}..."
+          
+          # Construct the authenticated URL
+          REMOTE_URL="https://x-access-token:${{ secrets.PERSONAL_REPO_TOKEN }}@github.com/${{ secrets.PERSONAL_REPO_PATH }}.git"
+          
+          # Try to list remote references - this verifies authentication
+          if git ls-remote "$REMOTE_URL" HEAD > /dev/null 2>&1; then
+            echo "✓ Token works and has access to the repository"
+          else
+            echo "❌ Authentication failed!"
+            echo "Please check:"
+            echo "1. The PERSONAL_REPO_TOKEN is valid and not expired"
+            echo "2. The token has the 'repo' scope enabled"
+            echo "3. The token owner has write access to ${{ secrets.PERSONAL_REPO_PATH }}"
+            echo "4. The repository name is correct (case-sensitive)"
+            exit 1
+          fi
+
       - name: Push to production branch
         run: |
           echo "Pushing to production branch..."
