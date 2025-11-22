@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Inter, Roboto_Mono } from "next/font/google"
 import "./globals.css"
 import SmoothScroll from "@/components/SmoothScroll"
+import ConvexClientProvider from "@/components/ConvexClientProvider"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -29,7 +30,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${robotoMono.variable} overflow-x-hidden bg-bg-page font-sans text-text-main`}
       >
-        <SmoothScroll>{children}</SmoothScroll>
+        <ConvexClientProvider>
+          <SmoothScroll>{children}</SmoothScroll>
+        </ConvexClientProvider>
       </body>
     </html>
   )
