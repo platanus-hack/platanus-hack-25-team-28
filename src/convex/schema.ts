@@ -87,4 +87,40 @@ export default defineSchema({
     valid_from: v.number(), // Timestamp
     valid_to: v.optional(v.number()), // Timestamp, null if current
   }).index("by_store_product", ["storeProductId", "valid_from"]),
+
+  recommendation_jobs: defineTable({
+    userPrompt: v.string(),
+    budget: v.optional(v.number()),
+    limit: v.optional(v.number()),
+    storeId: v.optional(v.id("stores")),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("processing"),
+      v.literal("completed"),
+      v.literal("failed")
+    ),
+    result: v.optional(
+      v.object({
+        analysis: v.object({
+          categories: v.array(v.string()),
+          keywords: v.array(v.string()),
+          quantity_hint: v.string(),
+          occasion: v.string(),
+        }),
+        recommendation: v.object({
+          recommendation: v.string(),
+          selectedProducts: v.array(
+            v.object({
+              _id: v.id("products"),
+              name: v.string(),
+              category: v.string(),
+            })
+          ),
+        }),
+      })
+    ),
+    error: v.optional(v.string()),
+    startedAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+  }).index("by_status", ["status"]),
 })
