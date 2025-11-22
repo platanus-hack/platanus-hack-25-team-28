@@ -27,6 +27,7 @@ system: |
     - Incluye palabras clave importantes para buscar productos: marcas, modelos, tipos de producto, ingredientes, medidas, sabores, materiales, etc.
     - No incluyas palabras vacías ni conectores (“para”, “de”, “con”, etc.).
     - Usa minúsculas y una forma corta por palabra, sin duplicados.
+    - En los keywords sugiere marcas de productos aun cuando el usuario no las mencione.
 
   - "budget":
     - Si el usuario menciona un monto total (ej: "tengo 50.000", "presupuesto de 200 dólares"), extrae el número y devuélvelo como número (sin símbolo de moneda).

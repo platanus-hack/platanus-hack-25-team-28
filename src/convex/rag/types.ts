@@ -22,10 +22,14 @@ export type EnrichedProduct = Omit<Product, "_creationTime"> & {
   maxPrice?: number
 }
 
+export type CategoryAnalysis = {
+  category: string
+  keywords: string[]
+}
+
 export type PromptAnalysis = {
   cleanedPrompt: string
-  categories: string[]
-  keywords: string[]
+  categories: CategoryAnalysis[]
   budget?: number
 }
 
@@ -49,8 +53,7 @@ export type RecommendationRequest = {
   prompt: string
   budget?: number
   limit?: number
-  categories?: string[]
-  keywords?: string[]
+  categories?: CategoryAnalysis[]
 }
 
 export type SimilarityResult = {
