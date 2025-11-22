@@ -12,8 +12,14 @@ We use a manual deployment process to sync changes from the hackathon repo to th
 1. **Merge your changes** to the `production` branch in the hackathon repo (via PR).
 2. **Run the deployment script** locally:
 
+   Using npm:
    ```bash
-   ./deploy-manual.sh
+   npm run deploy
+   ```
+
+   Or using pnpm:
+   ```bash
+   pnpm deploy
    ```
 
    This script will:
