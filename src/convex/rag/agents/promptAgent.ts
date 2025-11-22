@@ -1,6 +1,6 @@
 import { ChatAnthropic } from "@langchain/anthropic"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
-import { ConversationMessage, PromptAnalysis } from "../types"
+import { CategoryAnalysis, ConversationMessage, PromptAnalysis } from "../types"
 import { formatTemplate, getPromptAgentConfig } from "../promptLoader"
 
 export class PromptAgent {
@@ -44,57 +44,17 @@ export class PromptAgent {
       return {
         cleanedPrompt: userMessage,
         categories: [],
-        keywords: [],
         budget: undefined,
       }
     }
 
     const parsed = JSON.parse(jsonMatch[0])
     const categories = Array.isArray(parsed.categories) ? parsed.categories : []
-    const keywords = Array.isArray(parsed.keywords) ? parsed.keywords : []
-
-    const enrichedCategories = expandCategories(
-      categories,
-      keywords,
-      userMessage
-    )
 
     return {
       cleanedPrompt: parsed.cleanedPrompt || userMessage,
-      categories: enrichedCategories,
-      keywords,
+      categories: categories,
       budget: typeof parsed.budget === "number" ? parsed.budget : undefined,
     }
   }
-}
-
-const BEVERAGE_HINTS = [
-  "pisco",
-  "piscola",
-  "cola",
-  "coca",
-  "bebida",
-  "bebidas",
-  "trago",
-  "licor",
-]
-
-function expandCategories(
-  categories: string[],
-  keywords: string[],
-  userMessage: string
-): string[] {
-  const lowerText = userMessage.toLowerCase()
-  const lowerKeywords = keywords.map((k) => k.toLowerCase())
-  const set = new Set(categories)
-
-  const mentionsBeverage =
-    BEVERAGE_HINTS.some((hint) => lowerText.includes(hint)) ||
-    BEVERAGE_HINTS.some((hint) => lowerKeywords.some((k) => k.includes(hint)))
-
-  if (mentionsBeverage) {
-    set.add("licores-bebidas-y-aguas")
-  }
-
-  return Array.from(set)
 }

@@ -14,6 +14,8 @@ import type * as importData from "../importData.js";
 import type * as myFunctions from "../myFunctions.js";
 import type * as products from "../products.js";
 import type * as rag_agents_promptAgent from "../rag/agents/promptAgent.js";
+import type * as rag_agents_selectionAgent from "../rag/agents/selectionAgent.js";
+import type * as rag_embeddings from "../rag/embeddings.js";
 import type * as rag_promptLoader from "../rag/promptLoader.js";
 import type * as rag_providers_anthropicLlm from "../rag/providers/anthropicLlm.js";
 import type * as rag_providers_openaiEmbedding from "../rag/providers/openaiEmbedding.js";
@@ -37,6 +39,8 @@ declare const fullApi: ApiFromModules<{
   myFunctions: typeof myFunctions;
   products: typeof products;
   "rag/agents/promptAgent": typeof rag_agents_promptAgent;
+  "rag/agents/selectionAgent": typeof rag_agents_selectionAgent;
+  "rag/embeddings": typeof rag_embeddings;
   "rag/promptLoader": typeof rag_promptLoader;
   "rag/providers/anthropicLlm": typeof rag_providers_anthropicLlm;
   "rag/providers/openaiEmbedding": typeof rag_providers_openaiEmbedding;

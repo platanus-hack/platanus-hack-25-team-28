@@ -4,9 +4,25 @@ import { query } from "../_generated/server"
 export const listProducts = query({
   args: {
     storeId: v.optional(v.id("stores")),
+    paginationOpts: v.optional(
+      v.object({
+        numItems: v.number(),
+        cursor: v.union(v.string(), v.null()),
+      })
+    ),
   },
   handler: async (ctx, args) => {
-    const products = await ctx.db.query("products").collect()
+    const paginationOpts = args.paginationOpts || { numItems: 20, cursor: null }
+    const productsResult = await ctx.db
+      .query("products")
+      .order("desc")
+      .paginate(paginationOpts)
+
+    const products = productsResult.page
+
+    // Fetch all stores once to avoid N+1
+    const stores = await ctx.db.query("stores").collect()
+    const storeMap = new Map(stores.map((s) => [s._id, s.name]))
 
     const enrichedProducts = await Promise.all(
       products.map(async (p) => {
@@ -21,20 +37,17 @@ export const listProducts = query({
           )
         }
 
-        const prices = await Promise.all(
-          storeProducts.map(async (sp) => {
-            const store = await ctx.db.get(sp.storeId)
-            return {
-              storeId: sp.storeId,
-              storeName: store?.name || "Unknown Store",
-              currentPrice: Number(sp.current_price) / 100,
-              currency: sp.currency,
-              inStock: sp.in_stock,
-              sku: sp.sku,
-              promotions: sp.promotions,
-            }
-          })
-        )
+        const prices = storeProducts.map((sp) => {
+          return {
+            storeId: sp.storeId,
+            storeName: storeMap.get(sp.storeId) || "Unknown Store",
+            currentPrice: Number(sp.current_price),
+            currency: sp.currency,
+            inStock: sp.in_stock,
+            sku: sp.sku,
+            promotions: sp.promotions,
+          }
+        })
 
         const minPrice =
           prices.length > 0
@@ -62,7 +75,10 @@ export const listProducts = query({
       })
     )
 
-    return enrichedProducts
+    return {
+      ...productsResult,
+      page: enrichedProducts,
+    }
   },
 })
 
