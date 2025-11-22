@@ -52,6 +52,7 @@
     "predev": "convex dev --until-success && convex dashboard",
     "prepare": "husky",
     "start": "next start",
+    "typecheck": "tsc",
     "vercel": "sh deploy-manual.sh"
   },
   "version": "0.1.0"

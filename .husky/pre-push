@@ -25,6 +25,17 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+# Run typecheck
+echo "🔍 Running TypeScript typecheck..."
+pnpm typecheck
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Typecheck failed!"
+  echo "   Please run 'pnpm typecheck' to see errors."
+  exit 1
+fi
+
 echo ""
 echo "✅ All pre-push checks passed!"
 
