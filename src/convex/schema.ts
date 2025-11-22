@@ -87,13 +87,4 @@ export default defineSchema({
     // INDEX 3: Catalog browsing
     // Used if we want to list all products available in a specific store.
     .index("by_store", ["storeId"]),
-
-  // 4. PriceHistory: Analytical data (Optional but recommended)
-  price_histories: defineTable({
-    storeProductId: v.id("store_products"),
-    price: v.number(),
-    currency: v.string(),
-    valid_from: v.number(), // Timestamp
-    valid_to: v.optional(v.number()), // Timestamp, null if current
-  }).index("by_store_product", ["storeProductId", "valid_from"]),
 })
