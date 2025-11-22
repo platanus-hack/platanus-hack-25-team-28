@@ -39,7 +39,13 @@ export default defineSchema({
     description: v.optional(v.string()),
     imageId: v.optional(v.id("_storage")),
     imageUrl: v.optional(v.string()),
+    embedding: v.optional(v.array(v.float64())),
   })
+    .vectorIndex("by_embedding", {
+      vectorField: "embedding",
+      dimensions: 1536,
+      filterFields: ["category"],
+    })
     .searchIndex("search_name", {
       searchField: "name",
       filterFields: ["category", "brand"],
