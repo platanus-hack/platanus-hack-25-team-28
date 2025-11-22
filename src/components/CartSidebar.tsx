@@ -2,17 +2,18 @@
 
 import React, { useEffect, useRef } from 'react';
 import { ShoppingCart, X } from 'lucide-react';
-import { CartItem, formatCurrency } from '@/utils/cartUtils';
+import { CartItem } from '@/types';
+import { formatCurrency } from '@/utils/cartUtils';
 import gsap from 'gsap';
 
 interface CartSidebarProps {
-  items: CartItem[];
+  items?: CartItem[]; // Optional with default value
   total: number;
   isOpen: boolean; // for mobile
   onClose: () => void; // for mobile
 }
 
-export default function CartSidebar({ items, total, isOpen, onClose }: CartSidebarProps) {
+export default function CartSidebar({ items = [], total, isOpen, onClose }: CartSidebarProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const totalRef = useRef<HTMLSpanElement>(null);
 
