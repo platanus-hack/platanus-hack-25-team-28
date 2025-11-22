@@ -18,7 +18,6 @@ export default function ProductReveal({
   onFunnelComplete,
 }: ProductRevealProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const headerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
   const cartTargetRef = useRef<HTMLDivElement>(null)
@@ -39,13 +38,6 @@ export default function ProductReveal({
       masterTimeline.current = tl
 
       // 1. Entrance Animation
-      // Header slides down
-      tl.from(headerRef.current, {
-        y: -50,
-        opacity: 0,
-        duration: 0.8,
-      })
-
       // Cards stagger in
       tl.from(
         cardRefs.current,
@@ -176,26 +168,8 @@ export default function ProductReveal({
   return (
     <div
       ref={containerRef}
-      className="relative flex min-h-screen flex-col overflow-hidden bg-gray-50"
+      className="relative flex min-h-screen flex-col overflow-hidden bg-gray-50 pt-20"
     >
-      {/* Top prompt bar */}
-      <header
-        ref={headerRef}
-        className="sticky top-0 z-20 border-b bg-white/80 shadow-sm backdrop-blur-md"
-      >
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-          <div className="hidden text-sm font-medium text-gray-500 sm:block">
-            Construyendo tu carrito inteligente
-          </div>
-          <div className="flex max-w-full items-center gap-3 sm:max-w-xl">
-            <div className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-green-500"></div>
-            <div className="w-full truncate rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-800">
-              Buscando: {prompt}
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Scrollable products area */}
       <main className="relative mx-auto flex w-full max-w-6xl flex-1 px-4 pt-8 pb-24">
         <div
