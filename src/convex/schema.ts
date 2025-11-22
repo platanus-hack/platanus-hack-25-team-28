@@ -123,4 +123,66 @@ export default defineSchema({
     startedAt: v.optional(v.number()),
     completedAt: v.optional(v.number()),
   }).index("by_status", ["status"]),
+
+  conversation_sessions: defineTable({
+    userId: v.optional(v.string()),
+    topic: v.string(),
+    status: v.union(v.literal("active"), v.literal("archived")),
+    messages: v.array(
+      v.object({
+        id: v.string(),
+        role: v.union(v.literal("user"), v.literal("assistant")),
+        content: v.string(),
+        timestamp: v.number(),
+        analysis: v.optional(
+          v.object({
+            intent: v.string(),
+            sentiment: v.string(),
+            entities: v.array(v.string()),
+          })
+        ),
+      })
+    ),
+    feedbackHistory: v.array(
+      v.object({
+        productId: v.id("products"),
+        productName: v.string(),
+        feedback: v.union(v.literal("liked"), v.literal("disliked"), v.literal("interested")),
+        reason: v.optional(v.string()),
+        timestamp: v.number(),
+      })
+    ),
+    currentRecommendations: v.array(v.string()),
+    satisfactionLevel: v.number(),
+    refinementCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    lastMessageAt: v.number(),
+  })
+    .index("by_status", ["status"])
+    .index("by_user", ["userId"])
+    .index("by_last_message", ["lastMessageAt"]),
+
+  shopping_carts: defineTable({
+    sessionId: v.id("conversation_sessions"),
+    items: v.array(
+      v.object({
+        productId: v.id("products"),
+        productName: v.string(),
+        brand: v.optional(v.string()),
+        category: v.string(),
+        quantity: v.number(),
+        unit: v.string(),
+        pricePerUnit: v.number(),
+        currency: v.string(),
+        totalPrice: v.number(),
+        addedAt: v.number(),
+      })
+    ),
+    totalAmount: v.number(),
+    currency: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_session", ["sessionId"]),
 })
