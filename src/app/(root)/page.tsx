@@ -10,13 +10,8 @@ import Hero from "./_components/Hero"
 import ProductReveal from "./_components/ProductReveal"
 
 type ViewStep = "hero" | "productReveal" | "chat"
-type ViewStep = "hero" | "productReveal" | "chat"
 
 export default function Home() {
-  const [viewStep, setViewStep] = useState<ViewStep>("hero")
-  const [prompt, setPrompt] = useState("")
-  const [cart, setCart] = useState<CartItem[]>([])
-  const [showCart, setShowCart] = useState(false)
   const [viewStep, setViewStep] = useState<ViewStep>("hero")
   const [prompt, setPrompt] = useState("")
   const [cart, setCart] = useState<CartItem[]>([])
@@ -24,15 +19,10 @@ export default function Home() {
 
   const handleSearch = (userPrompt: string) => {
     setPrompt(userPrompt)
-    setPrompt(userPrompt)
     // Build cart immediately
     const newCart = buildMockCart()
     setCart(newCart)
-    const newCart = buildMockCart()
-    setCart(newCart)
     // Go to reveal view
-    setViewStep("productReveal")
-  }
     setViewStep("productReveal")
   }
 
@@ -41,15 +31,12 @@ export default function Home() {
     if (cart.length === 0) {
       const newCart = buildMockCart()
       setCart(newCart)
-      const newCart = buildMockCart()
-      setCart(newCart)
     }
     setViewStep("chat")
     setShowCart(true)
   }
 
   return (
-    <main className="fixed inset-0 flex h-screen w-full flex-col overflow-hidden bg-bg-page">
     <main className="fixed inset-0 flex h-screen w-full flex-col overflow-hidden bg-bg-page">
       {viewStep === "hero" && (
         <div className="flex-1 overflow-y-auto">
@@ -68,16 +55,13 @@ export default function Home() {
 
       {viewStep === "chat" && (
         <div className="flex h-screen flex-1 overflow-hidden">
-        <div className="flex h-screen flex-1 overflow-hidden">
           {/* Chat Area */}
           <div className="relative flex h-full flex-1 flex-col">
             <div className="flex-1 overflow-hidden">
               <ChatInterface initialPrompt={prompt} cartItems={cart} />
-              <ChatInterface initialPrompt={prompt} cartItems={cart} />
             </div>
 
             {/* Optional footer inside chat view */}
-            <div className="border-t border-gray-200 bg-bg-page p-4 text-center text-xs text-text-muted">
             <div className="border-t border-gray-200 bg-bg-page p-4 text-center text-xs text-text-muted">
               Supermarket AI Beta
             </div>
