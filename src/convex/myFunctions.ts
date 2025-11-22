@@ -4,7 +4,7 @@ import { action, mutation, query } from "./_generated/server"
 import { RAGRecommender } from "./rag/recommender"
 import { OpenAIEmbeddingProvider } from "./rag/providers/openaiEmbedding"
 import { OpenAILLMProvider } from "./rag/providers/openaiLlm"
-import { Product, RecommendationRequest, PromptAnalysis } from "./rag/types"
+import { Product, RecommendationRequest } from "./rag/types"
 import { PromptAnalyzerAgent } from "./rag/agents/promptAnalyzer"
 
 export const listNumbers = query({
