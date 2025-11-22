@@ -104,8 +104,8 @@ export default function Hero({ onFillCart }: HeroProps) {
           <p className="hero-text-element max-w-xl text-xl leading-relaxed text-text-muted">
             {/* eslint-disable-next-line react/no-unescaped-entities */}
             Escribe lo que necesitas — por ejemplo "Quiero armar un asado para 6
-            personas con 40.000 CLP&quot; — y dejamos que la magia se encargue del
-            resto.
+            personas con 40.000 CLP&quot; — y dejamos que la magia se encargue
+            del resto.
           </p>
 
           <div className="hero-text-element w-full max-w-lg">
@@ -162,7 +162,7 @@ export default function Hero({ onFillCart }: HeroProps) {
                   <p className="text-xs font-semibold tracking-wider text-text-muted uppercase">
                     Tu Carro
                   </p>
-                  <p className="font-bold text-text-main">Lider Express</p>
+                  <p className="font-bold text-text-main">Jumbo</p>
                 </div>
               </div>
               <span className="rounded bg-gray-100 px-2 py-1 font-mono text-xs text-gray-500">
