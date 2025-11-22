@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-push checks..."
+
+# Run prettier check
+echo "📝 Checking code formatting with Prettier..."
+pnpm format
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Prettier check failed!"
+  echo "   Please run 'pnpm format:fix' to fix formatting issues."
+  exit 1
+fi
+
+# Run lint
+echo "🔧 Running ESLint..."
+pnpm lint
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Lint check failed!"
+  echo "   Please run 'pnpm lint:fix' to fix linting issues."
+  exit 1
+fi
+
+echo ""
+echo "✅ All pre-push checks passed!"
+

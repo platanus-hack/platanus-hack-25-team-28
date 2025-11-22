@@ -1,0 +1,2 @@
+# Pre-commit hook is intentionally empty
+# All checks run on pre-push instead

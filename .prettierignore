@@ -1,2 +1,35 @@
+# Generated files
 src/convex/_generated/
 
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Build outputs
+.next
+out
+build
+dist
+*.tsbuildinfo
+next-env.d.ts
+
+# Dependencies
+node_modules
+
+# Logs
+*.log
+
+# Environment files
+.env*
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel
