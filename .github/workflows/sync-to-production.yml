@@ -1,0 +1,36 @@
+name: Sync to Production Repo
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout hackathon repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get tag name
+        id: tag
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "Releasing version: $TAG_NAME"
+
+      - name: Add personal repo as remote
+        run: |
+          git remote add personal https://x-access-token:${{ secrets.PERSONAL_REPO_TOKEN }}@github.com/${{ secrets.PERSONAL_REPO_PATH }}.git
+
+      - name: Push to production branch
+        run: |
+          git push personal HEAD:production --force
+          git push personal ${{ steps.tag.outputs.tag_name }} --force
