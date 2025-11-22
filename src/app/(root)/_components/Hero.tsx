@@ -54,17 +54,18 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
         ease: "sine.inOut",
       })
 
-      // Card Parallax with Mouse
+      // Card Parallax with Mouse - Enhanced to follow cursor
       const handleMouseMove = (e: MouseEvent) => {
         if (!cardRef.current) return
         const { clientX, clientY } = e
-        const xPos = (clientX / window.innerWidth - 0.5) * 20
-        const yPos = (clientY / window.innerHeight - 0.5) * 20
+        const xPos = (clientX / window.innerWidth - 0.5) * 30
+        const yPos = (clientY / window.innerHeight - 0.5) * 30
 
         gsap.to(cardRef.current, {
           rotateY: xPos,
           rotateX: -yPos,
-          duration: 1,
+          transformPerspective: 1000,
+          duration: 0.5,
           ease: "power2.out",
         })
       }
@@ -159,10 +160,14 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
         </div>
 
         {/* Right Column: Floating Card */}
-        <div className="perspective-1000 hidden justify-center lg:flex">
+        <div
+          className="hidden justify-center lg:flex"
+          style={{ perspective: "1000px" }}
+        >
           <div
             ref={cardRef}
-            className="transform-style-3d relative w-[380px] rounded-3xl border border-gray-100 bg-white p-6 shadow-2xl"
+            className="relative w-[380px] rounded-3xl border border-gray-100 bg-white p-6 shadow-2xl"
+            style={{ transformStyle: "preserve-3d" }}
           >
             {/* Card Header */}
             <div className="mb-6 flex items-center justify-between border-b border-gray-100 pb-4">
@@ -207,11 +212,6 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
                   {formatCurrency(42990)}
                 </span>
               </div>
-            </div>
-
-            {/* Floating Elements */}
-            <div className="absolute -top-6 -right-6 z-10 flex h-16 w-16 rotate-12 items-center justify-center rounded-2xl bg-accent-warning text-xl font-bold text-white shadow-lg">
-              IA
             </div>
           </div>
         </div>
