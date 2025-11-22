@@ -15,7 +15,6 @@ interface SmartShoppingGridProps {
   onItemAdded: (item: CartItem) => void
   canStart?: boolean
   onAnimationComplete?: () => void
-  onAnimationComplete?: () => void
 }
 
 export default function SmartShoppingGrid({
@@ -39,20 +38,20 @@ export default function SmartShoppingGrid({
         defaults: { ease: "power3.out" },
         delay: 0.5, // Small delay after scroll
         onComplete: () => {
-            if (onAnimationComplete) {
-                onAnimationComplete()
-            }
-        }
+          if (onAnimationComplete) {
+            onAnimationComplete()
+          }
+        },
       })
 
       // Force fallback trigger just in case everything else fails
       // This ensures cart is populated even if animation crashes/skips
       // We create a parallel timeline or just use a timeout in real React world, but here in GSAP context:
       const fallbackTimer = setTimeout(() => {
-          items.forEach(item => onItemAdded(item)) // Potentially duplicate calls if we don't check state?
-          // Wait, we rely on onItemAdded to update state. If we call it twice, we get duplicates.
-          // Better: Rely on the animation loop being robust.
-      }, 10000) 
+        items.forEach((item) => onItemAdded(item)) // Potentially duplicate calls if we don't check state?
+        // Wait, we rely on onItemAdded to update state. If we call it twice, we get duplicates.
+        // Better: Rely on the animation loop being robust.
+      }, 10000)
       // Actually, let's not do a global timeout that might cause race conditions.
       // Instead, lets make the loop more robust.
 
@@ -119,11 +118,11 @@ export default function SmartShoppingGrid({
 
             // Validate destRect - if it looks wrong (e.g. hidden), fallback immediately
             if (!destRect || destRect.width <= 0 || destRect.height <= 0) {
-                onItemAdded(item)
-                if (document.body.contains(flyer)) {
-                    document.body.removeChild(flyer)
-                }
-                return
+              onItemAdded(item)
+              if (document.body.contains(flyer)) {
+                document.body.removeChild(flyer)
+              }
+              return
             }
 
             // Morph Animation
@@ -140,7 +139,9 @@ export default function SmartShoppingGrid({
             // Calculate uniform scale to fit height (avoid squash)
             const scale = destRect.height / cardRect.height
 
-            morphTl.to(flyer, {
+            morphTl.to(
+              flyer,
+              {
                 x: destRect.left - cardRect.left,
                 y: destRect.top - cardRect.top,
                 scaleX: scale,
@@ -162,17 +163,17 @@ export default function SmartShoppingGrid({
           [],
           startTime
         )
-        
+
         // Make original card disappear completely
         tl.to(
-            cardRefs.current[index], 
-            { 
-                opacity: 0, 
-                scale: 0,
-                duration: 0.4,
-                ease: "back.in(1.7)"
-            }, 
-            startTime
+          cardRefs.current[index],
+          {
+            opacity: 0,
+            scale: 0,
+            duration: 0.4,
+            ease: "back.in(1.7)",
+          },
+          startTime
         )
       })
 
@@ -182,18 +183,17 @@ export default function SmartShoppingGrid({
       // Currently TL ends at startFlying + (N-1)*0.2 + 0.4 (disappear duration)
       // So we need to pad it by at least 0.4s
       tl.to({}, { duration: 0.5 }) // Safety padding
-
     }, containerRef)
 
     return () => {
-        ctx.revert()
-        // Cleanup any lingering flyers
-        flyersRef.current.forEach(flyer => {
-            if (document.body.contains(flyer)) {
-                document.body.removeChild(flyer)
-            }
-        })
-        flyersRef.current = []
+      ctx.revert()
+      // Cleanup any lingering flyers
+      flyersRef.current.forEach((flyer) => {
+        if (document.body.contains(flyer)) {
+          document.body.removeChild(flyer)
+        }
+      })
+      flyersRef.current = []
     }
   }, [items, cartListRef, canStart])
 

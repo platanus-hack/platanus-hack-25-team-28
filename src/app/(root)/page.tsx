@@ -7,7 +7,6 @@ import { useEffect, useRef, useState } from "react"
 import CartDrawer from "./_components/CartDrawer"
 import ChatInterface from "./_components/ChatInterface"
 import Hero from "./_components/Hero"
-import ChatInterface from "./_components/ChatInterface"
 import SmartShoppingGrid from "./_components/SmartShoppingGrid"
 // import { gsap } from "gsap" // Still used if needed for other animations, but removing ScrollToPlugin if unused
 // import { ScrollToPlugin } from "gsap/ScrollToPlugin"
@@ -22,16 +21,13 @@ import NavBar from "@/components/NavBar"
 // Ensure plugins are registered
 if (typeof window !== "undefined") {
   // gsap.registerPlugin(ScrollToPlugin, CustomEase)
-  
-  // CustomEase.create("ultraSmooth", "M0,0 C0.2,0 0.1,1 1,1") 
-  // CustomEase.create("extremeExpo", "M0,0 C0.1,0 0.1,1 1,1") 
+  // CustomEase.create("ultraSmooth", "M0,0 C0.2,0 0.1,1 1,1")
+  // CustomEase.create("extremeExpo", "M0,0 C0.1,0 0.1,1 1,1")
 }
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [showResults, setShowResults] = useState(false)
-  const [showChat, setShowChat] = useState(false)
-  const [prompt, setPrompt] = useState("") // Keep prompt state for chat
   const [showChat, setShowChat] = useState(false)
   const [prompt, setPrompt] = useState("") // Keep prompt state for chat
   const [allProducts, setAllProducts] = useState<CartItem[]>([]) // The grid items
@@ -53,8 +49,6 @@ export default function Home() {
 
   const handleSearch = async (userPrompt: string) => {
     setPrompt(userPrompt)
-  const handleSearch = async (userPrompt: string) => {
-    setPrompt(userPrompt)
     setIsLoading(true)
 
     // Simulate AI delay
@@ -73,9 +67,9 @@ export default function Home() {
         // We use native scroll which leverages the smooth behavior from SmoothScroll.tsx
         const resultsElement = document.getElementById("results-section")
         if (resultsElement) {
-            resultsElement.scrollIntoView({ behavior: "smooth", block: "start" })
+          resultsElement.scrollIntoView({ behavior: "smooth", block: "start" })
         }
-        
+
         // Open cart slightly before/during scroll so it's ready for incoming items
         setIsCartOpen(true)
       }, 100)
@@ -90,11 +84,11 @@ export default function Home() {
   }
 
   const handleGridAnimationComplete = () => {
-      // Transition to Chat
-      setShowChat(true)
-      // We keep showResults=true so the container structure stays, 
-      // but we swap the Grid component for the Chat component inside the layout.
-      // Or we can use showResults to mean "Show the split layout" and use showChat to toggle content.
+    // Transition to Chat
+    setShowChat(true)
+    // We keep showResults=true so the container structure stays,
+    // but we swap the Grid component for the Chat component inside the layout.
+    // Or we can use showResults to mean "Show the split layout" and use showChat to toggle content.
   }
 
   return (
@@ -109,17 +103,17 @@ export default function Home() {
         >
           <div className="flex-1">
             {!showChat ? (
-                <SmartShoppingGrid
-                  items={allProducts}
-                  cartListRef={desktopCartRef}
-                  onItemAdded={handleItemAdded}
-                  canStart={isSidebarReady}
-                  onAnimationComplete={handleGridAnimationComplete}
-                />
+              <SmartShoppingGrid
+                items={allProducts}
+                cartListRef={desktopCartRef}
+                onItemAdded={handleItemAdded}
+                canStart={isSidebarReady}
+                onAnimationComplete={handleGridAnimationComplete}
+              />
             ) : (
-                <div className="h-screen p-6 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
-                    <ChatInterface initialPrompt={prompt} cartItems={cartItems} />
-                </div>
+              <div className="animate-in fade-in slide-in-from-bottom-4 h-screen p-6 duration-700 ease-out">
+                <ChatInterface initialPrompt={prompt} cartItems={cartItems} />
+              </div>
             )}
             {/* Footer inside the main content column */}
             <Footer />
