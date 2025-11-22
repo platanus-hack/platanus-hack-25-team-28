@@ -3,7 +3,7 @@ import { action, query } from "./_generated/server"
 import { api } from "./_generated/api"
 import { PromptAgent } from "./rag/agents/promptAgent"
 import { OpenAIEmbeddingProvider } from "./rag/providers/openaiEmbedding"
-import { OpenAILLMProvider } from "./rag/providers/openaiLlm"
+import { AnthropicLLMProvider } from "./rag/providers/anthropicLlm"
 import { RAGRecommender } from "./rag/recommender"
 import {
   EnrichedProduct,
@@ -19,7 +19,8 @@ export const recommendProducts = action({
   },
   handler: async (ctx, args) => {
     const apiKey = process.env.OPENAI_API_KEY || ""
-    const agent = new PromptAgent(apiKey)
+    const anthropicKey = process.env.ANTHROPIC_API_KEY || ""
+    const agent = new PromptAgent(anthropicKey)
     const analysis = await agent.analyze(args.userPrompt)
 
     const products = await ctx.runQuery(api.myFunctions.listEnrichedProducts, {
@@ -27,7 +28,7 @@ export const recommendProducts = action({
     })
 
     const embeddingProvider = new OpenAIEmbeddingProvider(apiKey)
-    const llmProvider = new OpenAILLMProvider(apiKey)
+    const llmProvider = new AnthropicLLMProvider(anthropicKey)
     const recommender = new RAGRecommender(embeddingProvider, llmProvider)
 
     const request: RecommendationRequest = {

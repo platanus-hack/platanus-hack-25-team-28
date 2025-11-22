@@ -1,15 +1,15 @@
-import { ChatOpenAI } from "@langchain/openai"
+import { ChatAnthropic } from "@langchain/anthropic"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
 import { ConversationMessage, PromptAnalysis } from "../types"
 import { formatTemplate, getPromptAgentConfig } from "../promptLoader"
 
 export class PromptAgent {
-  private llm: ChatOpenAI
+  private llm: ChatAnthropic
 
   constructor(apiKey: string) {
-    this.llm = new ChatOpenAI({
+    this.llm = new ChatAnthropic({
       apiKey,
-      model: "gpt-4o-mini",
+      model: "claude-haiku-4-5-20251001",
       temperature: 0.3,
     })
   }
