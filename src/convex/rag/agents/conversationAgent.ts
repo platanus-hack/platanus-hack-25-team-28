@@ -34,7 +34,9 @@ export class ConversationAgent {
     userMessage: string,
     conversationHistory: ConversationMessage[]
   ): Promise<IntentAnalysis> {
-    const historyContext = this.formatConversationHistory(conversationHistory.slice(-6))
+    const historyContext = this.formatConversationHistory(
+      conversationHistory.slice(-6)
+    )
 
     const systemPrompt = `You are a shopping assistant that analyzes customer messages to understand their intent, sentiment, and needs.
 
@@ -112,7 +114,9 @@ Analyze the customer's latest message: "${userMessage}"`
     currentRecommendations?: string[],
     satisfactionLevel?: number
   ): Promise<string> {
-    const historyContext = this.formatConversationHistory(conversationHistory.slice(-8))
+    const historyContext = this.formatConversationHistory(
+      conversationHistory.slice(-8)
+    )
 
     let contextualTip = ""
     if (satisfactionLevel !== undefined) {
@@ -123,7 +127,8 @@ Analyze the customer's latest message: "${userMessage}"`
         contextualTip =
           "The customer is not satisfied with current recommendations. Be open to trying new approaches."
       } else {
-        contextualTip = "The customer has mixed feelings. Ask clarifying questions to better understand."
+        contextualTip =
+          "The customer has mixed feelings. Ask clarifying questions to better understand."
       }
     }
 

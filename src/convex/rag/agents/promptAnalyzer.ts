@@ -71,8 +71,14 @@ Respond with valid JSON matching this schema:
       const validated: AnalysisResult = {
         categories: Array.isArray(parsed.categories) ? parsed.categories : [],
         keywords: Array.isArray(parsed.keywords) ? parsed.keywords : [],
-        quantity_hint: typeof parsed.quantity_hint === "string" ? parsed.quantity_hint : "unknown",
-        occasion: typeof parsed.occasion === "string" ? parsed.occasion : "general shopping",
+        quantity_hint:
+          typeof parsed.quantity_hint === "string"
+            ? parsed.quantity_hint
+            : "unknown",
+        occasion:
+          typeof parsed.occasion === "string"
+            ? parsed.occasion
+            : "general shopping",
       }
 
       return validated

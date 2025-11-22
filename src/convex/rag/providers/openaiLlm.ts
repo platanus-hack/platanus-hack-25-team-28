@@ -1,7 +1,12 @@
-import { ChatOpenAI } from "@langchain/openai"
 import type { BaseMessage } from "@langchain/core/messages"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
-import { LLMProvider, EnrichedProduct, EnrichedPrice, RecommendationResult } from "../types"
+import { ChatOpenAI } from "@langchain/openai"
+import {
+  EnrichedPrice,
+  EnrichedProduct,
+  LLMProvider,
+  RecommendationResult,
+} from "../types"
 
 export class OpenAILLMProvider implements LLMProvider {
   private llm: ChatOpenAI
@@ -20,9 +25,14 @@ export class OpenAILLMProvider implements LLMProvider {
         const priceRange = p.minPrice
           ? `$${p.minPrice.toFixed(2)}–$${p.maxPrice?.toFixed(2)}`
           : "price unavailable"
-        const inStock = p.prices?.some((price: EnrichedPrice) => price.inStock) ? "In stock" : "Out of stock"
+        const inStock = p.prices?.some((price: EnrichedPrice) => price.inStock)
+          ? "In stock"
+          : "Out of stock"
         const stores = p.prices
-          ?.map((price: EnrichedPrice) => `${price.storeName} ($${price.currentPrice.toFixed(2)})`)
+          ?.map(
+            (price: EnrichedPrice) =>
+              `${price.storeName} ($${price.currentPrice.toFixed(2)})`
+          )
           .join(", ")
 
         return `
@@ -84,10 +94,10 @@ Provide clear, helpful recommendations in a conversational tone.`
     } catch (error) {
       console.error("Error generating recommendation:", error)
       return {
-        recommendation: "I encountered an error while processing your request. Please try again.",
+        recommendation:
+          "I encountered an error while processing your request. Please try again.",
         selectedProducts: [],
       }
     }
   }
 }
-

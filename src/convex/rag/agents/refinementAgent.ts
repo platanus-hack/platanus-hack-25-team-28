@@ -72,9 +72,15 @@ Disliked products: ${disliked.map((f) => f.productName).join(", ") || "None"}`
 
       const parsed = JSON.parse(jsonMatch[0])
       return {
-        preferredTags: Array.isArray(parsed.preferredTags) ? parsed.preferredTags : [],
-        dislikedTags: Array.isArray(parsed.dislikedTags) ? parsed.dislikedTags : [],
-        commonThemes: Array.isArray(parsed.commonThemes) ? parsed.commonThemes : [],
+        preferredTags: Array.isArray(parsed.preferredTags)
+          ? parsed.preferredTags
+          : [],
+        dislikedTags: Array.isArray(parsed.dislikedTags)
+          ? parsed.dislikedTags
+          : [],
+        commonThemes: Array.isArray(parsed.commonThemes)
+          ? parsed.commonThemes
+          : [],
       }
     } catch (error) {
       console.error("Error analyzing feedback:", error)
@@ -102,10 +108,14 @@ Generate ONLY the refined search prompt, nothing else. Make it specific and acti
 
     const context = []
     if (request.likedProducts.length > 0) {
-      context.push(`Liked: ${request.likedProducts.map((p) => p.name).join(", ")}`)
+      context.push(
+        `Liked: ${request.likedProducts.map((p) => p.name).join(", ")}`
+      )
     }
     if (request.dislikedProducts.length > 0) {
-      context.push(`Disliked: ${request.dislikedProducts.map((p) => p.name).join(", ")}`)
+      context.push(
+        `Disliked: ${request.dislikedProducts.map((p) => p.name).join(", ")}`
+      )
     }
     if (request.currentBudget) {
       context.push(`Budget: $${request.currentBudget}`)
@@ -129,7 +139,9 @@ Generate ONLY the refined search prompt, nothing else. Make it specific and acti
     }
   }
 
-  async strategyRecommendation(feedbackHistory: ProductFeedback[]): Promise<string> {
+  async strategyRecommendation(
+    feedbackHistory: ProductFeedback[]
+  ): Promise<string> {
     const analysis = await this.analyzeFeedback(feedbackHistory)
 
     if (analysis.dislikedTags.length > analysis.preferredTags.length) {
@@ -166,6 +178,9 @@ Generate ONLY the refined search prompt, nothing else. Make it specific and acti
       return { product: p, score }
     })
 
-    return scored.filter((s) => s.score >= 0).sort((a, b) => b.score - a.score).map((s) => s.product)
+    return scored
+      .filter((s) => s.score >= 0)
+      .sort((a, b) => b.score - a.score)
+      .map((s) => s.product)
   }
 }

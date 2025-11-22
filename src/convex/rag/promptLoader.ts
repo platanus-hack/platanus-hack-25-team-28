@@ -29,6 +29,12 @@ export function getRecommendationPrompts(): PromptConfig {
   return RECOMMENDATION_PROMPTS
 }
 
-export function formatUserPrompt(template: string, prompt: string, productsList: string): string {
-  return template.replace("{prompt}", prompt).replace("{products_list}", productsList)
+export function formatUserPrompt(
+  template: string,
+  prompt: string,
+  productsList: string
+): string {
+  return template
+    .replace("{prompt}", prompt)
+    .replace("{products_list}", productsList)
 }

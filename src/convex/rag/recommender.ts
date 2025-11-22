@@ -1,8 +1,17 @@
-import { EmbeddingProvider, LLMProvider, EnrichedProduct, RecommendationRequest, RecommendationResult } from "./types"
+import {
+  EmbeddingProvider,
+  LLMProvider,
+  EnrichedProduct,
+  RecommendationRequest,
+  RecommendationResult,
+} from "./types"
 import { retrieveSimilarProducts, filterByBudget } from "./retrieval"
 
 export class RAGRecommender {
-  constructor(private embeddingProvider: EmbeddingProvider, private llmProvider: LLMProvider) {}
+  constructor(
+    private embeddingProvider: EmbeddingProvider,
+    private llmProvider: LLMProvider
+  ) {}
 
   private formatProductForEmbedding(product: EnrichedProduct): string {
     const priceInfo = product.minPrice
@@ -32,7 +41,12 @@ export class RAGRecommender {
     const productEmbeddings = embeddings.slice(1)
 
     const k = request.limit ?? 10
-    const retrieved = retrieveSimilarProducts(queryEmbedding, products, productEmbeddings, k)
+    const retrieved = retrieveSimilarProducts(
+      queryEmbedding,
+      products,
+      productEmbeddings,
+      k
+    )
 
     let filtered = retrieved
     if (request.budget != null) {
@@ -41,8 +55,11 @@ export class RAGRecommender {
 
     const filteredProducts = filtered.map((r) => r.product)
 
-    const occasionHint = request.occasion ||
-      (request.categories?.length ? `${request.categories.join(", ")} items` : undefined)
+    const occasionHint =
+      request.occasion ||
+      (request.categories?.length
+        ? `${request.categories.join(", ")} items`
+        : undefined)
 
     const recommendation = await this.llmProvider.generateRecommendation(
       request.prompt,

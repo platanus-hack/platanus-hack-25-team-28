@@ -149,13 +149,18 @@ export const processRecommendationJob = action({
         occasion: analysis.occasion,
       }
 
-      const recommendation = await recommender.recommend(productsResult, request)
+      const recommendation = await recommender.recommend(
+        productsResult,
+        request
+      )
 
-      const selectedProducts = recommendation.selectedProducts.map((p: EnrichedProduct) => ({
-        _id: p._id,
-        name: p.name,
-        category: p.category,
-      }))
+      const selectedProducts = recommendation.selectedProducts.map(
+        (p: EnrichedProduct) => ({
+          _id: p._id,
+          name: p.name,
+          category: p.category,
+        })
+      )
 
       await ctx.runMutation(api.myFunctions.updateRecommendationJobMutation, {
         jobId: args.jobId,
@@ -170,7 +175,8 @@ export const processRecommendationJob = action({
         completedAt: Date.now(),
       })
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
       console.error(`Error processing job ${args.jobId}:`, errorMessage)
 
       await ctx.runMutation(api.myFunctions.updateRecommendationJobMutation, {
@@ -191,12 +197,15 @@ export const createRecommendationJob = action({
     storeId: v.optional(v.id("stores")),
   },
   handler: async (ctx, args): Promise<{ jobId: string }> => {
-    const jobId = await ctx.runMutation(api.myFunctions.createRecommendationJobMutation, {
-      userPrompt: args.userPrompt,
-      budget: args.budget,
-      limit: args.limit,
-      storeId: args.storeId,
-    })
+    const jobId = await ctx.runMutation(
+      api.myFunctions.createRecommendationJobMutation,
+      {
+        userPrompt: args.userPrompt,
+        budget: args.budget,
+        limit: args.limit,
+        storeId: args.storeId,
+      }
+    )
 
     await ctx.scheduler.runAfter(0, api.myFunctions.processRecommendationJob, {
       jobId,
@@ -214,12 +223,15 @@ export const recommendProducts = action({
     storeId: v.optional(v.id("stores")),
   },
   handler: async (ctx, args) => {
-    const jobId = await ctx.runMutation(api.myFunctions.createRecommendationJobMutation, {
-      userPrompt: args.userPrompt,
-      budget: args.budget,
-      limit: args.limit,
-      storeId: args.storeId,
-    })
+    const jobId = await ctx.runMutation(
+      api.myFunctions.createRecommendationJobMutation,
+      {
+        userPrompt: args.userPrompt,
+        budget: args.budget,
+        limit: args.limit,
+        storeId: args.storeId,
+      }
+    )
 
     await ctx.scheduler.runAfter(0, api.myFunctions.processRecommendationJob, {
       jobId,
