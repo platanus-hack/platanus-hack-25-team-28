@@ -1,30 +1,25 @@
 name: Sync to Production Repo
 
 on:
-  push:
-    tags:
-      - v*
+  pull_request:
+    types: [closed]
+    branches:
+      - production
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    if: github.event.pull_request.merged == true
 
     steps:
       - name: Checkout hackathon repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          fetch-tags: true
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Get tag name
-        id: tag
-        run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
-          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
-          echo "Releasing version: $TAG_NAME"
 
       - name: Add personal repo as remote
         run: |
@@ -33,4 +28,3 @@ jobs:
       - name: Push to production branch
         run: |
           git push personal HEAD:production --force
-          git push personal ${{ steps.tag.outputs.tag_name }} --force
