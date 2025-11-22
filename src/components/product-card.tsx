@@ -13,16 +13,20 @@ import { ShoppingCart } from "lucide-react"
 interface ProductCardProps {
   product: Doc<"products">
   // In a real app, we might pass the best price or user-specific data here
-  bestPrice?: number 
+  bestPrice?: number
   currency?: string
 }
 
-export function ProductCard({ product, bestPrice, currency = "$" }: ProductCardProps) {
+export function ProductCard({
+  product,
+  bestPrice,
+  currency = "$",
+}: ProductCardProps) {
   return (
     <Card className="w-full max-w-sm overflow-hidden transition-all hover:shadow-lg">
-      <div className="aspect-square relative bg-muted/20">
+      <div className="bg-muted/20 relative aspect-square">
         {/* Placeholder for image since we don't have real storage URLs yet */}
-        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/20 text-4xl font-bold select-none">
+        <div className="text-muted-foreground/20 absolute inset-0 flex items-center justify-center text-4xl font-bold select-none">
           {product.name.charAt(0)}
         </div>
         {product.imageId && (
@@ -33,14 +37,14 @@ export function ProductCard({ product, bestPrice, currency = "$" }: ProductCardP
       </div>
 
       <CardHeader className="p-4 pb-2">
-        <div className="flex justify-between items-start gap-2">
+        <div className="flex items-start justify-between gap-2">
           <div className="space-y-1">
             {product.brand && (
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+              <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
                 {product.brand}
               </p>
             )}
-            <CardTitle className="text-lg font-semibold leading-tight">
+            <CardTitle className="text-lg leading-tight font-semibold">
               {product.name}
             </CardTitle>
           </div>
@@ -51,23 +55,23 @@ export function ProductCard({ product, bestPrice, currency = "$" }: ProductCardP
       </CardHeader>
 
       <CardContent className="p-4 pt-2">
-        <div className="flex flex-wrap gap-1 mb-3">
+        <div className="mb-3 flex flex-wrap gap-1">
           {product.tags.map((tag) => (
-            <Badge key={tag} variant="outline" className="text-[10px] px-2 h-5">
+            <Badge key={tag} variant="outline" className="h-5 px-2 text-[10px]">
               {tag}
             </Badge>
           ))}
         </div>
         {product.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className="text-muted-foreground line-clamp-2 text-sm">
             {product.description}
           </p>
         )}
       </CardContent>
 
-      <CardFooter className="p-4 border-t bg-muted/5 flex items-center justify-between">
+      <CardFooter className="bg-muted/5 flex items-center justify-between border-t p-4">
         <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground">Best Price</span>
+          <span className="text-muted-foreground text-xs">Best Price</span>
           <div className="flex items-baseline gap-1">
             <span className="text-lg font-bold">
               {bestPrice ? `${currency}${bestPrice.toFixed(2)}` : "N/A"}
@@ -82,4 +86,3 @@ export function ProductCard({ product, bestPrice, currency = "$" }: ProductCardP
     </Card>
   )
 }
-

@@ -25,4 +25,3 @@ export const list = query({
     return productsWithPrice
   },
 })
-

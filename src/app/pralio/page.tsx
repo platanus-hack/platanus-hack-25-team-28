@@ -13,7 +13,7 @@ export default function Home() {
 
   return (
     <>
-      <header className="sticky top-0 z-10 flex flex-row items-center justify-between border-b border-slate-200 bg-background/80 p-4 shadow-sm backdrop-blur-md dark:border-slate-700">
+      <header className="bg-background/80 sticky top-0 z-10 flex flex-row items-center justify-between border-b border-slate-200 p-4 shadow-sm backdrop-blur-md dark:border-slate-700">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-3">
             <Image src="/convex.svg" alt="Convex Logo" width={32} height={32} />

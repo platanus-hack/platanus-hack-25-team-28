@@ -1,8 +1,17 @@
-import { EmbeddingProvider, EnrichedProduct, LLMProvider, RecommendationRequest, RecommendationResult } from "./types"
+import {
+  EmbeddingProvider,
+  EnrichedProduct,
+  LLMProvider,
+  RecommendationRequest,
+  RecommendationResult,
+} from "./types"
 import { retrieveSimilarProducts, filterByBudget } from "./retrieval"
 
 export class RAGRecommender {
-  constructor(private embeddingProvider: EmbeddingProvider, private llmProvider: LLMProvider) {}
+  constructor(
+    private embeddingProvider: EmbeddingProvider,
+    private llmProvider: LLMProvider
+  ) {}
 
   private formatProductForEmbedding(product: EnrichedProduct): string {
     const priceInfo = product.minPrice
@@ -12,7 +21,10 @@ export class RAGRecommender {
     return `${product.name} ${product.brand ? `(${product.brand})` : ""}. Categoria: ${product.category}. Tags: ${product.tags.join(", ")}. Precio: ${priceInfo}. Descripcion: ${product.description || ""}`
   }
 
-  async recommend(products: EnrichedProduct[], request: RecommendationRequest): Promise<RecommendationResult> {
+  async recommend(
+    products: EnrichedProduct[],
+    request: RecommendationRequest
+  ): Promise<RecommendationResult> {
     if (products.length === 0) {
       return {
         recommendation: "No hay productos disponibles para recomendar.",
@@ -30,7 +42,9 @@ export class RAGRecommender {
       candidates = products
     }
 
-    const productTexts = candidates.map((p) => this.formatProductForEmbedding(p))
+    const productTexts = candidates.map((p) =>
+      this.formatProductForEmbedding(p)
+    )
     const inputs = [request.prompt, ...productTexts]
 
     const embeddings = await this.embeddingProvider.embed(inputs)
@@ -38,13 +52,24 @@ export class RAGRecommender {
     const productEmbeddings = embeddings.slice(1)
 
     const k = request.limit ?? 10
-    const retrieved = retrieveSimilarProducts(queryEmbedding, candidates, productEmbeddings, k * 2)
-    const filteredByBudget = request.budget != null ? filterByBudget(retrieved, request.budget) : retrieved
+    const retrieved = retrieveSimilarProducts(
+      queryEmbedding,
+      candidates,
+      productEmbeddings,
+      k * 2
+    )
+    const filteredByBudget =
+      request.budget != null
+        ? filterByBudget(retrieved, request.budget)
+        : retrieved
 
     const pool = filteredByBudget.length ? filteredByBudget : retrieved
     const selectedProducts = pool.slice(0, k).map((r) => r.product)
 
-    const recommendation = await this.llmProvider.generateRecommendation(request.prompt, selectedProducts)
+    const recommendation = await this.llmProvider.generateRecommendation(
+      request.prompt,
+      selectedProducts
+    )
     return recommendation
   }
 }

@@ -45,17 +45,19 @@ src/
 When users first land on the application, they see the **Hero** component:
 
 - **Animated Landing Page**: Features a large, centered hero section with:
+
   - Animated text entrance using GSAP
   - A floating 3D card preview (desktop only) that responds to mouse movement
   - Gradient background effects
   - Primary call-to-action input field
 
 - **User Input**: Users can:
+
   - Type their shopping needs in natural language (e.g., "Quiero armar un asado para 6 personas")
   - Click on quick suggestion buttons ("Desayuno rápido", "Limpieza mensual", "Once con amigos")
   - Submit the form to trigger the AI shopping experience
 
-- **Visual Feedback**: 
+- **Visual Feedback**:
   - Input field pulses with a blue glow animation when submitted
   - Smooth transitions between states
 
@@ -63,14 +65,16 @@ When users first land on the application, they see the **Hero** component:
 
 After submitting the initial prompt, the app transitions to a **conversation view**:
 
-- **Layout Change**: 
+- **Layout Change**:
+
   - Hero section disappears
   - Full-screen chat interface appears
   - Cart sidebar becomes available (initially hidden)
 
 - **Chat Features**:
+
   - **Message History**: Displays conversation between user and AI assistant
-  - **Message Bubbles**: 
+  - **Message Bubbles**:
     - User messages appear on the right (white background)
     - AI messages appear on the left (white background with bot avatar)
   - **Typing Indicator**: Shows animated dots when AI is "thinking"
@@ -87,6 +91,7 @@ After submitting the initial prompt, the app transitions to a **conversation vie
 Once AI recommendations are ready:
 
 - **Cart Sidebar**:
+
   - Slides in from the right (desktop: fixed sidebar, mobile: overlay)
   - Displays all selected products with:
     - Product images
@@ -110,12 +115,13 @@ Once AI recommendations are ready:
 **Purpose**: Landing page that captures user intent
 
 **Key Features**:
+
 - **GSAP Animations**:
   - Text elements fade in with staggered timing
   - Floating card with 3D parallax effect (follows mouse movement)
   - Continuous floating animation (up/down motion)
-  
 - **Interactive Elements**:
+
   - Form submission with visual feedback
   - Quick suggestion buttons
   - Responsive design (mobile/desktop)
@@ -130,12 +136,15 @@ Once AI recommendations are ready:
 **Purpose**: Manages the conversation between user and AI
 
 **Key Features**:
+
 - **Message Management**:
+
   - Stores message history in React state
   - Handles user input and AI responses
   - Manages typing states
 
 - **UI Elements**:
+
   - User and bot avatars
   - Message bubbles with proper styling
   - Typing indicator with animated dots
@@ -151,11 +160,14 @@ Once AI recommendations are ready:
 **Purpose**: Displays the shopping cart with all selected items
 
 **Key Features**:
+
 - **Responsive Design**:
+
   - Desktop: Fixed sidebar (350-400px wide)
   - Mobile: Full-screen overlay with backdrop
 
 - **Animations**:
+
   - Items fade in with stagger effect
   - Total price animates on change (scale + color)
   - Smooth slide-in/out transitions
@@ -171,12 +183,14 @@ Once AI recommendations are ready:
 **Purpose**: Orchestrates the entire application flow
 
 **State Management**:
+
 - `prompt`: User's initial shopping request
 - `cart`: Array of products in cart
 - `isChatActive`: Controls view transition (Hero vs Chat)
 - `showCart`: Controls cart sidebar visibility
 
 **View Logic**:
+
 - Conditionally renders Hero or Chat interface
 - Manages cart sidebar visibility
 - Handles responsive cart behavior (mobile overlay vs desktop sidebar)
@@ -221,6 +235,7 @@ All animations use **GSAP** for smooth, performant transitions:
 ### Cart Generation
 
 The `buildMockCart()` function:
+
 - Randomly selects 12-18 products from available inventory
 - Creates `CartItem` objects with quantity = 1
 - Returns array ready for display
@@ -230,12 +245,14 @@ The `buildMockCart()` function:
 ## Responsive Design
 
 ### Mobile (< 1024px)
+
 - Hero: Single column layout
 - Chat: Full-width interface
 - Cart: Overlay with backdrop, slides in from right
 - Touch-friendly button sizes
 
 ### Desktop (≥ 1024px)
+
 - Hero: Two-column grid (content + floating card)
 - Chat: Centered with max-width
 - Cart: Fixed sidebar, always visible when active
@@ -293,6 +310,7 @@ pnpm build
 ### Environment Variables
 
 Required:
+
 - `NEXT_PUBLIC_CONVEX_URL`: Convex deployment URL
 
 ### Key Dependencies
@@ -308,9 +326,9 @@ Required:
 SuperTracker is a modern, interactive shopping assistant that demonstrates how AI can simplify the grocery shopping experience. Through natural language processing simulation, animated UI components, and a polished user interface, it provides users with an intuitive way to build their shopping cart by simply describing their needs.
 
 The application showcases modern web development practices including:
+
 - Component-based architecture
 - Smooth animations and transitions
 - Responsive design
 - Type-safe development with TypeScript
 - Clean, maintainable code structure
-

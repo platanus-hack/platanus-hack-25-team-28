@@ -16,7 +16,9 @@ export const listProducts = query({
           .collect()
 
         if (args.storeId) {
-          storeProducts = storeProducts.filter((sp) => sp.storeId === args.storeId)
+          storeProducts = storeProducts.filter(
+            (sp) => sp.storeId === args.storeId
+          )
         }
 
         const prices = await Promise.all(
@@ -34,8 +36,14 @@ export const listProducts = query({
           })
         )
 
-        const minPrice = prices.length > 0 ? Math.min(...prices.map((p) => p.currentPrice)) : undefined
-        const maxPrice = prices.length > 0 ? Math.max(...prices.map((p) => p.currentPrice)) : undefined
+        const minPrice =
+          prices.length > 0
+            ? Math.min(...prices.map((p) => p.currentPrice))
+            : undefined
+        const maxPrice =
+          prices.length > 0
+            ? Math.max(...prices.map((p) => p.currentPrice))
+            : undefined
 
         return {
           _id: p._id,
@@ -88,8 +96,14 @@ export const getProductsByIds = query({
           })
         )
 
-        const minPrice = prices.length > 0 ? Math.min(...prices.map((p) => p.currentPrice)) : undefined
-        const maxPrice = prices.length > 0 ? Math.max(...prices.map((p) => p.currentPrice)) : undefined
+        const minPrice =
+          prices.length > 0
+            ? Math.min(...prices.map((p) => p.currentPrice))
+            : undefined
+        const maxPrice =
+          prices.length > 0
+            ? Math.max(...prices.map((p) => p.currentPrice))
+            : undefined
 
         return {
           _id: product._id,
