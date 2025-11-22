@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Sparkles, Send, User, Bot } from "lucide-react";
 import clsx from "clsx";
+import { CartItem } from "@/types";
 
 interface Message {
   id: string;
@@ -12,10 +13,13 @@ interface Message {
 
 interface ChatInterfaceProps {
   initialPrompt: string;
-  onRecommendationsReady: () => void;
+  cartItems?: CartItem[];
 }
 
-export default function ChatInterface({ initialPrompt, onRecommendationsReady }: ChatInterfaceProps) {
+export default function ChatInterface({
+  initialPrompt,
+  cartItems,
+}: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -53,9 +57,8 @@ export default function ChatInterface({ initialPrompt, onRecommendationsReady }:
       };
       setMessages((prev) => [...prev, aiMsg]);
       setIsTyping(false);
-      onRecommendationsReady();
     }, 2000);
-  }, [initialPrompt, onRecommendationsReady]);
+  }, [initialPrompt]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
