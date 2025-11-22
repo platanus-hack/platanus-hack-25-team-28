@@ -19,11 +19,18 @@ export default function ChatInterface({
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  
+  // Ref for the scrollable container, NOT the end div
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const hasInitialized = useRef(false)
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({
+            top: scrollContainerRef.current.scrollHeight,
+            behavior: "smooth"
+        })
+    }
   }
 
   useEffect(() => {
@@ -45,17 +52,21 @@ export default function ChatInterface({
     setMessages([userMsg])
     setIsTyping(true)
 
+    // Calculate total for context
+    const total = cartItems?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0
+    const itemCount = cartItems?.length || 0
+
     // Simulate AI thinking and response
     setTimeout(() => {
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `¡Excelente elección! Para "${initialPrompt}", he preparado una selección de productos recomendados. He agregado los esenciales a tu carro. ¿Te gustaría ajustar algo o agregar algún detalle específico?`,
+        content: `¡He terminado! He agregado ${itemCount} productos a tu carro con un total estimado de $${total.toLocaleString("es-CL")}. ¿Te gustaría ajustar las cantidades o buscar algo más?`,
       }
       setMessages((prev) => [...prev, aiMsg])
       setIsTyping(false)
-    }, 2000)
-  }, [initialPrompt])
+    }, 1000)
+  }, [initialPrompt, cartItems])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -86,31 +97,33 @@ export default function ChatInterface({
 
   return (
     <div className="mx-auto flex h-full max-w-3xl flex-col p-4 md:p-6">
-      {/* Header */}
-      <div className="mb-6 text-center">
-        <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-accent-primary/10 text-accent-primary">
-          <Sparkles size={24} />
+      {/* Scrollable Container wrapping Header + Messages */}
+      <div 
+        ref={scrollContainerRef}
+        className="scrollbar-hide mb-6 flex-1 space-y-6 overflow-y-auto pr-2"
+      >
+        {/* Header - Now inside scrollable area */}
+        <div className="text-center pt-2 pb-2">
+            <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-accent-primary/10 text-accent-primary">
+            <Sparkles size={24} />
+            </div>
+            <h2 className="text-2xl font-bold text-text-main">
+            Asistente de Compras
+            </h2>
+            <p className="text-sm text-text-muted">
+            Diseñando tu experiencia de supermercado
+            </p>
         </div>
-        <h2 className="text-2xl font-bold text-text-main">
-          Asistente de Compras
-        </h2>
-        <p className="text-sm text-text-muted">
-          Diseñando tu experiencia de supermercado
-        </p>
-      </div>
 
-      {/* Messages Area */}
-      <div className="scrollbar-hide mb-6 flex-1 space-y-6 overflow-y-auto pr-2">
         {messages.map((msg) => (
           <ChatMessage key={msg.id} message={msg} />
         ))}
 
         {isTyping && <TypingIndicator />}
-        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <form onSubmit={handleSubmit} className="relative">
+      {/* Input Area - Stays fixed at bottom of flex container */}
+      <form onSubmit={handleSubmit} className="relative shrink-0">
         <input
           type="text"
           value={input}

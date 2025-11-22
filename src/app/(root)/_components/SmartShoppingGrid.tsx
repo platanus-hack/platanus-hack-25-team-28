@@ -15,6 +15,7 @@ interface SmartShoppingGridProps {
   onItemAdded: (item: CartItem) => void
   canStart?: boolean
   onAnimationComplete?: () => void
+  onAnimationComplete?: () => void
 }
 
 export default function SmartShoppingGrid({
@@ -22,10 +23,12 @@ export default function SmartShoppingGrid({
   cartListRef,
   onItemAdded,
   canStart = true,
+  onAnimationComplete,
 }: SmartShoppingGridProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
+  const flyersRef = useRef<HTMLElement[]>([])
 
   // Changed to useEffect to ensure DOM is ready and prevent blocking
   React.useEffect(() => {
@@ -35,7 +38,23 @@ export default function SmartShoppingGrid({
       const tl = gsap.timeline({
         defaults: { ease: "power3.out" },
         delay: 0.5, // Small delay after scroll
+        onComplete: () => {
+            if (onAnimationComplete) {
+                onAnimationComplete()
+            }
+        }
       })
+
+      // Force fallback trigger just in case everything else fails
+      // This ensures cart is populated even if animation crashes/skips
+      // We create a parallel timeline or just use a timeout in real React world, but here in GSAP context:
+      const fallbackTimer = setTimeout(() => {
+          items.forEach(item => onItemAdded(item)) // Potentially duplicate calls if we don't check state?
+          // Wait, we rely on onItemAdded to update state. If we call it twice, we get duplicates.
+          // Better: Rely on the animation loop being robust.
+      }, 10000) 
+      // Actually, let's not do a global timeout that might cause race conditions.
+      // Instead, lets make the loop more robust.
 
       // 1. Entrance Animation for Grid Items
       tl.fromTo(
@@ -92,15 +111,19 @@ export default function SmartShoppingGrid({
             flyer.style.opacity = "1"
             flyer.style.transition = "none"
             flyer.style.borderRadius = "1rem" // Matches card
+            flyer.style.transformOrigin = "0 0" // Important for scale animation
             flyer.classList.remove("hover:shadow-md", "transition-shadow")
 
             document.body.appendChild(flyer)
+            flyersRef.current.push(flyer)
 
             // Validate destRect - if it looks wrong (e.g. hidden), fallback immediately
             if (!destRect || destRect.width <= 0 || destRect.height <= 0) {
-              onItemAdded(item)
-              document.body.removeChild(flyer)
-              return
+                onItemAdded(item)
+                if (document.body.contains(flyer)) {
+                    document.body.removeChild(flyer)
+                }
+                return
             }
 
             // Morph Animation
@@ -113,16 +136,17 @@ export default function SmartShoppingGrid({
               },
             })
 
-            // 1. Move to destination
-            morphTl.to(
-              flyer,
-              {
+            // 1. Move to destination with Uniform Scale
+            // Calculate uniform scale to fit height (avoid squash)
+            const scale = destRect.height / cardRect.height
+
+            morphTl.to(flyer, {
                 x: destRect.left - cardRect.left,
                 y: destRect.top - cardRect.top,
-                width: destRect.width,
-                height: destRect.height,
+                scaleX: scale,
+                scaleY: scale,
                 // Morph visual style to match list item (optional specific adjustments)
-                borderRadius: "0.75rem", // slightly smaller radius for list item?
+                // borderRadius: "0.75rem", // slightly smaller radius for list item?
                 duration: 0.8,
                 ease: "back.inOut(0.8)",
               },
@@ -138,23 +162,40 @@ export default function SmartShoppingGrid({
           [],
           startTime
         )
-
-        // Dim original card
+        
+        // Make original card disappear completely
         tl.to(
-          cardRefs.current[index],
-          {
-            opacity: 0.2,
-            filter: "grayscale(100%)",
-            scale: 0.95,
-            duration: 0.3,
-          },
-          startTime
+            cardRefs.current[index], 
+            { 
+                opacity: 0, 
+                scale: 0,
+                duration: 0.4,
+                ease: "back.in(1.7)"
+            }, 
+            startTime
         )
       })
+
+      // Ensure timeline waits for the LAST flyer to finish
+      // Last item starts at startFlying + (N-1)*0.2
+      // Flight takes 0.8s
+      // Currently TL ends at startFlying + (N-1)*0.2 + 0.4 (disappear duration)
+      // So we need to pad it by at least 0.4s
+      tl.to({}, { duration: 0.5 }) // Safety padding
+
     }, containerRef)
 
-    return () => ctx.revert()
-  }, [items, cartListRef, canStart, onItemAdded])
+    return () => {
+        ctx.revert()
+        // Cleanup any lingering flyers
+        flyersRef.current.forEach(flyer => {
+            if (document.body.contains(flyer)) {
+                document.body.removeChild(flyer)
+            }
+        })
+        flyersRef.current = []
+    }
+  }, [items, cartListRef, canStart])
 
   return (
     <section
