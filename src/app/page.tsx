@@ -1,6 +1,7 @@
 "use client"
 
 import { ProductCard } from "@/components/product-card"
+import { RAGTester } from "@/components/rag-tester"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useQuery } from "convex/react"
 import Image from "next/image"
@@ -35,6 +36,7 @@ export default function Home() {
         </div>
       </header>
       <main className="flex flex-col gap-8 p-8">
+        <RAGTester />
         <ProductGrid />
       </main>
     </>
