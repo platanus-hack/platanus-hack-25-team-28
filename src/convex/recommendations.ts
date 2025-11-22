@@ -12,12 +12,23 @@ export const recommendProducts = action({
     userPrompt: v.string(),
     budget: v.optional(v.number()),
     limit: v.optional(v.number()),
+    conversationHistory: v.optional(
+      v.array(
+        v.object({
+          role: v.union(v.literal("user"), v.literal("assistant")),
+          content: v.string(),
+        })
+      )
+    ),
   },
   handler: async (ctx, args) => {
     const apiKey = process.env.OPENAI_API_KEY || ""
     const anthropicKey = process.env.ANTHROPIC_API_KEY || ""
     const agent = new PromptAgent(anthropicKey)
-    const analysis = await agent.analyze(args.userPrompt)
+    const analysis = await agent.analyze(
+      args.userPrompt,
+      args.conversationHistory || []
+    )
     const embeddingProvider = new OpenAIEmbeddingProvider(apiKey)
 
     // 1. Generate embeddings for queries (one per category)
@@ -97,6 +108,7 @@ export const recommendProducts = action({
         category: p.category,
         minPrice: p.minPrice,
         maxPrice: p.maxPrice,
+        quantity: p.quantity
       })),
     }
   },
