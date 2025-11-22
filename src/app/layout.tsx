@@ -1,8 +1,8 @@
+import ConvexClientProvider from "@/components/ConvexClientProvider"
+import SmoothScroll from "@/components/SmoothScroll"
 import type { Metadata } from "next"
 import { Inter, Roboto_Mono } from "next/font/google"
 import "./globals.css"
-import SmoothScroll from "@/components/SmoothScroll"
-import ConvexClientProvider from "@/components/ConvexClientProvider"
 
 const inter = Inter({
   variable: "--font-inter",
