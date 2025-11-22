@@ -76,20 +76,6 @@ export default function Hero({ onFillCart }: HeroProps) {
   }, []);
 
   return (
-<<<<<<< Current (Your changes)
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-bg-page to-bg-elevated px-6 py-20">
-      <div className="max-w-4xl w-full text-center space-y-8">
-        <div className="space-y-4">
-          <h1 className="text-5xl md:text-7xl font-bold text-text-main leading-tight">
-            What are we
-            <br />
-            <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
-              cooking today?
-            </span>
-          </h1>
-          <p className="text-xl md:text-2xl text-text-muted max-w-2xl mx-auto">
-            Describe your occasion and I'll build the perfect shopping list in seconds.
-=======
     <section 
       ref={containerRef} 
       className="relative min-h-screen flex items-center pt-20 pb-10 px-6 md:px-12 overflow-hidden"
@@ -115,7 +101,6 @@ export default function Hero({ onFillCart }: HeroProps) {
 
           <p className="hero-text-element text-xl text-text-muted max-w-xl leading-relaxed">
             Escribe lo que necesitas — por ejemplo "Quiero armar un asado para 6 personas con 40.000 CLP" — y dejamos que la magia se encargue del resto.
->>>>>>> Incoming (Background Agent changes)
           </p>
 
           <div className="hero-text-element w-full max-w-lg">
