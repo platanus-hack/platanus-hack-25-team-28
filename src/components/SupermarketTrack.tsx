@@ -1,201 +1,98 @@
-'use client';
+"use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { LiderProduct } from '@/types';
-import { ShoppingCart } from 'lucide-react';
-
-gsap.registerPlugin(ScrollTrigger);
+import { LiderProduct } from "@/types";
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import clsx from "clsx";
 
 interface SupermarketTrackProps {
-  isAddingItems: boolean;
-  productsToAnimate: LiderProduct[];
-  onItemAdded: (item: LiderProduct) => void;
-  onSequenceComplete: () => void;
+  products: LiderProduct[];
+  activeIndex: number;
 }
 
-export default function SupermarketTrack({ 
-  isAddingItems, 
-  productsToAnimate, 
-  onItemAdded, 
-  onSequenceComplete 
-}: SupermarketTrackProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const cartRef = useRef<HTMLDivElement>(null);
-  const shelvesRef = useRef<HTMLDivElement>(null);
-  const [flyingItem, setFlyingItem] = useState<LiderProduct | null>(null);
-  const [flyingItemPos, setFlyingItemPos] = useState({ x: 0, y: 0, scale: 1 });
+export default function SupermarketTrack({ products, activeIndex }: SupermarketTrackProps) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Parallax Scroll Effect
+  // Handle active product focus animations
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.to(shelvesRef.current, {
-        xPercent: -20,
-        ease: "none",
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: 1,
-        }
+    cardsRef.current.forEach((card, index) => {
+      if (!card) return;
+
+      const isActive = index === activeIndex;
+      
+      // Use GSAP for smooth transition between states
+      gsap.to(card, {
+        scale: isActive ? 1.15 : 0.9,
+        opacity: isActive ? 1 : 0.5,
+        filter: isActive ? "blur(0px) brightness(1)" : "blur(2px) brightness(0.9)",
+        z: isActive ? 0 : -100, // Push back inactive items
+        rotationY: isActive ? 0 : index < activeIndex ? 15 : -15, // Subtle rotation towards center
+        boxShadow: isActive 
+          ? "0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 40px rgba(37, 99, 235, 0.1)" 
+          : "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+        duration: 0.6,
+        ease: "power3.out",
       });
-    }, containerRef);
-    return () => ctx.revert();
-  }, []);
-
-  // Adding Items Sequence
-  useEffect(() => {
-    if (!isAddingItems || productsToAnimate.length === 0) return;
-
-    const ctx = gsap.context(() => {
-      const timeline = gsap.timeline({
-        onComplete: onSequenceComplete
-      });
-
-      // Animate first 4 items (or fewer)
-      const itemsToFly = productsToAnimate.slice(0, 4);
-      const remainingItems = productsToAnimate.slice(4);
-
-      itemsToFly.forEach((item, index) => {
-        // Find the product card on the shelf (we'll mock positions for now since real shelf logic is hard)
-        // In a real app, we'd use getBoundingClientRect of the specific shelf item
-        // Here we'll spawn them from random positions on the "shelf" area
-        
-        const startX = 200 + (index * 150); // Mock shelf positions
-        const startY = 150; 
-
-        timeline.call(() => {
-          // Trigger the visual "fly"
-          const cartRect = cartRef.current?.getBoundingClientRect();
-          const containerRect = containerRef.current?.getBoundingClientRect();
-          
-          if (cartRect && containerRect) {
-             // Calculate relative end position (cart center)
-             const endX = (cartRect.left - containerRect.left) + cartRect.width / 2;
-             const endY = (cartRect.top - containerRect.top) + cartRect.height / 4;
-
-             // Create a flying element
-             const flyer = document.createElement('div');
-             flyer.className = 'fixed z-50 w-24 h-24 bg-white rounded-xl shadow-xl border border-gray-100 p-2 pointer-events-none';
-             flyer.innerHTML = `<img src="${item.imageUrl}" class="w-full h-full object-contain" />`;
-             
-             // Set initial position (fixed to screen to avoid scroll issues during animation)
-             // Actually, let's use the container relative if we can, but fixed is safer for "flying" across contexts
-             // We need to calculate screen positions for the start/end
-             
-             const screenStartX = containerRect.left + startX;
-             const screenStartY = containerRect.top + startY;
-             
-             flyer.style.left = `${screenStartX}px`;
-             flyer.style.top = `${screenStartY}px`;
-             flyer.style.opacity = '0';
-             
-             document.body.appendChild(flyer);
-
-             // Animation
-             gsap.timeline()
-               .set(flyer, { opacity: 0, scale: 0.5 })
-               .to(flyer, { opacity: 1, scale: 1, duration: 0.2 }) // Appear on shelf
-               .to(flyer, { 
-                 left: cartRect.left + 20, 
-                 top: cartRect.top, 
-                 scale: 0.2, 
-                 opacity: 0.5,
-                 duration: 0.6, 
-                 ease: "power2.inOut",
-                 onComplete: () => {
-                   document.body.removeChild(flyer);
-                   onItemAdded(item);
-                   
-                   // Cart bounce
-                   gsap.to(cartRef.current, {
-                     scale: 1.1,
-                     y: 5,
-                     duration: 0.1,
-                     yoyo: true,
-                     repeat: 1
-                   });
-                 }
-               }, "+=0.3");
-          } else {
-            // Fallback if refs missing
-            onItemAdded(item);
-          }
-        }, null, index * 1.2); // Stagger start times
-      });
-
-      // Handle remaining items quickly
-      timeline.call(() => {
-        remainingItems.forEach(item => onItemAdded(item));
-      }, null, "+=0.5");
-
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, [isAddingItems, productsToAnimate]);
+    });
+  }, [activeIndex]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden bg-gray-50 rounded-3xl border border-gray-200">
-      
-      {/* Background Shelves (Blurred) */}
+    <div className="relative h-full flex items-center">
+      {/* The actual track that gets moved by the parent's ScrollTrigger */}
       <div 
-        ref={shelvesRef}
-        className="absolute top-0 left-0 w-[200%] h-full flex items-center opacity-50"
-        style={{ transform: 'translate3d(0,0,0)' }} // Force GPU
+        id="track-inner" 
+        ref={trackRef} 
+        className="flex items-center px-[50vw] gap-12 md:gap-32 will-change-transform"
       >
-        {/* Repeated Shelf Pattern */}
-        <div className="w-full h-[70%] bg-[url('https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=1600&q=80')] bg-repeat-x bg-contain filter blur-[2px]" />
-      </div>
+        {products.map((p, i) => (
+          <div
+            key={`${p.sku}-${i}`}
+            ref={(el) => { cardsRef.current[i] = el; }}
+            className={clsx(
+              "relative shrink-0 flex flex-col items-center justify-center bg-white rounded-3xl p-8 border border-gray-100",
+              "w-[280px] h-[380px] md:w-[350px] md:h-[450px]",
+              "transition-colors duration-500",
+              // If active, border is slightly blue
+              i === activeIndex ? "border-accent-primary/20" : "border-gray-100"
+            )}
+            style={{
+              transformStyle: "preserve-3d",
+              perspective: "1000px"
+            }}
+          >
+            {/* Product Image */}
+            <div className="w-full h-[60%] flex items-center justify-center mb-6 relative group">
+               {/* Glow effect behind image */}
+               <div 
+                 className={clsx(
+                   "absolute inset-0 bg-gradient-radial from-accent-primary/10 to-transparent opacity-0 transition-opacity duration-500 rounded-full blur-xl",
+                   i === activeIndex && "opacity-100"
+                 )} 
+               />
+               <img 
+                 src={p.imageUrl} 
+                 alt={p.name} 
+                 className="w-full h-full object-contain drop-shadow-xl relative z-10 mix-blend-multiply"
+               />
+            </div>
 
-      {/* Middle Layer: "Active" Shelf items (Visual decoration) */}
-      <div className="absolute top-[20%] left-10 md:left-32 flex gap-8">
-        {/* We could render productsToAnimate here if we wanted them to physically disappear from shelf, 
-            but for now we use the background image and just spawn flyers */}
-        {isAddingItems && productsToAnimate.slice(0, 4).map((item, i) => (
-           <div 
-             key={`shelf-${i}`} 
-             className="w-32 h-32 bg-white rounded-xl shadow-sm border border-gray-100 p-2 opacity-0"
-             // The GSAP animation creates the visual flyer, these are just placeholders/anchors if we needed them
-             style={{ 
-               transform: `translateX(${i * 150}px)` 
-             }}
-           >
-             <img src={item.imageUrl} className="w-full h-full object-contain" />
-           </div>
+            {/* Minimal Info on Card (Detailed info is in the side panel) */}
+            <div className="text-center relative z-10 w-full">
+              <div className="bg-gray-50 inline-block px-3 py-1 rounded-full text-xs font-medium text-text-muted mb-2">
+                {p.category}
+              </div>
+              {/* Price pill only visible if NOT active (since active shows big panel) */}
+              <div className={clsx(
+                  "mt-2 font-bold text-lg transition-opacity duration-300",
+                  i === activeIndex ? "opacity-0" : "opacity-60 text-text-muted"
+              )}>
+                 ${p.price.toLocaleString("es-CL")}
+              </div>
+            </div>
+          </div>
         ))}
       </div>
-
-      {/* Floor */}
-      <div className="absolute bottom-0 w-full h-[20%] bg-gray-200 border-t border-gray-300" />
-
-      {/* Cart */}
-      <div 
-        ref={cartRef}
-        className="absolute bottom-[10%] left-[50%] md:left-[30%] transform -translate-x-1/2 z-20"
-      >
-        <div className="relative w-48 h-48 md:w-64 md:h-64">
-           {/* Stylized Cart SVG/Image */}
-           <div className="w-full h-full flex items-center justify-center">
-             {/* Simple CSS Cart or SVG */}
-             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="w-full h-full text-text-main fill-white/50">
-                <path d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" fill="currentColor" />
-                <path d="M20 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" fill="currentColor" />
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-             </svg>
-             
-             {/* Floating Badge Count */}
-             <div className="absolute -top-2 -right-2 w-10 h-10 bg-accent-primary rounded-full flex items-center justify-center text-white font-bold shadow-lg border-2 border-white">
-               <span className="text-lg">
-                 {/* This could be animated externally */}
-                 <ShoppingCart size={20} />
-               </span>
-             </div>
-           </div>
-        </div>
-      </div>
-      
     </div>
   );
 }
-

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
+import ConvexClientProvider from "@/components/ConvexClientProvider";
 import SmoothScroll from "@/components/SmoothScroll";
+import NavBar from "@/components/NavBar";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -28,9 +30,12 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${robotoMono.variable} bg-bg-page text-text-main overflow-x-hidden font-sans`}
       >
-        <SmoothScroll>
-          {children}
-        </SmoothScroll>
+        <ConvexClientProvider>
+          <SmoothScroll>
+            <NavBar />
+            {children}
+          </SmoothScroll>
+        </ConvexClientProvider>
       </body>
     </html>
   );
