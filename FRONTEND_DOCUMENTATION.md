@@ -99,6 +99,7 @@ Once all items have flown into the cart:
 **Purpose**: Provides a conversational interface for refining the cart after the initial fill.
 
 **Key Logic**:
+
 - **Context Awareness**: Accepts `initialPrompt` and `cartItems` to generate a relevant opening message.
 - **Layout**: Designed to fill the same spatial footprint as the grid (left column) to prevent layout shifts.
 

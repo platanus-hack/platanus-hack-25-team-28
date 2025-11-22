@@ -44,17 +44,6 @@ export default function SmartShoppingGrid({
         },
       })
 
-      // Force fallback trigger just in case everything else fails
-      // This ensures cart is populated even if animation crashes/skips
-      // We create a parallel timeline or just use a timeout in real React world, but here in GSAP context:
-      const fallbackTimer = setTimeout(() => {
-        items.forEach((item) => onItemAdded(item)) // Potentially duplicate calls if we don't check state?
-        // Wait, we rely on onItemAdded to update state. If we call it twice, we get duplicates.
-        // Better: Rely on the animation loop being robust.
-      }, 10000)
-      // Actually, let's not do a global timeout that might cause race conditions.
-      // Instead, lets make the loop more robust.
-
       // 1. Entrance Animation for Grid Items
       tl.fromTo(
         cardRefs.current,
@@ -195,7 +184,7 @@ export default function SmartShoppingGrid({
       })
       flyersRef.current = []
     }
-  }, [items, cartListRef, canStart])
+  }, [items, cartListRef, canStart, onItemAdded, onAnimationComplete])
 
   return (
     <section

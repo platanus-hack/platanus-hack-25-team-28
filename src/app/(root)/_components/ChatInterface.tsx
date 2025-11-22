@@ -13,23 +13,23 @@ interface ChatInterfaceProps {
 
 export default function ChatInterface({
   initialPrompt,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   cartItems,
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
-  
+
   // Ref for the scrollable container, NOT the end div
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const hasInitialized = useRef(false)
 
   const scrollToBottom = () => {
     if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTo({
-            top: scrollContainerRef.current.scrollHeight,
-            behavior: "smooth"
-        })
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      })
     }
   }
 
@@ -53,7 +53,8 @@ export default function ChatInterface({
     setIsTyping(true)
 
     // Calculate total for context
-    const total = cartItems?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0
+    const total =
+      cartItems?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0
     const itemCount = cartItems?.length || 0
 
     // Simulate AI thinking and response
@@ -98,21 +99,21 @@ export default function ChatInterface({
   return (
     <div className="mx-auto flex h-full max-w-3xl flex-col p-4 md:p-6">
       {/* Scrollable Container wrapping Header + Messages */}
-      <div 
+      <div
         ref={scrollContainerRef}
         className="scrollbar-hide mb-6 flex-1 space-y-6 overflow-y-auto pr-2"
       >
         {/* Header - Now inside scrollable area */}
-        <div className="text-center pt-2 pb-2">
-            <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-accent-primary/10 text-accent-primary">
+        <div className="pt-2 pb-2 text-center">
+          <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-accent-primary/10 text-accent-primary">
             <Sparkles size={24} />
-            </div>
-            <h2 className="text-2xl font-bold text-text-main">
+          </div>
+          <h2 className="text-2xl font-bold text-text-main">
             Asistente de Compras
-            </h2>
-            <p className="text-sm text-text-muted">
+          </h2>
+          <p className="text-sm text-text-muted">
             Diseñando tu experiencia de supermercado
-            </p>
+          </p>
         </div>
 
         {messages.map((msg) => (

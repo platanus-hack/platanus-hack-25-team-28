@@ -22,24 +22,24 @@ const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
     const listRef = useRef<HTMLDivElement>(null)
     const totalRef = useRef<HTMLSpanElement>(null)
 
-  useImperativeHandle(ref, () => ({
-    getDestinationRect: (index: number) => {
-      if (!listRef.current) return null
-      
-      // If we can find the item in the DOM, use it. 
-      // If not (it's a new item), calculate where it SHOULD be.
-      const list = listRef.current
-      let existingItem = list.children[index] as HTMLElement
-      
-      // If the cart is empty, the first child is the "Empty State" placeholder, 
-      // which is NOT the destination we want. We want the calculated position for the first item.
-      if (items.length === 0) {
-        existingItem = null as unknown as HTMLElement
-      }
-      
-      if (existingItem) {
-        return existingItem.getBoundingClientRect()
-      }
+    useImperativeHandle(ref, () => ({
+      getDestinationRect: (index: number) => {
+        if (!listRef.current) return null
+
+        // If we can find the item in the DOM, use it.
+        // If not (it's a new item), calculate where it SHOULD be.
+        const list = listRef.current
+        let existingItem = list.children[index] as HTMLElement
+
+        // If the cart is empty, the first child is the "Empty State" placeholder,
+        // which is NOT the destination we want. We want the calculated position for the first item.
+        if (items.length === 0) {
+          existingItem = null as unknown as HTMLElement
+        }
+
+        if (existingItem) {
+          return existingItem.getBoundingClientRect()
+        }
 
         // Estimate position for new items
         const listRect = list.getBoundingClientRect()
@@ -61,29 +61,29 @@ const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
           top = listRect.top + padding + index * (estimatedItemHeight + gap)
         }
 
-      // If the estimated position is outside the viewport or scrolled area, 
-      // we might want to scroll to it or just return a valid rect at the bottom of the visible area.
-      // For the "fly to cart" effect, flying to the bottom of the visible list is often safer.
-      
-      // Construct a fake rect
-      // Fix: Clamp the vertical position to ensure it doesn't visually overlap the footer/totals area.
-      // The flyer is fixed position, so we must constrain it to the visible list container.
-      const maxTop = listRect.bottom - estimatedItemHeight - 4 // -4 for safety margin
-      const clampedTop = Math.min(top, maxTop)
+        // If the estimated position is outside the viewport or scrolled area,
+        // we might want to scroll to it or just return a valid rect at the bottom of the visible area.
+        // For the "fly to cart" effect, flying to the bottom of the visible list is often safer.
 
-      return {
+        // Construct a fake rect
+        // Fix: Clamp the vertical position to ensure it doesn't visually overlap the footer/totals area.
+        // The flyer is fixed position, so we must constrain it to the visible list container.
+        const maxTop = listRect.bottom - estimatedItemHeight - 4 // -4 for safety margin
+        const clampedTop = Math.min(top, maxTop)
+
+        return {
           top: clampedTop,
-          left: listRect.left + padding, 
-          width: listRect.width - (padding * 2),
+          left: listRect.left + padding,
+          width: listRect.width - padding * 2,
           height: estimatedItemHeight,
           right: listRect.right - padding,
           bottom: clampedTop + estimatedItemHeight,
           x: listRect.left + padding,
           y: clampedTop,
-          toJSON: () => {}
-      } as DOMRect
-    }
-  }))
+          toJSON: () => {},
+        } as DOMRect
+      },
+    }))
 
     // Animate new items
     // Removed GSAP animation to ensure visibility reliability

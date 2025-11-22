@@ -9,9 +9,7 @@ export default function Footer() {
         </div>
 
         <div className="text-right text-xs text-text-muted">
-          <p className="inline-block mr-4">
-            Hackathon Demo
-          </p>
+          <p className="mr-4 inline-block">Hackathon Demo</p>
           <a
             href="#"
             className="text-gray-400 transition-colors hover:text-text-main"
