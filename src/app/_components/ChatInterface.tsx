@@ -1,15 +1,10 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { Sparkles, Send, User, Bot } from "lucide-react"
-import clsx from "clsx"
 import { CartItem } from "@/types"
-
-interface Message {
-  id: string
-  role: "user" | "assistant"
-  content: string
-}
+import { Send, Sparkles } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { ChatMessage, Message } from "./chat/ChatMessage"
+import { TypingIndicator } from "./chat/TypingIndicator"
 
 interface ChatInterfaceProps {
   initialPrompt: string
@@ -105,60 +100,10 @@ export default function ChatInterface({
       {/* Messages Area */}
       <div className="scrollbar-hide mb-6 flex-1 space-y-6 overflow-y-auto pr-2">
         {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={clsx(
-              "animate-in fade-in slide-in-from-bottom-2 flex gap-4 duration-300",
-              msg.role === "user" ? "flex-row-reverse" : "flex-row"
-            )}
-          >
-            {/* Avatar */}
-            <div
-              className={clsx(
-                "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
-                msg.role === "user"
-                  ? "bg-gray-200 text-gray-600"
-                  : "bg-accent-primary text-white"
-              )}
-            >
-              {msg.role === "user" ? <User size={20} /> : <Bot size={20} />}
-            </div>
-
-            {/* Bubble */}
-            <div
-              className={clsx(
-                "max-w-[80%] rounded-2xl p-4 text-sm leading-relaxed shadow-sm md:text-base",
-                msg.role === "user"
-                  ? "rounded-tr-sm border border-gray-200 bg-white text-text-main"
-                  : "rounded-tl-sm border border-gray-200 bg-white text-text-main"
-              )}
-            >
-              {msg.content}
-            </div>
-          </div>
+          <ChatMessage key={msg.id} message={msg} />
         ))}
 
-        {isTyping && (
-          <div className="animate-in fade-in flex flex-row gap-4 duration-300">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-primary text-white">
-              <Bot size={20} />
-            </div>
-            <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm border border-gray-200 bg-white p-4 shadow-sm">
-              <div
-                className="h-2 w-2 animate-bounce rounded-full bg-accent-primary/50"
-                style={{ animationDelay: "0ms" }}
-              />
-              <div
-                className="h-2 w-2 animate-bounce rounded-full bg-accent-primary/50"
-                style={{ animationDelay: "150ms" }}
-              />
-              <div
-                className="h-2 w-2 animate-bounce rounded-full bg-accent-primary/50"
-                style={{ animationDelay: "300ms" }}
-              />
-            </div>
-          </div>
-        )}
+        {isTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
       </div>
 
