@@ -1,6 +1,7 @@
 "use client"
 
 import Footer from "@/components/Footer"
+import NavBar from "@/components/NavBar"
 import { CartItem } from "@/types"
 import { buildMockCart } from "@/utils/cartUtils"
 import { useState } from "react"
@@ -38,6 +39,7 @@ export default function Home() {
 
   return (
     <main className="fixed inset-0 flex h-screen w-full flex-col overflow-hidden bg-bg-page">
+      <NavBar />
       {viewStep === "hero" && (
         <div className="flex-1 overflow-y-auto">
           <Hero onFillCart={handleSearch} />
