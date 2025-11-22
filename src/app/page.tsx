@@ -64,36 +64,25 @@ export default function Home() {
                 : "w-[85vw] translate-x-full lg:w-0 lg:translate-x-0 lg:border-none"
             )}
           >
-            <div className="relative h-full w-full">
-              {/* Mobile Close Button */}
-              <button
-                onClick={() => setShowCart(false)}
-                className={clsx(
-                  "absolute top-4 right-4 z-50 rounded-full bg-white p-2 text-text-main shadow-md hover:bg-gray-100 lg:hidden",
-                  !showCart && "hidden"
-                )}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-
-              <CartSidebar
-                cart={cart}
-                total={cart.reduce((acc, item) => acc + item.price, 0)}
-              />
-            </div>
+             <div className="w-full h-full relative">
+                 {/* Mobile Close Button */}
+                 <button 
+                    onClick={() => setShowCart(false)}
+                    className={clsx(
+                        "lg:hidden absolute top-4 right-4 z-50 p-2 bg-white rounded-full shadow-md text-text-main hover:bg-gray-100",
+                        !showCart && "hidden"
+                    )}
+                 >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                 </button>
+                 
+                 <CartSidebar 
+                    items={cart} 
+                    total={cart.reduce((acc, item) => acc + item.price, 0)} 
+                    isOpen={showCart}
+                    onClose={() => setShowCart(false)}
+                />
+             </div>
           </div>
         </div>
       )}
