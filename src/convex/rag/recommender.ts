@@ -37,7 +37,7 @@ export class RAGRecommender {
     const queryEmbedding = embeddings[0]
     const productEmbeddings = embeddings.slice(1)
 
-    const k = request.limit ?? 5
+    const k = request.limit ?? 10
     const retrieved = retrieveSimilarProducts(queryEmbedding, candidates, productEmbeddings, k * 2)
     const filteredByBudget = request.budget != null ? filterByBudget(retrieved, request.budget) : retrieved
 

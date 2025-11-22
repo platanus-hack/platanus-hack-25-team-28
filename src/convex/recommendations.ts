@@ -19,7 +19,7 @@ export const recommendProducts = action({
     const analysis = await agent.analyze(args.userPrompt)
 
     const products = await ctx.runQuery(api.myFunctions.listEnrichedProducts, {
-      limit: 200,
+      limit: 2000,
     })
 
     const embeddingProvider = new OpenAIEmbeddingProvider(apiKey)
