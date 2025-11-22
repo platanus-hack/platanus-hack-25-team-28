@@ -18,17 +18,18 @@ export default function CartSidebar({ items = [], total, isOpen, onClose }: Cart
   const totalRef = useRef<HTMLSpanElement>(null);
 
   // Animate new items
-  useEffect(() => {
-    if (listRef.current) {
-      gsap.from(listRef.current.children, {
-        opacity: 0,
-        y: 20,
-        stagger: 0.05,
-        duration: 0.4,
-        ease: "power2.out"
-      });
-    }
-  }, [items]); // Re-run when items change (or valid subset)
+  // Removed GSAP animation to ensure visibility reliability
+  // useEffect(() => {
+  //   if (listRef.current) {
+  //     gsap.from(listRef.current.children, {
+  //       opacity: 0,
+  //       y: 20,
+  //       stagger: 0.05,
+  //       duration: 0.4,
+  //       ease: "power2.out"
+  //     });
+  //   }
+  // }, [items]);
 
   // Animate total change
   useEffect(() => {
@@ -50,7 +51,7 @@ export default function CartSidebar({ items = [], total, isOpen, onClose }: Cart
 
       {/* Sidebar Container */}
       <div className={`
-        fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl transform transition-transform duration-300 ease-in-out lg:transform-none lg:relative lg:w-full lg:h-[80vh] lg:rounded-3xl lg:shadow-xl lg:border lg:border-gray-100 flex flex-col
+        fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl transform transition-transform duration-300 ease-in-out lg:transform-none lg:relative lg:w-full lg:h-full lg:rounded-none lg:shadow-none lg:border-l lg:border-gray-200 flex flex-col
         ${isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
       `}>
         
@@ -69,7 +70,7 @@ export default function CartSidebar({ items = [], total, isOpen, onClose }: Cart
         </div>
 
         {/* List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3" ref={listRef}>
+        <div className="flex-1 overflow-y-auto min-h-0 p-4 space-y-3" ref={listRef}>
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-text-muted opacity-50">
               <ShoppingCart size={48} className="mb-4" />
@@ -78,7 +79,7 @@ export default function CartSidebar({ items = [], total, isOpen, onClose }: Cart
           ) : (
             items.map((item, index) => (
               <div key={`${item.sku}-${index}`} className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors group border border-transparent hover:border-gray-100">
-                <div className="w-12 h-12 bg-white border border-gray-100 rounded-lg overflow-hidden flex-shrink-0 p-1">
+                <div className="w-12 h-12 bg-white border border-gray-100 rounded-lg overflow-hidden shrink-0 p-1">
                   <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain" />
                 </div>
                 <div className="flex-1 min-w-0">
