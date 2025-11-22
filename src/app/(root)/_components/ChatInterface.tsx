@@ -115,6 +115,7 @@ export default function ChatInterface({
           onUpdateCart
         ) {
           // Convert to CartItem format
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const newItems: any = result.selectedProducts.map((p) => ({
             id: p.id,
             name: p.name,

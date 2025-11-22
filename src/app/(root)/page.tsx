@@ -57,6 +57,7 @@ export default function Home() {
     try {
       const result = await recommendProducts({ userPrompt })
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newItems: any = result.selectedProducts.map((p) => ({
         id: p.id,
         name: p.name,
