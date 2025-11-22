@@ -138,7 +138,7 @@ export default function NavBar() {
           <div>
             <label
               htmlFor="login-email"
-              className="block text-sm font-medium text-text-main mb-1"
+              className="mb-1 block text-sm font-medium text-text-main"
             >
               Email
             </label>
@@ -146,14 +146,14 @@ export default function NavBar() {
               id="login-email"
               type="email"
               required
-              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:outline-none focus:ring-2 focus:ring-accent-primary"
+              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:ring-2 focus:ring-accent-primary focus:outline-none"
               placeholder="tu@email.com"
             />
           </div>
           <div>
             <label
               htmlFor="login-password"
-              className="block text-sm font-medium text-text-main mb-1"
+              className="mb-1 block text-sm font-medium text-text-main"
             >
               Contraseña
             </label>
@@ -161,7 +161,7 @@ export default function NavBar() {
               id="login-password"
               type="password"
               required
-              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:outline-none focus:ring-2 focus:ring-accent-primary"
+              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:ring-2 focus:ring-accent-primary focus:outline-none"
               placeholder="••••••••"
             />
           </div>
@@ -186,7 +186,7 @@ export default function NavBar() {
           <div>
             <label
               htmlFor="signup-name"
-              className="block text-sm font-medium text-text-main mb-1"
+              className="mb-1 block text-sm font-medium text-text-main"
             >
               Nombre
             </label>
@@ -194,14 +194,14 @@ export default function NavBar() {
               id="signup-name"
               type="text"
               required
-              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:outline-none focus:ring-2 focus:ring-accent-primary"
+              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:ring-2 focus:ring-accent-primary focus:outline-none"
               placeholder="Tu nombre"
             />
           </div>
           <div>
             <label
               htmlFor="signup-email"
-              className="block text-sm font-medium text-text-main mb-1"
+              className="mb-1 block text-sm font-medium text-text-main"
             >
               Email
             </label>
@@ -209,14 +209,14 @@ export default function NavBar() {
               id="signup-email"
               type="email"
               required
-              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:outline-none focus:ring-2 focus:ring-accent-primary"
+              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:ring-2 focus:ring-accent-primary focus:outline-none"
               placeholder="tu@email.com"
             />
           </div>
           <div>
             <label
               htmlFor="signup-password"
-              className="block text-sm font-medium text-text-main mb-1"
+              className="mb-1 block text-sm font-medium text-text-main"
             >
               Contraseña
             </label>
@@ -224,7 +224,7 @@ export default function NavBar() {
               id="signup-password"
               type="password"
               required
-              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:outline-none focus:ring-2 focus:ring-accent-primary"
+              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:ring-2 focus:ring-accent-primary focus:outline-none"
               placeholder="••••••••"
             />
           </div>

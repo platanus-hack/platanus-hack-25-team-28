@@ -25,16 +25,19 @@ If this is not set, Vercel treats `production` branch deploys as "Preview" envir
 2. **Run the deployment script** locally:
 
    Using npm:
+
    ```bash
    npm run deploy
    ```
 
    Or using pnpm:
+
    ```bash
    pnpm deploy
    ```
 
    This script will:
+
    - Fetch the latest `production` code from the hackathon repo.
    - Push it to the `production` branch of your personal repo (`samaluk/super-tracker`).
    - Vercel will automatically trigger a deployment.

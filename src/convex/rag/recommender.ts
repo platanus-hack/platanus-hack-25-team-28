@@ -12,10 +12,13 @@ export class RAGRecommender {
   constructor(
     private embeddingProvider: EmbeddingProvider,
     private llmProvider: LLMProvider
-  ) { }
+  ) {}
 
   private normalizeCategory(category: string): string {
-    return category.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
+    return category
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
   }
 
   private formatProductForEmbedding(product: EnrichedProduct): string {

@@ -38,11 +38,11 @@ export function Dialog({ isOpen, onClose, title, children }: DialogProps) {
         className="relative z-50 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-text-main">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-full p-1 hover:bg-gray-100 transition-colors"
+            className="rounded-full p-1 transition-colors hover:bg-gray-100"
           >
             <X size={20} className="text-text-muted" />
           </button>
@@ -52,4 +52,3 @@ export function Dialog({ isOpen, onClose, title, children }: DialogProps) {
     </div>
   )
 }
-

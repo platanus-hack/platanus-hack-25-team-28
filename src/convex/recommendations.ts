@@ -40,7 +40,7 @@ export const recommendProducts = action({
         // We need to map agent categories to DB categories or rely on semantic search without filter if mismatch.
         // For now, let's try to map or just search without filter if we can't map.
         // Actually, the previous fallback logic suggests we might just want to search globally if we are unsure.
-        // But let's try to use the filter if we can. 
+        // But let's try to use the filter if we can.
         // Given the mismatch issues seen before, let's do a global vector search but boost/filter in post-processing?
         // No, vector search is most effective with filters.
 
@@ -64,7 +64,9 @@ export const recommendProducts = action({
       }
     } else {
       // Fallback: Global search with just the prompt
-      const queryEmbedding = (await embeddingProvider.embed([analysis.cleanedPrompt]))[0]
+      const queryEmbedding = (
+        await embeddingProvider.embed([analysis.cleanedPrompt])
+      )[0]
       const results = await ctx.vectorSearch("products", "by_embedding", {
         vector: queryEmbedding,
         limit: 20,
@@ -76,9 +78,12 @@ export const recommendProducts = action({
 
     // 3. Fetch full product details
     const productIds = Array.from(searchResults.keys()) as Id<"products">[]
-    const products = await ctx.runQuery(api.myFunctions.getEnrichedProductsByIds, {
-      ids: productIds
-    })
+    const products = await ctx.runQuery(
+      api.myFunctions.getEnrichedProductsByIds,
+      {
+        ids: productIds,
+      }
+    )
 
     // 4. Selection Agent
     const selectionAgent = new SelectionAgent(anthropicKey)
@@ -149,7 +154,7 @@ export const getEnrichedProductsByIds = query({
       })
     }
     return enriched
-  }
+  },
 })
 
 export const listEnrichedProducts = query({
