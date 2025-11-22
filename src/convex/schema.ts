@@ -40,6 +40,8 @@ export default defineSchema({
     imageId: v.optional(v.id("_storage")),
     imageUrl: v.optional(v.string()),
     embedding: v.optional(v.array(v.float64())),
+    productUrl: v.optional(v.string()), // Link to manufacturer's page
+    sku: v.optional(v.string()), // Manufacturer's SKU
   })
     .vectorIndex("by_embedding", {
       vectorField: "embedding",
@@ -67,6 +69,7 @@ export default defineSchema({
 
     // Metadata
     sku: v.optional(v.string()), // Store-specific ID
+    productUrl: v.optional(v.string()), // Link to store's product page
     promotions: v.optional(
       v.object({
         type: v.string(), // "3x2", "discount"
