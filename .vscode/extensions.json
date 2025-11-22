@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "yoavbls.pretty-ts-errors",
+    "esbenp.prettier-vscode",
+    "ms-vscode.makefile-tools",
+    "bradlc.vscode-tailwindcss",
+    "mikestead.dotenv",
+    "usernamehw.errorlens"
+  ]
+}
