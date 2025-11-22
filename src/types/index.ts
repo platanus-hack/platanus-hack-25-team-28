@@ -1,8 +1,14 @@
 export interface LiderProduct {
-  sku: string;
   name: string;
+  sku: string;
+  url: string;
   price: number;
-  category: string;
   imageUrl: string;
+  category: string;
+  store: string;
+  date: string;
 }
 
+export type CartItem = LiderProduct & {
+  quantity: number;
+};
