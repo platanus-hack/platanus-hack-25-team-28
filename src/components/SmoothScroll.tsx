@@ -8,8 +8,8 @@ interface SmoothScrollProps {
 
 export default function SmoothScroll({ children }: SmoothScrollProps) {
   useEffect(() => {
-    // Simple smooth scroll implementation
-    // In production, you might want to use Lenis or similar library
+    // We disable global smooth scroll because we are using GSAP for controlled scrolling.
+    // CSS scroll-behavior: smooth often conflicts with GSAP ScrollToPlugin.
     document.documentElement.style.scrollBehavior = "smooth"
 
     return () => {
