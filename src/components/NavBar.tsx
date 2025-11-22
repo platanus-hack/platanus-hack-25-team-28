@@ -70,7 +70,7 @@ export default function NavBar() {
   return (
     <nav
       ref={navRef}
-      className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between px-6 transition-colors duration-300 md:px-12"
+      className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-gray-200/50 px-6 transition-colors duration-300 md:px-12"
     >
       <div
         ref={logoRef}
