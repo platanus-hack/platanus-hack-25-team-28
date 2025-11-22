@@ -2,7 +2,6 @@
 
 import Footer from "@/components/Footer"
 import { CartItem } from "@/types"
-import { buildMockCart } from "@/utils/cartUtils"
 import { useEffect, useRef, useState } from "react"
 import CartDrawer from "./_components/CartDrawer"
 import ChatInterface from "./_components/ChatInterface"
@@ -17,6 +16,8 @@ import SmartShoppingGrid from "./_components/SmartShoppingGrid"
 
 import { CartSidebarRef } from "@/components/CartSidebar"
 import NavBar from "@/components/NavBar"
+import { api } from "@/convex/_generated/api"
+import { useAction } from "convex/react"
 
 // Ensure plugins are registered
 if (typeof window !== "undefined") {
@@ -38,6 +39,8 @@ export default function Home() {
   // Use separate refs for desktop and mobile to avoid collision
   const desktopCartRef = useRef<CartSidebarRef>(null)
   const mobileCartRef = useRef<CartSidebarRef>(null)
+  
+  const recommendProducts = useAction(api.recommendations.recommendProducts)
 
   // Check if sidebar is ready
   useEffect(() => {
@@ -51,20 +54,27 @@ export default function Home() {
     setPrompt(userPrompt)
     setIsLoading(true)
 
-    // Simulate AI delay
-    setTimeout(() => {
-      const results = buildMockCart() // Mock data
-      setAllProducts(results)
+    try {
+      const result = await recommendProducts({ userPrompt })
+      
+      const newItems: CartItem[] = result.selectedProducts.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: p.minPrice || 0,
+        quantity: 1,
+        image: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
+        category: p.category
+      }))
+
+      setAllProducts(newItems)
       setCartItems([]) // Start with empty cart, they will fly in
       setShowResults(true)
-      setShowChat(false) // Reset chat state
       setShowChat(false) // Reset chat state
       setIsLoading(false)
 
       // Wait for render then scroll and open cart
       setTimeout(() => {
         // Scroll to results so it takes up the full page
-        // We use native scroll which leverages the smooth behavior from SmoothScroll.tsx
         const resultsElement = document.getElementById("results-section")
         if (resultsElement) {
           resultsElement.scrollIntoView({ behavior: "smooth", block: "start" })
@@ -73,7 +83,11 @@ export default function Home() {
         // Open cart slightly before/during scroll so it's ready for incoming items
         setIsCartOpen(true)
       }, 100)
-    }, 2000)
+    } catch (error) {
+      console.error("Error fetching recommendations:", error)
+      setIsLoading(false)
+      // Handle error (maybe show a toast or alert)
+    }
   }
 
   const handleItemAdded = (item: CartItem) => {
@@ -86,9 +100,18 @@ export default function Home() {
   const handleGridAnimationComplete = () => {
     // Transition to Chat
     setShowChat(true)
-    // We keep showResults=true so the container structure stays,
-    // but we swap the Grid component for the Chat component inside the layout.
-    // Or we can use showResults to mean "Show the split layout" and use showChat to toggle content.
+  }
+
+  const handleUpdateCart = (newItems: CartItem[]) => {
+    // Add new items to the cart
+    setCartItems(prev => {
+      // We could check for duplicates here
+      return [...prev, ...newItems]
+    })
+    // Also update allProducts if we want them to show up in the grid?
+    // But the grid might be hidden or static now.
+    // If we want to animate them, we might need to update allProducts and trigger animation?
+    // For now, just updating the cart is enough for the chat interaction.
   }
 
   return (
@@ -112,7 +135,11 @@ export default function Home() {
               />
             ) : (
               <div className="animate-in fade-in slide-in-from-bottom-4 h-screen p-6 duration-700 ease-out">
-                <ChatInterface initialPrompt={prompt} cartItems={cartItems} />
+                <ChatInterface 
+                  initialPrompt={prompt} 
+                  cartItems={cartItems} 
+                  onUpdateCart={handleUpdateCart}
+                />
               </div>
             )}
             {/* Footer inside the main content column */}

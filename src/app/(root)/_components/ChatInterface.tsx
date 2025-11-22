@@ -1,6 +1,8 @@
 "use client"
 
+import { api } from "@/convex/_generated/api"
 import { CartItem } from "@/types"
+import { useAction } from "convex/react"
 import { Send, Sparkles } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { ChatMessage, Message } from "./chat/ChatMessage"
@@ -9,13 +11,15 @@ import { TypingIndicator } from "./chat/TypingIndicator"
 interface ChatInterfaceProps {
   initialPrompt: string
   cartItems?: CartItem[]
+  onUpdateCart?: (items: CartItem[]) => void
 }
 
 export default function ChatInterface({
   initialPrompt,
-
   cartItems,
+  onUpdateCart,
 }: ChatInterfaceProps) {
+  const recommendProducts = useAction(api.recommendations.recommendProducts)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
@@ -58,16 +62,17 @@ export default function ChatInterface({
     const itemCount = cartItems?.length || 0
 
     // Simulate AI thinking and response
-    setTimeout(() => {
-      const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: `¡He terminado! He agregado ${itemCount} productos a tu carro con un total estimado de $${total.toLocaleString("es-CL")}. ¿Te gustaría ajustar las cantidades o buscar algo más?`,
-      }
-      setMessages((prev) => [...prev, aiMsg])
-      setIsTyping(false)
-    }, 1000)
-  }, [initialPrompt, cartItems])
+    // For the initial load, we assume the parent component (page.tsx) already fetched the products
+    // so we just show the summary message.
+    
+    const aiMsg: Message = {
+      id: (Date.now() + 1).toString(),
+      role: "assistant",
+      content: `¡He terminado! He agregado ${itemCount} productos a tu carro con un total estimado de $${total.toLocaleString("es-CL")}. ¿Te gustaría ajustar las cantidades o buscar algo más?`,
+    }
+    setMessages((prev) => [...prev, aiMsg])
+    setIsTyping(false)
+  }, [initialPrompt, cartItems]) // Only run when these change initially
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,17 +88,56 @@ export default function ChatInterface({
     setInput("")
     setIsTyping(true)
 
-    // Simple echo/mock response for follow-up
-    setTimeout(() => {
+    // Call the API
+    const history = messages.map(m => ({ role: m.role as "user" | "assistant", content: m.content }))
+    
+    recommendProducts({
+      userPrompt: input,
+      conversationHistory: history
+    }).then((result) => {
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content:
-          "Entendido. He actualizado tus recomendaciones basándome en eso. ¿Necesitas algo más?",
+        content: result.recommendation || "Aquí tienes los productos recomendados.",
       }
       setMessages((prev) => [...prev, aiMsg])
       setIsTyping(false)
-    }, 1500)
+
+      // Update cart if products were returned
+      if (result.selectedProducts && result.selectedProducts.length > 0 && onUpdateCart) {
+        // Convert to CartItem format
+        const newItems: CartItem[] = result.selectedProducts.map(p => ({
+          id: p.id,
+          name: p.name,
+          price: p.minPrice || 0,
+          quantity: p.quantity || 1,
+          image: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop", // Placeholder or fetch real image if available
+          category: p.category
+        }))
+        // We might want to merge with existing items or replace?
+        // For now, let's append or replace based on logic. 
+        // The prompt might be "add milk", so we should probably append.
+        // But if the user says "replace everything", we should replace.
+        // The current backend logic returns a list of "selectedProducts" based on the query.
+        // It doesn't explicitly say "append" or "replace".
+        // Let's assume we append for now, or maybe the user wants to see *only* these products?
+        // Given the "SmartShoppingGrid" context, maybe we should just add them.
+        
+        // Actually, let's just pass the new items to the parent and let it decide?
+        // Or just call onUpdateCart with the new list.
+        // Let's append for now.
+        onUpdateCart(newItems)
+      }
+    }).catch(err => {
+      console.error("Error fetching recommendations:", err)
+      setIsTyping(false)
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "Lo siento, hubo un error al procesar tu solicitud.",
+      }
+      setMessages((prev) => [...prev, errorMsg])
+    })
   }
 
   return (
