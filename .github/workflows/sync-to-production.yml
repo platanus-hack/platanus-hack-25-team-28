@@ -50,6 +50,10 @@ jobs:
         run: |
           git ls-remote personal --heads production || echo "Warning: Could not access production branch, will attempt to create it"
 
+      - name: Test repository access
+        run: |
+          git ls-remote personal --heads production || echo "Warning: Could not access production branch, will attempt to create it"
+
       - name: Push to production branch
         run: |
           git push personal HEAD:production --force
