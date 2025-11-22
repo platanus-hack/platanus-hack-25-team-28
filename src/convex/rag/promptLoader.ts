@@ -1,34 +1,48 @@
 export type PromptConfig = {
   system: string
-  user_template: string
+  user_template?: string
 }
 
-const RECOMMENDATION_PROMPTS: PromptConfig = {
-  system: `You are a shopping recommendation assistant. Given a user's request and available products, recommend specific products with quantities needed. 
-  
-Return a valid JSON object with the following structure:
+export function getPromptAgentConfig(): PromptConfig {
+  return {
+    system: `Eres un agente que toma el mensaje del usuario y lo deja listo para un flujo RAG de compras.
+Objetivo: limpiar y estructurar la petición sin limitarla, preservando datos clave como cantidad de personas, presupuesto, productos deseados, ocasión y restricciones.
+Devuelve únicamente un JSON con esta forma:
 {
-  "products": [
-    { "name": "product_name", "quantity": number, "reason": "why this product fits the request" }
-  ],
-  "summary": "brief summary of the complete recommendation"
+  "cleanedPrompt": "texto breve y accionable en español que resume lo pedido",
+  "categories": ["categoria1", "categoria2"],   // solo si hay señal explícita
+  "keywords": ["palabra1", "palabra2"],         // ingredientes/productos clave
+  "budget": number | null                       // extrae monto si lo menciona, si no deja null
 }
 
-Consider dietary restrictions, budget constraints, group size, and the occasion described in the user request.
-Be practical and suggest realistic quantities.`,
+- No inventes categorías ni presupuesto si el usuario no los dio.
+- Mantén todas las pistas sobre cantidades de gente, dinero, ocasión y preferencias.
+- Responde siempre en español y solo con el JSON.`,
+    user_template: `Historial reciente:
+{history}
 
-  user_template: `User request: {prompt}
+Mensaje nuevo: "{user_message}"
 
-Available products:
-{products_list}
-
-Based on the request above, recommend products with appropriate quantities and reasons. Return valid JSON.`,
+Devuelve solo el JSON pedido arriba.`,
+  }
 }
 
-export function getRecommendationPrompts(): PromptConfig {
-  return RECOMMENDATION_PROMPTS
+export function getRecommendationPromptConfig(): PromptConfig {
+  return {
+    system: `Eres un asistente de compras que arma recomendaciones basadas en resultados RAG.
+- Responde en español, tono claro y conciso.
+- Usa 3 a 5 productos máximo, priorizando relevancia al pedido limpio del agente.
+- Incluye por qué encaja cada producto y menciona precio y tienda si está disponible.
+- Considera señales de presupuesto, cantidad de personas u ocasión si vienen en el prompt.`,
+    user_template: `Pedido procesado: "{user_query}"
+
+Productos disponibles:
+{products_context}
+
+Entrega la recomendación en texto breve: lista de productos y explicación corta.`,
+  }
 }
 
-export function formatUserPrompt(template: string, prompt: string, productsList: string): string {
-  return template.replace("{prompt}", prompt).replace("{products_list}", productsList)
+export function formatTemplate(template: string, values: Record<string, string>): string {
+  return Object.entries(values).reduce((acc, [key, value]) => acc.replaceAll(`{${key}}`, value), template)
 }

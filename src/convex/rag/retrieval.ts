@@ -11,7 +11,7 @@ export function retrieveSimilarProducts(
   queryEmbedding: number[],
   products: EnrichedProduct[],
   productEmbeddings: number[][],
-  k: number = 10
+  k: number
 ): SimilarityResult[] {
   const scores = productEmbeddings.map((embedding, index) => ({
     index,
@@ -22,13 +22,9 @@ export function retrieveSimilarProducts(
   return scores.sort((a, b) => b.score - a.score).slice(0, k)
 }
 
-export function filterByBudget(
-  results: SimilarityResult[],
-  budget: number,
-  avgQuantity: number = 1
-): SimilarityResult[] {
+export function filterByBudget(results: SimilarityResult[], budget: number): SimilarityResult[] {
   return results.filter((r) => {
-    const price = r.product.minPrice || 0
-    return price * avgQuantity <= budget
+    const price = r.product.minPrice ?? r.product.prices?.[0]?.currentPrice ?? 0
+    return price <= budget
   })
 }

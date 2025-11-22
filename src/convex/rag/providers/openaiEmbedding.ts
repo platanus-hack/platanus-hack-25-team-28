@@ -12,7 +12,6 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
   }
 
   async embed(texts: string[]): Promise<number[][]> {
-    const result = await this.embeddings.embedDocuments(texts)
-    return result
+    return this.embeddings.embedDocuments(texts)
   }
 }
