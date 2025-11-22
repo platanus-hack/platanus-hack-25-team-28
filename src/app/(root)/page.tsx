@@ -56,7 +56,7 @@ export default function Home() {
       )}
 
       {viewStep === "chat" && (
-        <div className="flex h-screen flex-1 overflow-hidden">
+        <div className="flex h-screen flex-1 overflow-hidden pt-20">
           {/* Chat Area */}
           <div className="relative flex h-full flex-1 flex-col">
             <div className="flex-1 overflow-hidden">
