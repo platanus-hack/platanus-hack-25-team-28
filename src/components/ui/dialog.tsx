@@ -1,8 +1,7 @@
 "use client"
 
-import React, { useEffect } from "react"
 import { X } from "lucide-react"
-import { Button } from "./button"
+import React, { useEffect } from "react"
 
 interface DialogProps {
   isOpen: boolean

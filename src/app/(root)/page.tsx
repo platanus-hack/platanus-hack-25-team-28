@@ -49,7 +49,6 @@ export default function Home() {
 
       {viewStep === "productReveal" && (
         <ProductReveal
-          prompt={prompt}
           cartItems={cart}
           onFunnelComplete={handleFunnelComplete}
         />

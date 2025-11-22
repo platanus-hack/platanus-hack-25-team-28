@@ -1,15 +1,11 @@
 import { v } from "convex/values"
-import { action, query } from "./_generated/server"
 import { api } from "./_generated/api"
 import { Id } from "./_generated/dataModel"
+import { action, query } from "./_generated/server"
 import { PromptAgent } from "./rag/agents/promptAgent"
-import { OpenAIEmbeddingProvider } from "./rag/providers/openaiEmbedding"
 import { SelectionAgent } from "./rag/agents/selectionAgent"
-import {
-  EnrichedProduct,
-  EnrichedPrice,
-  RecommendationRequest,
-} from "./rag/types"
+import { OpenAIEmbeddingProvider } from "./rag/providers/openaiEmbedding"
+import { EnrichedPrice, EnrichedProduct } from "./rag/types"
 
 export const recommendProducts = action({
   args: {

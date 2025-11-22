@@ -112,6 +112,7 @@ export const seed = internalMutation({
 
 // clear all data from the database
 export const clear = internalMutation({
+  args: {},
   handler: async (ctx) => {
     const tables = ["numbers", "stores", "products", "store_products"] as const
     for (const table of tables) {

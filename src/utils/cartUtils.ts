@@ -2,7 +2,15 @@ import { LiderProduct, CartItem } from "@/types"
 import rawProducts from "@/data/lider_products.json"
 
 // Transform raw data to LiderProduct type
-const allProducts: LiderProduct[] = rawProducts.map((p: any) => ({
+interface RawProduct {
+  name: string;
+  sku: string;
+  price: number;
+  imageUrl: string;
+  category: string;
+}
+
+const allProducts: LiderProduct[] = (rawProducts as RawProduct[]).map((p) => ({
   name: p.name,
   sku: p.sku,
   url: `https://www.lider.cl/supermercado/product/${p.sku}`, // Mock URL

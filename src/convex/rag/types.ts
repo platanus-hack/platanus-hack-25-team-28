@@ -1,4 +1,3 @@
-import { GenericId } from "convex/values"
 import { Doc, Id } from "../_generated/dataModel"
 
 export type Product = Doc<"products">

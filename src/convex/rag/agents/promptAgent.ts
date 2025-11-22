@@ -1,7 +1,7 @@
 import { ChatAnthropic } from "@langchain/anthropic"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
-import { CategoryAnalysis, ConversationMessage, PromptAnalysis } from "../types"
 import { formatTemplate, getPromptAgentConfig } from "../promptLoader"
+import { ConversationMessage, PromptAnalysis } from "../types"
 
 export class PromptAgent {
   private llm: ChatAnthropic

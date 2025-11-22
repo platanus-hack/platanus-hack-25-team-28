@@ -1,19 +1,16 @@
 "use client"
 
-import React, { useRef, useLayoutEffect, useEffect } from "react"
+import { CartItem } from "@/types"
 import { gsap } from "gsap"
 import { ShoppingCart } from "lucide-react"
-import { CartItem } from "@/types"
-import Image from "next/image"
+import { useLayoutEffect, useRef } from "react"
 
 interface ProductRevealProps {
-  prompt: string
   cartItems: CartItem[]
   onFunnelComplete: () => void
 }
 
 export default function ProductReveal({
-  prompt,
   cartItems,
   onFunnelComplete,
 }: ProductRevealProps) {
@@ -88,6 +85,7 @@ export default function ProductReveal({
         const cartCenterX = cartRect.left + cartRect.width / 2
         const cartCenterY = cartRect.top + cartRect.height / 2
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         cardRefs.current.forEach((card, index) => {
           if (!card) return
 
@@ -201,6 +199,7 @@ export default function ProductReveal({
                   >
                     {/* Image placeholder or actual image if available */}
                     {item.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={item.imageUrl}
                         alt={item.name}

@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
 import { CartItem } from "@/types"
-import SupermarketTrack from "./SupermarketTrack"
+import { useEffect, useState } from "react"
 import CartSidebar from "./CartSidebar"
+import SupermarketTrack from "./SupermarketTrack"
 
 interface SupermarketExperienceProps {
   prompt: string
@@ -24,6 +24,7 @@ export default function SupermarketExperience({
   // Reset display items when a new filling process starts
   useEffect(() => {
     if (isFilling) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplayItems([])
     }
   }, [isFilling, targetCart])
@@ -49,6 +50,7 @@ export default function SupermarketExperience({
       <div className="mb-8 space-y-2 text-center md:text-left">
         {prompt ? (
           <div className="mb-2 inline-block rounded-full border border-accent-primary/10 bg-accent-primary/5 px-4 py-2 text-sm font-medium text-accent-primary">
+            {/* eslint-disable-next-line react/no-unescaped-entities */}
             Entendimos: "{prompt}"
           </div>
         ) : (

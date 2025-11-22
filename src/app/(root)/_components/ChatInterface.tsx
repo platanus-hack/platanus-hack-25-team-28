@@ -13,6 +13,7 @@ interface ChatInterfaceProps {
 
 export default function ChatInterface({
   initialPrompt,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   cartItems,
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([])
@@ -40,6 +41,7 @@ export default function ChatInterface({
       role: "user",
       content: initialPrompt,
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMessages([userMsg])
     setIsTyping(true)
 

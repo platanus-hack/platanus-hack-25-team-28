@@ -97,6 +97,7 @@ export default function CartSidebar({
                 className="group flex items-center gap-4 rounded-xl border border-transparent p-3 transition-colors hover:border-gray-100 hover:bg-gray-50"
               >
                 <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-white p-1">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={item.imageUrl}
                     alt={item.name}

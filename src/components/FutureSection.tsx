@@ -13,6 +13,7 @@ export default function FutureSection() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Parallax cards
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
       gsap.utils.toArray(".future-card").forEach((card: any, i) => {
         gsap.from(card, {
           y: 100,
@@ -87,6 +88,7 @@ export default function FutureSection() {
               Videos generados por IA
             </h3>
             <p className="mb-8 text-lg leading-relaxed text-gray-400">
+              {/* eslint-disable-next-line react/no-unescaped-entities */}
               Imagina escribir "asado para 10" y recibir un video corto con los
               pasos, tiempos y productos exactos que ya están en tu carro.
             </p>
@@ -96,6 +98,7 @@ export default function FutureSection() {
                   <Play size={24} fill="white" className="ml-1" />
                 </div>
               </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80"
                 alt="Cooking Preview"

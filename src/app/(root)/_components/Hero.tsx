@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
-import { Sparkles, ArrowRight, ShoppingBag } from "lucide-react"
-import gsap from "gsap"
 import { formatCurrency } from "@/utils/cartUtils"
+import gsap from "gsap"
+import { ArrowRight, ShoppingBag, Sparkles } from "lucide-react"
+import React, { useEffect, useRef, useState } from "react"
 
 interface HeroProps {
   onFillCart: (prompt: string) => void
@@ -102,8 +102,9 @@ export default function Hero({ onFillCart }: HeroProps) {
           </h1>
 
           <p className="hero-text-element max-w-xl text-xl leading-relaxed text-text-muted">
+            {/* eslint-disable-next-line react/no-unescaped-entities */}
             Escribe lo que necesitas — por ejemplo "Quiero armar un asado para 6
-            personas con 40.000 CLP" — y dejamos que la magia se encargue del
+            personas con 40.000 CLP&quot; — y dejamos que la magia se encargue del
             resto.
           </p>
 

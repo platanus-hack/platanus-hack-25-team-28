@@ -1,6 +1,10 @@
 import { v } from "convex/values"
 import { internal } from "./_generated/api"
-import { internalAction, internalMutation } from "./_generated/server"
+import {
+  internalAction,
+  internalMutation,
+  MutationCtx,
+} from "./_generated/server"
 import { ProductUnit } from "./schema"
 
 // --- Components ---
@@ -9,6 +13,7 @@ import { ProductUnit } from "./schema"
 // This is the entry point. It takes the big JSON blob, splits it, and schedules the work.
 
 export const deleteAllProducts = internalMutation({
+  args: {},
   handler: async (ctx) => {
     const products = await ctx.db.query("products").collect()
     for (const product of products) await ctx.db.delete(product._id)
@@ -84,7 +89,8 @@ export const processBatch = internalMutation({
 
 // --- Helper Logic ---
 
-async function processSingleItem(ctx: any, storeId: any, item: any) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function processSingleItem(ctx: MutationCtx, storeId: any, item: any) {
   // Parse Unit and Quantity
   let quantity = 1
   let unit = ProductUnit.PCS
@@ -102,10 +108,12 @@ async function processSingleItem(ctx: any, storeId: any, item: any) {
   // Upsert Product
   let productId = await ctx.db
     .query("products")
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .withIndex("by_name_brand", (q: any) =>
       q.eq("name", item.name).eq("brand", item.brand ?? undefined)
     )
     .first()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .then((p: any) => p?._id)
 
   if (!productId) {
@@ -124,6 +132,7 @@ async function processSingleItem(ctx: any, storeId: any, item: any) {
   // Upsert Price
   const existingPrice = await ctx.db
     .query("store_products")
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .withIndex("by_store_and_product", (q: any) =>
       q.eq("storeId", storeId).eq("productId", productId)
     )
