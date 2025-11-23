@@ -15,6 +15,7 @@ interface CartDrawerProps {
   liderCartCount: number
   unimarcCartCount: number
   jumboCartCount: number
+  onCheckout?: () => void
 }
 
 export default function CartDrawer({
@@ -29,6 +30,7 @@ export default function CartDrawer({
   liderCartCount,
   unimarcCartCount,
   jumboCartCount,
+  onCheckout,
 }: CartDrawerProps) {
   return (
     <div
@@ -90,6 +92,7 @@ export default function CartDrawer({
             ref={sidebarRef}
             onUpdateQuantity={onUpdateQuantity}
             activeStore={activeStore}
+            onCheckout={onCheckout}
           />
         </div>
       </div>

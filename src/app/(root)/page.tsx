@@ -18,7 +18,9 @@ import { CartSidebarRef } from "@/components/CartSidebar"
 import { InteractiveRevealBackground } from "@/components/InteractiveRevealBackground"
 import NavBar from "@/components/NavBar"
 import { api } from "@/convex/_generated/api"
-import { useAction } from "convex/react"
+import { Id } from "@/convex/_generated/dataModel"
+import { useAction, useMutation, useQuery } from "convex/react"
+import { useRouter } from "next/navigation"
 
 // Ensure plugins are registered
 if (typeof window !== "undefined") {
@@ -39,17 +41,101 @@ export default function Home() {
   const [activeStore, setActiveStore] = useState<StoreName>("Jumbo")
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isSidebarReady, setIsSidebarReady] = useState(false)
+  const hasRestoredCart = useRef(false)
 
   // Use separate refs for desktop and mobile to avoid collision
   const desktopCartRef = useRef<CartSidebarRef>(null)
   const mobileCartRef = useRef<CartSidebarRef>(null)
 
   const recommendProducts = useAction(api.recommendations.recommendProducts)
+  const createCart = useMutation(api.carts.createCart)
+  const router = useRouter()
+
+  const [checkoutCartId, setCheckoutCartId] = useState<Id<"carts"> | null>(null)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedCartId = sessionStorage.getItem("checkoutCartId")
+      if (storedCartId) {
+        setCheckoutCartId(storedCartId as Id<"carts">)
+      }
+    }
+  }, [])
+
+  const cartFromCheckout = useQuery(
+    api.carts.getCartById,
+    checkoutCartId ? { cartId: checkoutCartId } : "skip"
+  )
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const pendingCheckout = sessionStorage.getItem("pendingCheckout")
+      if (pendingCheckout && !sessionStorage.getItem("checkoutCartId")) {
+        const createPendingCart = async () => {
+          try {
+            const { storeName, items } = JSON.parse(pendingCheckout)
+            const result = await createCart({
+              storeName,
+              items,
+            })
+            if (result?.cartId) {
+              sessionStorage.removeItem("pendingCheckout")
+              sessionStorage.setItem("checkoutCartId", result.cartId)
+              router.push("/checkout")
+            }
+          } catch (error) {
+            console.error("Error creating cart from pending checkout:", error)
+          }
+        }
+        createPendingCart()
+      }
+    }
+  }, [createCart, router])
+
+  useEffect(() => {
+    if (
+      cartFromCheckout &&
+      !hasRestoredCart.current &&
+      typeof window !== "undefined"
+    ) {
+      const storedCartId = sessionStorage.getItem("checkoutCartId")
+      if (storedCartId && cartFromCheckout.items.length > 0) {
+        hasRestoredCart.current = true
+        const restoredItems: CartItem[] = cartFromCheckout.items.map(
+          (item) => ({
+            sku: item.externalSku,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            imageUrl: item.imageUrl || "https://via.placeholder.com/80",
+            category: item.category || "Otros",
+            url: "#",
+            store: cartFromCheckout.storeName as StoreName,
+            date: new Date(cartFromCheckout.createdAt).toISOString(),
+          })
+        )
+
+        if (cartFromCheckout.storeName === "Lider") {
+          setLiderCartItems(restoredItems)
+          setActiveStore("Lider")
+        } else if (cartFromCheckout.storeName === "Unimarc") {
+          setUnimarcCartItems(restoredItems)
+          setActiveStore("Unimarc")
+        } else if (cartFromCheckout.storeName === "Jumbo") {
+          setJumboCartItems(restoredItems)
+          setActiveStore("Jumbo")
+        }
+
+        setShowResults(true)
+        setShowChat(true)
+        setIsCartOpen(true)
+      }
+    }
+  }, [cartFromCheckout])
 
   // Check if sidebar is ready
   useEffect(() => {
     if (showResults && desktopCartRef.current) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsSidebarReady(true)
     }
   }, [showResults, isCartOpen])
@@ -221,6 +307,42 @@ export default function Home() {
     return liderCartItems
   }
 
+  const handleCheckout = async () => {
+    const activeCartItems = getActiveCartItems()
+
+    if (activeCartItems.length === 0) {
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      const itemsWithoutId = activeCartItems.map((item) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...itemWithoutId } = item as CartItem & { id?: string }
+        return itemWithoutId
+      })
+
+      const result = await createCart({
+        storeName: activeStore,
+        items: itemsWithoutId,
+      })
+
+      if (result?.cartId) {
+        sessionStorage.setItem("checkoutCartId", result.cartId)
+        router.push("/checkout")
+      } else {
+        throw new Error("No se recibió un ID de carrito")
+      }
+    } catch (error) {
+      console.error("Error creating cart:", error)
+      alert(
+        `Error al crear el carrito: ${error instanceof Error ? error.message : "Error desconocido"}`
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <main className="relative min-h-screen w-full">
       <NavBar />
@@ -269,6 +391,7 @@ export default function Home() {
                 liderCartCount={liderCartItems.length}
                 unimarcCartCount={unimarcCartItems.length}
                 jumboCartCount={jumboCartItems.length}
+                onCheckout={handleCheckout}
               />
             </div>
           </div>
@@ -288,6 +411,7 @@ export default function Home() {
           liderCartCount={liderCartItems.length}
           unimarcCartCount={unimarcCartItems.length}
           jumboCartCount={jumboCartItems.length}
+          onCheckout={handleCheckout}
         />
       </div>
     </main>
