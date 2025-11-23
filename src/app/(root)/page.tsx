@@ -136,7 +136,6 @@ export default function Home() {
   // Check if sidebar is ready
   useEffect(() => {
     if (showResults && desktopCartRef.current) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsSidebarReady(true)
     }
   }, [showResults, isCartOpen])
@@ -317,6 +316,7 @@ export default function Home() {
     try {
       setIsLoading(true)
       const itemsWithoutId = activeCartItems.map((item) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id, ...itemWithoutId } = item as CartItem & { id?: string }
         return itemWithoutId
       })
