@@ -48,7 +48,7 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
       // Card Floating Animation
       gsap.to(cardRef.current, {
         y: -15,
-        duration: 3,
+        duration: 2.5,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
@@ -58,14 +58,14 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
       const handleMouseMove = (e: MouseEvent) => {
         if (!cardRef.current) return
         const { clientX, clientY } = e
-        const xPos = (clientX / window.innerWidth - 0.5) * 30
-        const yPos = (clientY / window.innerHeight - 0.5) * 30
+        const xPos = (clientX / window.innerWidth - 0.5) * 12
+        const yPos = (clientY / window.innerHeight - 0.5) * 12
 
         gsap.to(cardRef.current, {
           rotateY: xPos,
           rotateX: -yPos,
           transformPerspective: 1000,
-          duration: 0.5,
+          duration: 0.4,
           ease: "power2.out",
         })
       }
@@ -88,7 +88,7 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
 
       <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
         {/* Left Column: Content */}
-        <div ref={textRef} className="z-10 flex flex-col gap-8">
+        <div ref={textRef} className="z-10 flex flex-col gap-4">
           <div className="hero-text-element inline-flex w-fit items-center gap-2 rounded-full border border-gray-200 bg-white/50 px-3 py-1 backdrop-blur-sm">
             <Sparkles className="h-4 w-4 text-accent-primary" />
             <span className="text-sm font-medium text-text-muted">
@@ -96,19 +96,23 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
             </span>
           </div>
 
-          <h1 className="hero-text-element text-5xl leading-[1.1] font-bold tracking-tight text-text-main md:text-7xl">
-            Arma tu carro de <br className="hidden md:block" />
-            <span className="text-accent-primary">supermercado</span> con{" "}
-            <br className="hidden md:block" />
-            solo una frase.
-          </h1>
+          <div className="hero-text-element inline-block rounded-2xl bg-white/80 px-6 py-4 shadow-sm backdrop-blur-sm">
+            <h1 className="text-5xl leading-[1.1] font-bold tracking-tight text-text-main md:text-7xl">
+              Arma tu carro de <br className="hidden md:block" />
+              <span className="text-accent-primary">supermercado</span> con{" "}
+              <br className="hidden md:block" />
+              solo una frase.
+            </h1>
+          </div>
 
-          <p className="hero-text-element max-w-xl text-xl leading-relaxed text-text-muted">
-            {/* eslint-disable-next-line react/no-unescaped-entities */}
-            Escribe lo que necesitas — por ejemplo "Quiero armar un asado para 6
-            personas con 40.000 CLP&quot; — y dejamos que la magia se encargue
-            del resto.
-          </p>
+          <div className="hero-text-element inline-block max-w-xl rounded-2xl bg-white/80 px-6 py-4 shadow-sm backdrop-blur-sm">
+            <p className="text-xl leading-relaxed text-text-muted">
+              {/* eslint-disable-next-line react/no-unescaped-entities */}
+              Escribe lo que necesitas — por ejemplo "Quiero armar un asado para
+              6 personas con 40.000 CLP&quot; — y dejamos que la magia se
+              encargue del resto.
+            </p>
+          </div>
 
           <div className="hero-text-element w-full max-w-lg">
             <form
@@ -189,17 +193,44 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
 
             {/* Mini Items */}
             <div className="mb-6 space-y-3">
-              {[1, 2, 3].map((_, i) => (
+              {[
+                {
+                  name: "Pan Molde Ideal",
+                  quantity: "2x",
+                  price: "$3.990",
+                  emoji: "🍞",
+                },
+                {
+                  name: "Leche Entera 1L",
+                  quantity: "3x",
+                  price: "$2.490",
+                  emoji: "🥛",
+                },
+                {
+                  name: "Huevos Docena",
+                  quantity: "1x",
+                  price: "$4.200",
+                  emoji: "🥚",
+                },
+              ].map((item, i) => (
                 <div
                   key={i}
                   className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-gray-50"
                 >
-                  <div className="h-12 w-12 animate-pulse rounded-lg bg-gray-200" />
-                  <div className="flex-1 space-y-1">
-                    <div className="h-3 w-24 animate-pulse rounded bg-gray-200" />
-                    <div className="h-2 w-12 animate-pulse rounded bg-gray-200" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 text-2xl">
+                    {item.emoji}
                   </div>
-                  <div className="h-4 w-10 animate-pulse rounded bg-gray-200" />
+                  <div className="flex-1 space-y-1">
+                    <div className="text-sm font-medium text-text-main">
+                      {item.name}
+                    </div>
+                    <div className="text-xs text-text-muted">
+                      {item.quantity}
+                    </div>
+                  </div>
+                  <div className="text-sm font-semibold text-text-main">
+                    {item.price}
+                  </div>
                 </div>
               ))}
             </div>
@@ -209,7 +240,7 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
               <div className="flex items-end justify-between">
                 <span className="text-sm text-text-muted">Total estimado</span>
                 <span className="text-2xl font-bold text-accent-success">
-                  {formatCurrency(42990)}
+                  {formatCurrency(10680)}
                 </span>
               </div>
             </div>

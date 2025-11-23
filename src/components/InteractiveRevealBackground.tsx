@@ -20,6 +20,7 @@ export function InteractiveRevealBackground({
   const cursor = useRef({ x: -1000, y: -1000 })
   const smoothCursor = useRef({ x: -1000, y: -1000 }) // Smoothed cursor position
   const velocity = useRef({ x: 0, y: 0 })
+  const revealStrength = useRef(0) // How much the reveal is "open" (0 = closed, 1 = fully open)
   const trail = useRef<
     Array<{ x: number; y: number; alpha: number; size: number }>
   >([])
@@ -34,7 +35,7 @@ export function InteractiveRevealBackground({
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { alpha: false })
     if (!ctx) return
 
     const container = containerRef.current
@@ -85,14 +86,16 @@ export function InteractiveRevealBackground({
       for (let i = 0; i <= points; i++) {
         const angle = (Math.PI * 2 * i) / points
 
-        // Very subtle, natural deformation
+        // Organic, wobbly deformation
         const angleFromDirection = angle - direction
         const stretchFactor =
-          Math.cos(angleFromDirection) * Math.min(speed / 40, 0.2)
+          Math.cos(angleFromDirection) * Math.min(speed / 40, 0.25)
 
-        // Minimal organic variation - mostly circular
+        // More pronounced organic variation for wobbly effect
         const organicVariation =
-          Math.sin(angle * 3) * 0.02 + Math.cos(angle * 5) * 0.015
+          Math.sin(angle * 3) * 0.12 +
+          Math.cos(angle * 5) * 0.1 +
+          Math.sin(angle * 7) * 0.08
 
         const r = size * (1 + stretchFactor + organicVariation)
         const px = x + Math.cos(angle) * r
@@ -105,9 +108,11 @@ export function InteractiveRevealBackground({
           const prevAngle = (Math.PI * 2 * (i - 1)) / points
           const prevAngleFromDirection = prevAngle - direction
           const prevStretchFactor =
-            Math.cos(prevAngleFromDirection) * Math.min(speed / 40, 0.2)
+            Math.cos(prevAngleFromDirection) * Math.min(speed / 40, 0.25)
           const prevOrganicVariation =
-            Math.sin(prevAngle * 3) * 0.02 + Math.cos(prevAngle * 5) * 0.015
+            Math.sin(prevAngle * 3) * 0.12 +
+            Math.cos(prevAngle * 5) * 0.1 +
+            Math.sin(prevAngle * 7) * 0.08
           const prevR = size * (1 + prevStretchFactor + prevOrganicVariation)
 
           const controlAngle1 = prevAngle + (angle - prevAngle) * 0.33
@@ -140,17 +145,21 @@ export function InteractiveRevealBackground({
     const animate = () => {
       if (!ctx || !canvas) return
 
+      // Clear the entire canvas first to remove previous frame
       ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      // Draw a completely solid opaque white background
       ctx.globalCompositeOperation = "source-over"
 
       if (testMode) {
         ctx.fillStyle = "rgba(245, 245, 247, 0.3)"
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
       } else {
+        // Solid opaque white
         ctx.fillStyle = "#f5f5f7"
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
       }
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
 
+      // Now switch to destination-out mode to punch holes (only if revealing)
       ctx.globalCompositeOperation = "destination-out"
 
       const { x, y } = cursor.current
@@ -168,45 +177,65 @@ export function InteractiveRevealBackground({
           velocity.current.x ** 2 + velocity.current.y ** 2
         )
 
-        // Add to trail when moving
+        // Progressively open/close the reveal based on movement
         if (speed > 0.5) {
-          trail.current.push({
-            x: smoothCursor.current.x,
-            y: smoothCursor.current.y,
-            alpha: 1,
-            size: revealRadius,
+          // Mouse is moving - open the reveal progressively
+          revealStrength.current += (1 - revealStrength.current) * 0.2
+        } else {
+          // Mouse stopped - close the reveal progressively
+          revealStrength.current += (0 - revealStrength.current) * 0.1
+        }
+
+        // Clamp to exactly 0 when very close to avoid floating point issues
+        if (revealStrength.current < 0.02) {
+          revealStrength.current = 0
+        }
+
+        // Only draw if reveal is actually open
+        if (revealStrength.current > 0) {
+          // Add to trail when moving and reveal is opening
+          if (speed > 0.5 && revealStrength.current > 0.2) {
+            trail.current.push({
+              x: smoothCursor.current.x,
+              y: smoothCursor.current.y,
+              alpha: 1,
+              size: revealRadius,
+            })
+
+            // Limit trail length
+            if (trail.current.length > 20) {
+              trail.current.shift()
+            }
+          }
+
+          // Update and draw trail
+          trail.current = trail.current.filter((point) => {
+            point.alpha -= 0.05
+            return point.alpha > 0
           })
 
-          // Limit trail length
-          if (trail.current.length > 20) {
-            trail.current.shift()
+          for (const point of trail.current) {
+            drawBlob(
+              point.x,
+              point.y,
+              point.size,
+              point.alpha * 0.4 * revealStrength.current,
+              velocity.current
+            )
           }
-        }
 
-        // Update and draw trail
-        trail.current = trail.current.filter((point) => {
-          point.alpha -= 0.05
-          return point.alpha > 0
-        })
-
-        for (const point of trail.current) {
+          // Draw main blob with reveal strength controlling opacity
           drawBlob(
-            point.x,
-            point.y,
-            point.size,
-            point.alpha * 0.4,
+            smoothCursor.current.x,
+            smoothCursor.current.y,
+            revealRadius,
+            revealStrength.current,
             velocity.current
           )
+        } else {
+          // Clear trail when reveal is closed
+          trail.current = []
         }
-
-        // Draw main blob
-        drawBlob(
-          smoothCursor.current.x,
-          smoothCursor.current.y,
-          revealRadius,
-          1,
-          velocity.current
-        )
       }
 
       requestRef.current = requestAnimationFrame(animate)
@@ -234,6 +263,7 @@ export function InteractiveRevealBackground({
       <canvas
         ref={canvasRef}
         className="pointer-events-none absolute inset-0 -z-10 hidden lg:block"
+        style={{ opacity: 1 }}
         aria-hidden="true"
       />
 
