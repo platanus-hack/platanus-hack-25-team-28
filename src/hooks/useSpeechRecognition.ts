@@ -94,12 +94,16 @@ export function useSpeechRecognition({
       window.SpeechRecognition || window.webkitSpeechRecognition
 
     if (!SpeechRecognition) {
-      setIsSupported(false)
-      setError("Speech Recognition API no está disponible en este navegador")
+      setTimeout(() => {
+        setIsSupported(false)
+        setError("Speech Recognition API no está disponible en este navegador")
+      }, 0)
       return
     }
 
-    setIsSupported(true)
+    setTimeout(() => {
+      setIsSupported(true)
+    }, 0)
     const recognition = new SpeechRecognition()
     recognition.lang = language
     recognition.continuous = continuous
@@ -185,7 +189,7 @@ export function useSpeechRecognition({
       setTranscript("")
       setError(null)
       recognitionRef.current.start()
-    } catch (err) {
+    } catch {
       setError("No se pudo iniciar el reconocimiento de voz")
       setIsListening(false)
     }

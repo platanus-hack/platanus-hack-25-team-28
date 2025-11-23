@@ -34,7 +34,10 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
 
   useEffect(() => {
     if (transcript) {
-      setPrompt(transcript)
+      const timer = setTimeout(() => {
+        setPrompt(transcript)
+      }, 0)
+      return () => clearTimeout(timer)
     }
   }, [transcript])
 

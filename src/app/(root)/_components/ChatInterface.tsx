@@ -1,11 +1,11 @@
 "use client"
 
 import { api } from "@/convex/_generated/api"
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition"
 import { CartItem } from "@/types"
 import { useAction } from "convex/react"
 import { Mic, Send, Sparkles } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
-import { useSpeechRecognition } from "@/hooks/useSpeechRecognition"
 import { ChatMessage, Message } from "./chat/ChatMessage"
 import { TypingIndicator } from "./chat/TypingIndicator"
 
@@ -41,7 +41,10 @@ export default function ChatInterface({
 
   useEffect(() => {
     if (transcript) {
-      setInput(transcript)
+      const timer = setTimeout(() => {
+        setInput(transcript)
+      }, 0)
+      return () => clearTimeout(timer)
     }
   }, [transcript])
 
