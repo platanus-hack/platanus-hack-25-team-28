@@ -12,8 +12,11 @@ export function useAnimatedCounter(
 
   useEffect(() => {
     if (!enabled) {
-      setCurrentValue(targetValue)
-      return
+      // Use requestAnimationFrame to avoid synchronous setState
+      const frameId = requestAnimationFrame(() => {
+        setCurrentValue(targetValue)
+      })
+      return () => cancelAnimationFrame(frameId)
     }
 
     const startValue = 0
@@ -21,8 +24,11 @@ export function useAnimatedCounter(
     const difference = targetValue - startValue
 
     if (difference === 0) {
-      setCurrentValue(targetValue)
-      return
+      // Use requestAnimationFrame to avoid synchronous setState
+      const frameId = requestAnimationFrame(() => {
+        setCurrentValue(targetValue)
+      })
+      return () => cancelAnimationFrame(frameId)
     }
 
     const animate = () => {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import type { LucideIcon } from "lucide-react"
 import {
   Croissant,
@@ -8,7 +8,6 @@ import {
   CircleDot,
   Droplet,
   Package,
-  ShoppingBag,
   UtensilsCrossed,
 } from "lucide-react"
 
@@ -109,10 +108,17 @@ export function useCartSimulation(options: UseCartSimulationOptions = {}) {
     return match ? parseFloat(match[1]) : 1
   }
 
-  const currentScenario = scenarios[currentScenarioIndex]
-  const totalPrice = currentScenario.items.reduce(
-    (sum, item) => sum + item.price * parseQuantity(item.quantity),
-    0
+  const currentScenario = useMemo(
+    () => scenarios[currentScenarioIndex],
+    [currentScenarioIndex]
+  )
+  const totalPrice = useMemo(
+    () =>
+      currentScenario.items.reduce(
+        (sum, item) => sum + item.price * parseQuantity(item.quantity),
+        0
+      ),
+    [currentScenario]
   )
 
   const timersRef = useRef<NodeJS.Timeout[]>([])
@@ -184,7 +190,7 @@ export function useCartSimulation(options: UseCartSimulationOptions = {}) {
     }
   }, [
     phase,
-    currentScenarioIndex,
+    currentScenario,
     typingDuration,
     processingDuration,
     holdDuration,
