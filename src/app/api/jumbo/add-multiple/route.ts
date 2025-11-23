@@ -8,6 +8,9 @@ type Body = {
   headless?: boolean
   keepOpen?: boolean
   openCartAfter?: boolean
+  loginFirst?: boolean
+  username?: string
+  password?: string
 }
 
 const USER_DATA_DIR = path.join(process.cwd(), ".pw-user-data")
@@ -96,6 +99,41 @@ async function findAddButton(page: Page) {
     if (await loc.isVisible().catch(() => false)) return loc
   }
   return null
+}
+
+async function performLogin(page: Page, rut: string, password: string) {
+  await page.goto("https://www.jumbo.cl/login-page", {
+    waitUntil: "domcontentloaded",
+    timeout: 60000,
+  })
+
+  await page.waitForTimeout(2000)
+  await acceptCookies(page)
+
+  const emailInput = page.locator('input[name="email"]')
+  await emailInput.waitFor({ state: "visible", timeout: 10000 })
+  await emailInput.fill(rut)
+
+  await page.waitForTimeout(500)
+
+  const passwordInput = page.locator('input[name="Clave"]')
+  await passwordInput.waitFor({ state: "visible", timeout: 10000 })
+  await passwordInput.fill(password)
+
+  await page.waitForTimeout(500)
+
+  const submitButton = page.locator('.login-page button[type="submit"]').first()
+  await submitButton.waitFor({ state: "visible", timeout: 10000 })
+  await submitButton.click()
+
+  await page.waitForURL("**/*", { timeout: 30000 })
+
+  await page.waitForTimeout(3000)
+
+  const currentUrl = page.url()
+  const isLoggedIn = !currentUrl.includes("/login-page")
+
+  return isLoggedIn
 }
 
 async function addProductToCart(page: Page, productUrl: string) {
@@ -187,6 +225,9 @@ export async function POST(req: NextRequest) {
       headless = true,
       keepOpen = false,
       openCartAfter = false,
+      loginFirst = false,
+      username,
+      password,
     } = body
 
     if (!productUrls || productUrls.length === 0) {
@@ -204,6 +245,38 @@ export async function POST(req: NextRequest) {
       viewport: { width: 1280, height: 800 },
       args: ["--disable-blink-features=AutomationControlled", "--no-sandbox"],
     })
+
+    if (loginFirst) {
+      const rut = username || process.env.LOGIN_RUT
+      const password_val = password || process.env.LOGIN_PASSWORD
+
+      if (!rut || !password_val) {
+        await context.close()
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "username and password are required (either in body or as LOGIN_RUT/LOGIN_PASSWORD env vars)",
+          },
+          { status: 400 }
+        )
+      }
+
+      const loginPage = await context.newPage()
+      const isLoggedIn = await performLogin(loginPage, rut, password_val)
+      await loginPage.close()
+
+      if (!isLoggedIn) {
+        await context.close()
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Login failed. Check credentials.",
+          },
+          { status: 401 }
+        )
+      }
+    }
 
     let guestId: string | undefined = undefined
     const cookies = await context.cookies()

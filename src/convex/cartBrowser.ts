@@ -26,6 +26,9 @@ export const addMultipleProductsToCart = action({
     headless: v.optional(v.boolean()),
     batchSize: v.optional(v.number()),
     delayBetweenBatches: v.optional(v.number()),
+    loginFirst: v.optional(v.boolean()),
+    username: v.optional(v.string()),
+    password: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const {
@@ -33,6 +36,9 @@ export const addMultipleProductsToCart = action({
       headless = true,
       batchSize = 2,
       delayBetweenBatches = 2000,
+      loginFirst = false,
+      username,
+      password,
     } = args
 
     const startTime = Date.now()
@@ -42,6 +48,42 @@ export const addMultipleProductsToCart = action({
       data: AddToCartResult | null
       error: string | null
     }> = []
+
+    if (loginFirst) {
+      const response = await fetch(ADD_MULTIPLE_API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productUrls,
+          headless,
+          keepOpen: false,
+          openCartAfter: false,
+          loginFirst: true,
+          username,
+          password,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(
+          `Failed to add products: ${response.status} - ${errorText}`
+        )
+      }
+
+      const result = await response.json()
+
+      return {
+        success: result.failed === 0,
+        totalProducts: result.totalProducts,
+        succeeded: result.succeeded,
+        failed: result.failed,
+        results: result.results,
+        totalMs: result.totalMs,
+      }
+    }
 
     for (let i = 0; i < productUrls.length; i += batchSize) {
       const batch = productUrls.slice(i, i + batchSize)
@@ -140,6 +182,9 @@ export const addProductsAndOpenCart = action({
     delayBeforeOpeningCart: v.optional(v.number()),
     useMultiTab: v.optional(v.boolean()),
     keepCartOpen: v.optional(v.boolean()),
+    loginFirst: v.optional(v.boolean()),
+    username: v.optional(v.string()),
+    password: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const {
@@ -148,11 +193,18 @@ export const addProductsAndOpenCart = action({
       delayBeforeOpeningCart = 3000,
       useMultiTab = true,
       keepCartOpen = true,
+      loginFirst = false,
+      username,
+      password,
     } = args
 
     const startTime = Date.now()
 
     if (useMultiTab) {
+      if (loginFirst) {
+        console.log("[CartBrowser] Will login before adding products...")
+      }
+
       const response = await fetch(ADD_MULTIPLE_API, {
         method: "POST",
         headers: {
@@ -163,6 +215,9 @@ export const addProductsAndOpenCart = action({
           headless,
           keepOpen: keepCartOpen,
           openCartAfter: true,
+          loginFirst,
+          username,
+          password,
         }),
       })
 
