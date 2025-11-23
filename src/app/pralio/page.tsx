@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export default function PralioTestPage() {
   const [username, setUsername] = useState("")
@@ -21,25 +21,27 @@ export default function PralioTestPage() {
     results?: unknown[]
   } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [checkoutTriggered, setCheckoutTriggered] = useState(false)
+  const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const checkCartStatus = async () => {
-    try {
-      const response = await fetch("/api/jumbo/get-cart")
-      if (response.ok) {
-        const data = await response.json()
-        const itemCount = data.cart?.items?.length || 0
-        setCartInfo({ ready: itemCount > 0, count: itemCount })
+  useEffect(() => {
+    return () => {
+      if (pollTimeoutRef.current) {
+        clearTimeout(pollTimeoutRef.current)
+        pollTimeoutRef.current = null
       }
-    } catch {
-      // Silently ignore errors when checking cart status
     }
-  }
+  }, [])
 
   const checkJobStatus = async (jobId: string) => {
     const response = await fetch(`/api/jumbo/add-multiple-async?jobId=${jobId}`)
     const data = await response.json()
 
     if (data.status === "completed") {
+      if (checkoutTriggered) {
+        return true
+      }
+      setCheckoutTriggered(true)
       setResult(data.result)
       setStatus("Products added! Waiting for browser to close...")
 
@@ -76,16 +78,23 @@ export default function PralioTestPage() {
       setLoading(false)
       setStatus(null)
       setCartInfo(null)
+      setCheckoutTriggered(false)
       return true
     } else if (data.status === "running") {
-      await checkCartStatus()
+      const progress = data.progress
+      if (progress) {
+        setCartInfo({
+          ready: progress.cartReady ?? false,
+          count: progress.currentCartCount ?? 0,
+        })
+      }
 
-      const cartStatus =
-        cartInfo && cartInfo.ready
-          ? `🛒 Cart ready (${cartInfo.count} items)`
+      const ready =
+        progress?.cartReady && (progress.currentCartCount ?? 0) > 0
+          ? `🛒 Cart ready (${progress.currentCartCount} items)`
           : "⏳ Preparing cart..."
 
-      setStatus(`${cartStatus} - Adding products...`)
+      setStatus(`${ready} - Adding products...`)
       return false
     } else {
       setStatus("Starting job...")
@@ -99,6 +108,11 @@ export default function PralioTestPage() {
     setResult(null)
     setError(null)
     setStatus("Starting job...")
+    setCheckoutTriggered(false)
+    if (pollTimeoutRef.current) {
+      clearTimeout(pollTimeoutRef.current)
+      pollTimeoutRef.current = null
+    }
 
     try {
       const productLines = urls
@@ -136,12 +150,24 @@ export default function PralioTestPage() {
 
       const { jobId } = await response.json()
 
-      const pollInterval = setInterval(async () => {
+      if (pollTimeoutRef.current) {
+        clearTimeout(pollTimeoutRef.current)
+        pollTimeoutRef.current = null
+      }
+
+      const poll = async () => {
         const done = await checkJobStatus(jobId)
-        if (done) {
-          clearInterval(pollInterval)
+        if (!done) {
+          pollTimeoutRef.current = setTimeout(poll, 2000)
+        } else {
+          if (pollTimeoutRef.current) {
+            clearTimeout(pollTimeoutRef.current)
+            pollTimeoutRef.current = null
+          }
         }
-      }, 2000)
+      }
+
+      poll()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred")
       setLoading(false)

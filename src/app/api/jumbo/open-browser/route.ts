@@ -3,6 +3,10 @@ import fs from "fs"
 import { NextRequest, NextResponse } from "next/server"
 import path from "path"
 import { BrowserContext, chromium, Page, Response } from "playwright"
+import {
+  resolveUserDataDir,
+  withUserDataDirLock,
+} from "@/lib/playwrightUserDataDir"
 
 type Body = {
   productUrl: string
@@ -11,7 +15,7 @@ type Body = {
   slowMoMs?: number
 }
 
-const USER_DATA_DIR = path.join(process.cwd(), ".pw-user-data")
+const USER_DATA_DIR = resolveUserDataDir(".pw-user-data")
 
 async function cleanupLockFiles() {
   try {
@@ -132,7 +136,7 @@ async function getOrderFormCount(page: Page) {
   })
 }
 
-export async function POST(req: NextRequest) {
+async function handleOpenBrowser(req: NextRequest) {
   let context: BrowserContext | null = null
   let page: Page | null = null
 
@@ -265,4 +269,8 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+export async function POST(req: NextRequest) {
+  return withUserDataDirLock(USER_DATA_DIR, () => handleOpenBrowser(req))
 }
