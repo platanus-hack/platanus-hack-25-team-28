@@ -42,6 +42,33 @@ async function cleanupLockFiles() {
   } catch {}
 }
 
+async function getOrderFormCount(page: Page) {
+  return page.evaluate(async () => {
+    try {
+      const r = await fetch("/api/checkout/pub/orderForm", {
+        credentials: "include",
+      })
+      if (r.ok) {
+        const data = await r.json()
+        return (data?.items?.length ?? 0) as number
+      }
+    } catch {}
+
+    try {
+      const r2 = await fetch(
+        "https://be-reg-groceries-bff-jumbo.ecomm.cencosud.com/cart",
+        { credentials: "include" }
+      )
+      if (r2.ok) {
+        const data2 = await r2.json()
+        return (data2?.items?.length ?? 0) as number
+      }
+    } catch {}
+
+    return 0
+  })
+}
+
 async function acceptCookies(page: Page) {
   const candidates = [
     "#onetrust-accept-btn-handler",
@@ -283,6 +310,8 @@ async function addProductToCart(
     throw new Error("No encontré botón Agregar")
   }
 
+  const beforeCount = await getOrderFormCount(page).catch(() => 0)
+
   await addBtn.click({ timeout: 10000 })
 
   await Promise.race([
@@ -291,6 +320,21 @@ async function addProductToCart(
   ])
 
   await page.waitForTimeout(1200)
+
+  let afterCount = beforeCount
+  const maxWaitMs = 15000
+  const checkIntervalMs = 1000
+  const targetCount = beforeCount + quantity
+  const startWait = Date.now()
+
+  while (Date.now() - startWait < maxWaitMs) {
+    const currentCount = await getOrderFormCount(page).catch(() => afterCount)
+    afterCount = currentCount
+    if (currentCount >= targetCount) {
+      break
+    }
+    await page.waitForTimeout(checkIntervalMs)
+  }
 
   const drawerCloseButton = page.locator("button.drawer-close").first()
   const drawerVisible = await drawerCloseButton.isVisible().catch(() => false)
@@ -334,7 +378,8 @@ async function addProductToCart(
 
   const success =
     (addToCartResponse.status ?? 0) >= 200 &&
-    (addToCartResponse.status ?? 0) < 300
+    (addToCartResponse.status ?? 0) < 300 &&
+    afterCount >= targetCount
 
   return {
     success,
@@ -343,6 +388,8 @@ async function addProductToCart(
     addToCartResponseUrl: addToCartResponse.url,
     addToCartResponseItems: addToCartResponse.items,
     guestId: addToCartResponse.guestId,
+    beforeCount,
+    afterCount,
     ms,
   }
 }
@@ -427,6 +474,8 @@ async function handleAddMultiple(req: NextRequest) {
       guestId = guestCookie.value
     }
 
+    const keepPagesOpen = !headless || (keepOpen && !headless)
+
     async function addAndConfirm(product: Product) {
       if (!context) throw new Error("Browser context not initialized")
       const page = await context.newPage()
@@ -463,6 +512,13 @@ async function handleAddMultiple(req: NextRequest) {
             normalizedProductName,
             desiredQty
           )
+        if (!confirmed) {
+          const countIncrease =
+            (addResult.afterCount ?? 0) - (addResult.beforeCount ?? 0)
+          if (countIncrease >= desiredQty) {
+            confirmed = true
+          }
+        }
 
         let retries = 0
         const maxRetries = confirmed ? 0 : 5
@@ -521,7 +577,11 @@ async function handleAddMultiple(req: NextRequest) {
         if (!confirmed && addResult.success) {
           confirmed = true
         }
-        await page.close()
+
+        if (!keepPagesOpen) {
+          await page.close()
+        }
+
         return {
           url: product.url,
           quantity: product.quantity || 1,
