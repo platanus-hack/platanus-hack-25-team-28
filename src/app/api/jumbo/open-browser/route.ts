@@ -1,16 +1,34 @@
 // app/api/jumbo/open-browser/route.ts
+import fs from "fs"
 import { NextRequest, NextResponse } from "next/server"
 import path from "path"
 import { BrowserContext, chromium, Page, Response } from "playwright"
 
 type Body = {
   productUrl: string
-  keepOpen?: boolean // deja el browser abierto para ver
-  headless?: boolean // override si quieres
-  slowMoMs?: number // para ver mejor los clicks
+  keepOpen?: boolean
+  headless?: boolean
+  slowMoMs?: number
 }
 
 const USER_DATA_DIR = path.join(process.cwd(), ".pw-user-data")
+
+async function cleanupLockFiles() {
+  try {
+    const lockFile = path.join(USER_DATA_DIR, "SingletonLock")
+    if (fs.existsSync(lockFile)) {
+      fs.unlinkSync(lockFile)
+    }
+    const socketFile = path.join(USER_DATA_DIR, "SingletonSocket")
+    if (fs.existsSync(socketFile)) {
+      fs.unlinkSync(socketFile)
+    }
+    const cookieFile = path.join(USER_DATA_DIR, "SingletonCookie")
+    if (fs.existsSync(cookieFile)) {
+      fs.unlinkSync(cookieFile)
+    }
+  } catch {}
+}
 
 async function acceptCookies(page: Page) {
   // 1) banner normal
@@ -137,7 +155,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Contexto persistente para que se vea y guarde cookies
+    await cleanupLockFiles()
+
     context = await chromium.launchPersistentContext(USER_DATA_DIR, {
       headless,
       slowMo,

@@ -5,6 +5,10 @@ const OPEN_BROWSER_API = process.env.NEXT_PUBLIC_APP_URL
   ? `${process.env.NEXT_PUBLIC_APP_URL}/api/jumbo/open-browser`
   : "http://localhost:3000/api/jumbo/open-browser"
 
+const ADD_MULTIPLE_API = process.env.NEXT_PUBLIC_APP_URL
+  ? `${process.env.NEXT_PUBLIC_APP_URL}/api/jumbo/add-multiple`
+  : "http://localhost:3000/api/jumbo/add-multiple"
+
 type AddToCartResult = {
   success: boolean
   url: string
@@ -22,6 +26,9 @@ export const addMultipleProductsToCart = action({
     headless: v.optional(v.boolean()),
     batchSize: v.optional(v.number()),
     delayBetweenBatches: v.optional(v.number()),
+    loginFirst: v.optional(v.boolean()),
+    username: v.optional(v.string()),
+    password: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const {
@@ -29,6 +36,9 @@ export const addMultipleProductsToCart = action({
       headless = true,
       batchSize = 2,
       delayBetweenBatches = 2000,
+      loginFirst = false,
+      username,
+      password,
     } = args
 
     const startTime = Date.now()
@@ -38,6 +48,42 @@ export const addMultipleProductsToCart = action({
       data: AddToCartResult | null
       error: string | null
     }> = []
+
+    if (loginFirst) {
+      const response = await fetch(ADD_MULTIPLE_API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productUrls,
+          headless,
+          keepOpen: false,
+          openCartAfter: false,
+          loginFirst: true,
+          username,
+          password,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(
+          `Failed to add products: ${response.status} - ${errorText}`
+        )
+      }
+
+      const result = await response.json()
+
+      return {
+        success: result.failed === 0,
+        totalProducts: result.totalProducts,
+        succeeded: result.succeeded,
+        failed: result.failed,
+        results: result.results,
+        totalMs: result.totalMs,
+      }
+    }
 
     for (let i = 0; i < productUrls.length; i += batchSize) {
       const batch = productUrls.slice(i, i + batchSize)
@@ -133,21 +179,72 @@ export const addProductsAndOpenCart = action({
   args: {
     productUrls: v.array(v.string()),
     headless: v.optional(v.boolean()),
-    batchSize: v.optional(v.number()),
-    delayBetweenBatches: v.optional(v.number()),
     delayBeforeOpeningCart: v.optional(v.number()),
+    useMultiTab: v.optional(v.boolean()),
+    keepCartOpen: v.optional(v.boolean()),
+    loginFirst: v.optional(v.boolean()),
+    username: v.optional(v.string()),
+    password: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const {
       productUrls,
       headless = true,
-      batchSize = 2,
-      delayBetweenBatches = 2000,
       delayBeforeOpeningCart = 3000,
+      useMultiTab = true,
+      keepCartOpen = true,
+      loginFirst = false,
+      username,
+      password,
     } = args
 
     const startTime = Date.now()
-    const results: Array<{
+
+    if (useMultiTab) {
+      if (loginFirst) {
+        console.log("[CartBrowser] Will login before adding products...")
+      }
+
+      const response = await fetch(ADD_MULTIPLE_API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productUrls,
+          headless,
+          keepOpen: keepCartOpen,
+          openCartAfter: true,
+          loginFirst,
+          username,
+          password,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(
+          `Failed to add products: ${response.status} - ${errorText}`
+        )
+      }
+
+      const result = await response.json()
+
+      return {
+        success: result.failed === 0,
+        totalProducts: result.totalProducts,
+        succeeded: result.succeeded,
+        failed: result.failed,
+        results: result.results,
+        totalMs: result.totalMs,
+        cartOpened: result.cartOpened || false,
+        cartUrl: "https://www.jumbo.cl",
+      }
+    }
+
+    const batchSize = 2
+    const delayBetweenBatches = 2000
+    const resultsArray: Array<{
       url: string
       success: boolean
       data: AddToCartResult | null
@@ -182,7 +279,7 @@ export const addProductsAndOpenCart = action({
         })
       )
 
-      results.push(
+      resultsArray.push(
         ...batchResults.map((r, idx) => ({
           url: batch[idx],
           success: r.status === "fulfilled",
@@ -196,8 +293,8 @@ export const addProductsAndOpenCart = action({
       }
     }
 
-    const succeeded = results.filter((r) => r.success).length
-    const failed = results.filter((r) => !r.success).length
+    const succeeded = resultsArray.filter((r) => r.success).length
+    const failed = resultsArray.filter((r) => !r.success).length
     const totalMs = Date.now() - startTime
 
     if (succeeded > 0) {
@@ -225,7 +322,7 @@ export const addProductsAndOpenCart = action({
         totalProducts: productUrls.length,
         succeeded,
         failed,
-        results,
+        results: resultsArray,
         totalMs,
         cartOpened: true,
         cartUrl,
@@ -238,7 +335,7 @@ export const addProductsAndOpenCart = action({
       totalProducts: productUrls.length,
       succeeded,
       failed,
-      results,
+      results: resultsArray,
       totalMs,
       cartOpened: false,
       message: "No products were added successfully, cart not opened",
