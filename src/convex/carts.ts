@@ -97,6 +97,34 @@ export const getCartById = query({
       .withIndex("by_cart", (q) => q.eq("cartId", args.cartId))
       .collect()
 
+    // Fetch product URLs from store_products for items with productId
+    const itemsWithUrls = await Promise.all(
+      items.map(async (item) => {
+        let url: string | undefined = undefined
+        if (item.productId) {
+          const productId = item.productId // Type narrowing
+          const storeProduct = await ctx.db
+            .query("store_products")
+            .withIndex("by_store_and_product", (q) =>
+              q.eq("storeId", cart.storeId).eq("productId", productId)
+            )
+            .first()
+          url = storeProduct?.productUrl
+        }
+        return {
+          _id: item._id,
+          productId: item.productId,
+          externalSku: item.externalSku,
+          quantity: item.quantity,
+          price: item.price,
+          name: item.name,
+          imageUrl: item.imageUrl,
+          category: item.category,
+          url,
+        }
+      })
+    )
+
     return {
       _id: cart._id,
       userId: cart.userId,
@@ -105,16 +133,7 @@ export const getCartById = query({
       status: cart.status,
       createdAt: cart.createdAt,
       completedAt: cart.completedAt,
-      items: items.map((item) => ({
-        _id: item._id,
-        productId: item.productId,
-        externalSku: item.externalSku,
-        quantity: item.quantity,
-        price: item.price,
-        name: item.name,
-        imageUrl: item.imageUrl,
-        category: item.category,
-      })),
+      items: itemsWithUrls,
     }
   },
 })

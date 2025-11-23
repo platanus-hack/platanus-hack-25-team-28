@@ -322,7 +322,7 @@ export default function CheckoutPage() {
   const cartItems = cart.items.map((item) => ({
     name: item.name,
     sku: item.externalSku,
-    url: "#",
+    url: item.url,
     price: item.price,
     imageUrl: item.imageUrl || "https://via.placeholder.com/80",
     category: item.category || "Otros",
