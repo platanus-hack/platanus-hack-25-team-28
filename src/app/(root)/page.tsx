@@ -2,7 +2,7 @@
 
 import Footer from "@/components/Footer"
 import { CartItem, StoreName } from "@/types"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import CartDrawer from "./_components/CartDrawer"
 import ChatInterface from "./_components/ChatInterface"
 import Hero from "./_components/Hero"
@@ -118,36 +118,39 @@ export default function Home() {
     }
   }
 
-  const handleItemAdded = (item: CartItem) => {
-    // Add to the store-specific cart based on item's store field
-    const store = item.store || activeStore
-    const updateCart = (prev: CartItem[]) => {
-      const existingItemIndex = prev.findIndex((i) => i.sku === item.sku)
-      if (existingItemIndex >= 0) {
-        // Update quantity
-        const newCart = [...prev]
-        newCart[existingItemIndex] = {
-          ...newCart[existingItemIndex],
-          quantity: newCart[existingItemIndex].quantity + item.quantity,
+  const handleItemAdded = useCallback(
+    (item: CartItem) => {
+      // Add to the store-specific cart based on item's store field
+      const store = item.store || activeStore
+      const updateCart = (prev: CartItem[]) => {
+        const existingItemIndex = prev.findIndex((i) => i.sku === item.sku)
+        if (existingItemIndex >= 0) {
+          // Update quantity
+          const newCart = [...prev]
+          newCart[existingItemIndex] = {
+            ...newCart[existingItemIndex],
+            quantity: newCart[existingItemIndex].quantity + item.quantity,
+          }
+          return newCart
         }
-        return newCart
+        return [...prev, item]
       }
-      return [...prev, item]
-    }
 
-    if (store === "Lider") {
-      setLiderCartItems(updateCart)
-    } else if (store === "Unimarc") {
-      setUnimarcCartItems(updateCart)
-    } else if (store === "Jumbo") {
-      setJumboCartItems(updateCart)
-    }
-  }
+      if (store === "Lider") {
+        setLiderCartItems(updateCart)
+      } else if (store === "Unimarc") {
+        setUnimarcCartItems(updateCart)
+      } else if (store === "Jumbo") {
+        setJumboCartItems(updateCart)
+      }
+    },
+    [activeStore]
+  )
 
-  const handleGridAnimationComplete = () => {
+  const handleGridAnimationComplete = useCallback(() => {
     // Transition to Chat
     setShowChat(true)
-  }
+  }, [])
 
   const handleUpdateCart = (newItems: CartItem[]) => {
     // Distribute items to their respective store carts based on store field
