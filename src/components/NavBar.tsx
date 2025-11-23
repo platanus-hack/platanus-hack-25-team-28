@@ -21,7 +21,10 @@ export default function NavBar() {
     // Update CSS variable with navbar height
     const updateNavbarHeight = () => {
       const height = nav.getBoundingClientRect().height
-      document.documentElement.style.setProperty("--navbar-height", `${height}px`)
+      document.documentElement.style.setProperty(
+        "--navbar-height",
+        `${height}px`
+      )
     }
 
     // Initial State
