@@ -28,13 +28,14 @@ export class PromptAgent {
     availableCategories: string[] = []
   ): Promise<PromptAnalysis> {
     const promptConfig = getPromptAgentConfig()
-    
-    const categoriesList = availableCategories.length > 0 
-      ? availableCategories.map(c => `- "${c}"`).join("\n")
-      : `- "general"` // Fallback if no categories provided
+
+    const categoriesList =
+      availableCategories.length > 0
+        ? availableCategories.map((c) => `- "${c}"`).join("\n")
+        : `- "general"` // Fallback if no categories provided
 
     const systemPrompt = formatTemplate(promptConfig.system, {
-      categories_list: categoriesList
+      categories_list: categoriesList,
     })
 
     const userPrompt = formatTemplate(promptConfig.user_template || "", {

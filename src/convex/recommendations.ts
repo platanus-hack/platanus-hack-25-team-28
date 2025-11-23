@@ -5,7 +5,11 @@ import { action, query } from "./_generated/server"
 import { PromptAgent } from "./rag/agents/promptAgent"
 import { SelectionAgent } from "./rag/agents/selectionAgent"
 import { OpenAIEmbeddingProvider } from "./rag/providers/openaiEmbedding"
-import { EnrichedPrice, EnrichedProduct, StoreRecommendation } from "./rag/types"
+import {
+  EnrichedPrice,
+  EnrichedProduct,
+  StoreRecommendation,
+} from "./rag/types"
 
 export const recommendProducts = action({
   args: {
@@ -37,15 +41,48 @@ export const recommendProducts = action({
 
     // Define categories per store
     const storeCategories: Record<string, string[]> = {
-      "Jumbo": ["carnes-y-pescados", "frutas-y-verduras", "lacteos-huevos-y-congelados", "quesos-y-fiambres", "despensa", "panaderia-y-pasteleria", "licores-bebidas-y-aguas", "chocolates-galletas-y-snacks"],
-      "Lider": ["bebidas", "cerdo", "congelados", "despensa", "frutas y verduras", "lacteos", "licores", "limpieza", "panaderia", "pescados y mariscos", "pollo", "quesos y fiambres", "vacuno"],
-      "Unimarc": ["bebidas-y-licores", "carnes", "congelados", "desayuno-y-dulces", "despensa", "frutas-y-verduras", "lacteos-huevos-y-refrigerados", "panaderia-y-pasteleria", "quesos-y-fiambres"]
+      Jumbo: [
+        "carnes-y-pescados",
+        "frutas-y-verduras",
+        "lacteos-huevos-y-congelados",
+        "quesos-y-fiambres",
+        "despensa",
+        "panaderia-y-pasteleria",
+        "licores-bebidas-y-aguas",
+        "chocolates-galletas-y-snacks",
+      ],
+      Lider: [
+        "bebidas",
+        "cerdo",
+        "congelados",
+        "despensa",
+        "frutas y verduras",
+        "lacteos",
+        "licores",
+        "limpieza",
+        "panaderia",
+        "pescados y mariscos",
+        "pollo",
+        "quesos y fiambres",
+        "vacuno",
+      ],
+      Unimarc: [
+        "bebidas-y-licores",
+        "carnes",
+        "congelados",
+        "desayuno-y-dulces",
+        "despensa",
+        "frutas-y-verduras",
+        "lacteos-huevos-y-refrigerados",
+        "panaderia-y-pasteleria",
+        "quesos-y-fiambres",
+      ],
     }
 
     await Promise.all(
       stores.map(async (store) => {
         const categories = storeCategories[store.name] || []
-        
+
         // 1. Analyze prompt for this store
         const analysis = await agent.analyze(
           args.userPrompt,
@@ -55,11 +92,13 @@ export const recommendProducts = action({
 
         // 2. Vector Search
         const searchResults = new Map<string, number>()
-        
+
         if (analysis.categories.length > 0) {
           for (const catAnalysis of analysis.categories) {
             const queryText = `${catAnalysis.category} ${catAnalysis.keywords.join(" ")}`
-            const queryEmbedding = (await embeddingProvider.embed([queryText]))[0]
+            const queryEmbedding = (
+              await embeddingProvider.embed([queryText])
+            )[0]
 
             const results = await ctx.vectorSearch("products", "by_embedding", {
               vector: queryEmbedding,
@@ -74,7 +113,9 @@ export const recommendProducts = action({
             }
           }
         } else {
-          const queryEmbedding = (await embeddingProvider.embed([analysis.cleanedPrompt]))[0]
+          const queryEmbedding = (
+            await embeddingProvider.embed([analysis.cleanedPrompt])
+          )[0]
           const results = await ctx.vectorSearch("products", "by_embedding", {
             vector: queryEmbedding,
             limit: 20,
@@ -114,8 +155,7 @@ export const recommendProducts = action({
         // 4. Selection Agent
         const recommendation = await selectionAgent.generateRecommendation(
           analysis.cleanedPrompt,
-          storeProducts,
-          store.name
+          storeProducts
         )
 
         const selectedProducts = recommendation.selectedProducts || []
@@ -127,7 +167,8 @@ export const recommendProducts = action({
         storeRecommendations.push({
           storeId: store._id,
           storeName: store.name,
-          recommendation: recommendation.recommendation || "Aquí tienes tu recomendación.",
+          recommendation:
+            recommendation.recommendation || "Aquí tienes tu recomendación.",
           selectedProducts: selectedProducts.map((p) => ({
             ...p,
             prices: p.prices || [],
@@ -137,17 +178,23 @@ export const recommendProducts = action({
       })
     )
 
+    // Return the first store recommendation if available, otherwise return empty structure
+    const firstRecommendation = storeRecommendations[0]
     return {
       analysis,
-      recommendation: recommendation.recommendation,
-      selectedProducts: recommendation.selectedProducts.map((p) => ({
-        id: p._id,
-        name: p.name,
-        category: p.category,
-        minPrice: p.minPrice,
-        maxPrice: p.maxPrice,
-        quantity: p.quantity
-      })),
+      recommendation:
+        firstRecommendation?.recommendation ||
+        "No hay recomendaciones disponibles.",
+      selectedProducts:
+        firstRecommendation?.selectedProducts.map((p) => ({
+          id: p._id,
+          name: p.name,
+          category: p.category,
+          minPrice: p.minPrice,
+          maxPrice: p.maxPrice,
+          quantity: p.quantity,
+        })) || [],
+      storeRecommendations,
     }
   },
 })
