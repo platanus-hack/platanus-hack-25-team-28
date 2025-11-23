@@ -10,7 +10,7 @@ type InteractiveRevealBackgroundProps = {
 }
 
 export function InteractiveRevealBackground({
-  backgroundImageUrl = "/images/supermarket-aisle.png",
+  backgroundImageUrl = "./images/supermarket-aisle.png",
   children,
   revealRadius = 150,
   testMode = false,
@@ -46,6 +46,10 @@ export function InteractiveRevealBackground({
         const rect = container.getBoundingClientRect()
         canvas.width = rect.width
         canvas.height = rect.height
+        
+        // Draw initial white background immediately after resize
+        ctx.fillStyle = "#f5f5f7"
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
       }
     }
 
@@ -86,16 +90,14 @@ export function InteractiveRevealBackground({
       for (let i = 0; i <= points; i++) {
         const angle = (Math.PI * 2 * i) / points
 
-        // Organic, wobbly deformation
+        // Very subtle, natural deformation
         const angleFromDirection = angle - direction
         const stretchFactor =
-          Math.cos(angleFromDirection) * Math.min(speed / 40, 0.25)
+          Math.cos(angleFromDirection) * Math.min(speed / 40, 0.2)
 
-        // More pronounced organic variation for wobbly effect
+        // Minimal organic variation - mostly circular
         const organicVariation =
-          Math.sin(angle * 3) * 0.12 +
-          Math.cos(angle * 5) * 0.1 +
-          Math.sin(angle * 7) * 0.08
+          Math.sin(angle * 3) * 0.02 + Math.cos(angle * 5) * 0.015
 
         const r = size * (1 + stretchFactor + organicVariation)
         const px = x + Math.cos(angle) * r
@@ -108,11 +110,9 @@ export function InteractiveRevealBackground({
           const prevAngle = (Math.PI * 2 * (i - 1)) / points
           const prevAngleFromDirection = prevAngle - direction
           const prevStretchFactor =
-            Math.cos(prevAngleFromDirection) * Math.min(speed / 40, 0.25)
+            Math.cos(prevAngleFromDirection) * Math.min(speed / 40, 0.2)
           const prevOrganicVariation =
-            Math.sin(prevAngle * 3) * 0.12 +
-            Math.cos(prevAngle * 5) * 0.1 +
-            Math.sin(prevAngle * 7) * 0.08
+            Math.sin(prevAngle * 3) * 0.02 + Math.cos(prevAngle * 5) * 0.015
           const prevR = size * (1 + prevStretchFactor + prevOrganicVariation)
 
           const controlAngle1 = prevAngle + (angle - prevAngle) * 0.33
@@ -253,23 +253,26 @@ export function InteractiveRevealBackground({
   }, [revealRadius, testMode])
 
   return (
-    <div ref={containerRef} className="relative min-h-screen overflow-hidden">
+    <div ref={containerRef} className="relative min-h-screen overflow-hidden bg-bg-page">
+      {/* Background image layer */}
       <div
-        className="absolute inset-0 -z-20 hidden bg-cover bg-center lg:block"
+        className="absolute inset-0 z-0 hidden bg-cover bg-center lg:block"
         style={{ backgroundImage: `url(${backgroundImageUrl})` }}
         aria-hidden="true"
       />
 
+      {/* Canvas overlay - covers background, reveals it when moving */}
       <canvas
         ref={canvasRef}
-        className="pointer-events-none absolute inset-0 -z-10 hidden lg:block"
-        style={{ opacity: 1 }}
+        className="pointer-events-none absolute inset-0 z-10 hidden bg-bg-page lg:block"
         aria-hidden="true"
       />
 
-      <div className="absolute inset-0 -z-10 bg-white lg:hidden" />
+      {/* Fallback for mobile */}
+      <div className="absolute inset-0 z-0 bg-bg-page lg:hidden" />
 
-      <div className="relative z-10">{children}</div>
+      {/* Content layer - must be above canvas */}
+      <div className="relative z-20">{children}</div>
     </div>
   )
 }
