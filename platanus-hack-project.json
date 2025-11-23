@@ -1,4 +1,5 @@
 {
-  "project-name": "<FILL THIS>",
-  "project-description-spanish": "<FILL THIS>"
+    "project-name" : "SuperTracker",
+    "project-description-spanish" : "Aplicacion de creacion de carros de compra de supermercado y a la ves comparadora de carritos de compra entre supermercados",
+    "deploy-url" : "https://super-tracker-gold.vercel.app"
 }
