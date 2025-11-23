@@ -18,6 +18,7 @@
   --accent-primary: #2563eb;
   --accent-success: #22c55e;
   --accent-warning: #f97316;
+  --navbar-height: 80px;
 }
 
 @layer base {

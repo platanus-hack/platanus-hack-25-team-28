@@ -19,9 +19,9 @@ export default function StoreTabs({
   jumboCartCount,
 }: StoreTabsProps) {
   const stores: Array<{ name: StoreName; label: string; count: number }> = [
+    { name: "Jumbo", label: "Jumbo", count: jumboCartCount },
     { name: "Lider", label: "Lider", count: liderCartCount },
     { name: "Unimarc", label: "Unimarc", count: unimarcCartCount },
-    { name: "Jumbo", label: "Jumbo", count: jumboCartCount },
   ]
 
   return (
