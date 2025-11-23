@@ -29,12 +29,12 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.2.4
         version: 1.2.4(@types/react@19.2.6)(react@19.2.0)
-      chromium-bidi:
-        specifier: ^11.0.1
-        version: 11.0.1(devtools-protocol@0.0.1548823)
       '@workos-inc/authkit-nextjs':
         specifier: ^2.11.1
         version: 2.11.1(next@16.0.3(@babel/core@7.28.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      chromium-bidi:
+        specifier: ^11.0.1
+        version: 11.0.1(devtools-protocol@0.0.1548823)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -71,6 +71,9 @@ importers:
       react-dom:
         specifier: ^19.2.0
         version: 19.2.0(react@19.2.0)
+      react-wrap-balancer:
+        specifier: ^1.1.1
+        version: 1.1.1(react@19.2.0)
       tailwind-merge:
         specifier: ^3.4.0
         version: 3.4.0
@@ -1595,11 +1598,6 @@ packages:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
     engines: {node: '>=10'}
 
-  chromium-bidi@11.0.1:
-    resolution: {integrity: sha512-lgLoTGXbcIFsFKeU4mrpag+KNY4Oh/lAAbGkbB7jUqesl+H31spExDvHXWc98LGnjfwC49tYATd0dRcZrzBrRw==}
-    peerDependencies:
-      devtools-protocol: '*'
-
   check-error@2.1.1:
     resolution: {integrity: sha512-OAlb+T7V4Op9OwdkjmguYRqncdlx5JiofwOAUkmTF+jNdHwzTaTs4sRAGpzLF3oOz5xAyDGrPgeIDFQmDOTiJw==}
     engines: {node: '>= 16'}
@@ -1607,6 +1605,11 @@ packages:
   chokidar@4.0.3:
     resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
     engines: {node: '>= 14.16.0'}
+
+  chromium-bidi@11.0.1:
+    resolution: {integrity: sha512-lgLoTGXbcIFsFKeU4mrpag+KNY4Oh/lAAbGkbB7jUqesl+H31spExDvHXWc98LGnjfwC49tYATd0dRcZrzBrRw==}
+    peerDependencies:
+      devtools-protocol: '*'
 
   class-variance-authority@0.7.1:
     resolution: {integrity: sha512-Ka+9Trutv7G8M6WT6SeiRWz792K5qEqIGEGzXKhAE6xOWAY6pPH8U+9IY3oCMv6kqTmLsv7Xh/2w2RigkePMsg==}
@@ -2799,6 +2802,11 @@ packages:
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
+
+  react-wrap-balancer@1.1.1:
+    resolution: {integrity: sha512-AB+l7FPRWl6uZ28VcJ8skkwLn2+UC62bjiw8tQUrZPlEWDVnR9MG0lghyn7EyxuJSsFEpht4G+yh2WikEqQ/5Q==}
+    peerDependencies:
+      react: '>=16.8.0 || ^17.0.0 || ^18'
 
   react@19.2.0:
     resolution: {integrity: sha512-tmbWg6W31tQLeB5cdIBOicJDJRR2KzXsV7uSK9iNfLWQ5bIZfxuPEHp7M8wiHyHnn0DD1i7w3Zmin0FtkrwoCQ==}
@@ -4700,17 +4708,17 @@ snapshots:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
 
-  chromium-bidi@11.0.1(devtools-protocol@0.0.1548823):
-    dependencies:
-      devtools-protocol: 0.0.1548823
-      mitt: 3.0.1
-      zod: 3.25.76
-
   check-error@2.1.1: {}
 
   chokidar@4.0.3:
     dependencies:
       readdirp: 4.1.2
+
+  chromium-bidi@11.0.1(devtools-protocol@0.0.1548823):
+    dependencies:
+      devtools-protocol: 0.0.1548823
+      mitt: 3.0.1
+      zod: 3.25.76
 
   class-variance-authority@0.7.1:
     dependencies:
@@ -5919,6 +5927,10 @@ snapshots:
       scheduler: 0.27.0
 
   react-is@16.13.1: {}
+
+  react-wrap-balancer@1.1.1(react@19.2.0):
+    dependencies:
+      react: 19.2.0
 
   react@19.2.0: {}
 

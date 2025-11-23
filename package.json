@@ -7,8 +7,8 @@
     "@langchain/openai": "^1.1.2",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-slot": "^1.2.4",
-    "chromium-bidi": "^11.0.1",
     "@workos-inc/authkit-nextjs": "^2.11.1",
+    "chromium-bidi": "^11.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.29.3",
@@ -21,6 +21,7 @@
     "playwright-core": "^1.56.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-wrap-balancer": "^1.1.1",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

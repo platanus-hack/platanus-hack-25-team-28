@@ -1,9 +1,13 @@
 "use client"
 
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition"
 import gsap from "gsap"
-import { ArrowRight, Loader2, Mic, Sparkles } from "lucide-react"
+import { ArrowRight, Mic, Sparkles } from "lucide-react"
 import React, { useEffect, useRef, useState } from "react"
+import Balancer from "react-wrap-balancer"
 import HeroCartPreview from "./HeroCartPreview"
 
 interface HeroProps {
@@ -48,9 +52,10 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
     gsap.to(inputRef.current, {
       scale: 1.02,
       boxShadow: "0 0 20px rgba(37, 99, 235, 0.3)",
-      duration: 0.15,
+      duration: 1,
       yoyo: true,
       repeat: 1,
+
       onComplete: () => {
         onFillCart(prompt)
       },
@@ -92,39 +97,41 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
           </div>
 
           <div className="hero-text-element inline-block rounded-2xl bg-white/80 px-6 py-4 shadow-sm backdrop-blur-sm">
-            <h1 className="text-5xl leading-[1.1] font-bold tracking-tight text-text-main md:text-7xl">
-              Pide tus compras <br className="hidden md:block" />
-              <span className="text-accent-primary">sin pensar</span>, en{" "}
-              <br className="hidden md:block" />
-              segundos.
+            <h1 className="text-4xl leading-[1.1] font-bold tracking-tight text-text-main md:text-7xl">
+              <Balancer ratio={0.8}>
+                Pide tus compras <br className="hidden md:block" />
+                <span className="text-accent-primary">sin pensar</span>, en{" "}
+                <br className="hidden md:block" />
+                segundos.
+              </Balancer>
             </h1>
           </div>
 
-          <div className="hero-text-element inline-block max-w-xl rounded-2xl bg-white/80 px-6 py-4 shadow-sm backdrop-blur-sm">
+          <div className="hero-text-element inline-block w-full rounded-2xl bg-white/80 px-6 py-4 shadow-sm backdrop-blur-sm">
             <p className="text-xl leading-relaxed text-text-muted">
               Dile a nuestra IA qué necesitas y te armamos el mejor carro
               comparando varios supermercados. Tú solo pagas.
             </p>
           </div>
 
-          <div className="hero-text-element w-full max-w-lg">
+          <div className="hero-text-element w-full">
             <form
               ref={inputRef}
               onSubmit={handleSubmit}
-              className="group relative flex items-center rounded-2xl border border-gray-100 bg-white p-2 shadow-lg transition-all duration-300 focus-within:shadow-xl focus-within:ring-2 focus-within:ring-accent-primary/20 hover:shadow-xl"
+              className="group relative flex items-center gap-2 rounded-2xl border border-gray-100 bg-white p-2 shadow-lg transition-all duration-300 focus-within:shadow-xl focus-within:ring-2 focus-within:ring-accent-primary/20 hover:shadow-xl"
             >
-              <input
-                type="text"
+              <Input
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Quiero armar un carro para un asado para 6 personas..."
-                className="flex-1 border-none bg-transparent px-4 py-3 pr-12 text-lg text-text-main placeholder:text-gray-400 focus:outline-none"
+                className="flex-1 border-none bg-transparent py-3 text-lg text-text-main placeholder:text-gray-400 focus:outline-none"
                 disabled={isLoading}
               />
               <div className="flex items-center gap-2">
                 {isSupported && (
-                  <button
+                  <Button
                     type="button"
+                    size="icon-lg"
                     onClick={() => {
                       if (isListening) {
                         stopListening()
@@ -144,26 +151,27 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
                         : "Iniciar grabación de voz"
                     }
                   >
-                    <Mic size={20} />
-                  </button>
+                    <Mic size={24} />
+                  </Button>
                 )}
-                <button
+                <Button
                   type="submit"
                   disabled={isLoading}
-                  className="flex min-w-[140px] transform items-center justify-center gap-2 rounded-xl bg-accent-primary px-6 py-3 font-semibold text-white shadow-md transition-colors duration-100 hover:bg-blue-700 hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-80"
+                  variant={"default"}
+                  className="flex transform items-center justify-center gap-2 rounded-xl bg-accent-primary py-3 font-semibold text-slate-100 transition-colors duration-100 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-80"
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <Spinner />
                       <span className="hidden sm:inline">Pensando...</span>
                     </>
                   ) : (
                     <>
                       <span className="hidden sm:inline">Llenar carro</span>
-                      <ArrowRight className="h-5 w-5" />
+                      <ArrowRight />
                     </>
                   )}
-                </button>
+                </Button>
               </div>
             </form>
             {speechError && (
@@ -173,13 +181,13 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
             <div className="mt-4 flex flex-wrap gap-2">
               {["Desayuno rápido", "Limpieza mensual", "Once con amigos"].map(
                 (suggestion, i) => (
-                  <button
+                  <Button
                     key={i}
                     onClick={() => setPrompt(suggestion + "...")}
                     className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm text-text-muted transition-colors hover:border-accent-primary hover:text-accent-primary"
                   >
                     {suggestion}
-                  </button>
+                  </Button>
                 )
               )}
             </div>
