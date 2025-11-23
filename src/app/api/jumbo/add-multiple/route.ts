@@ -2,9 +2,19 @@ import fs from "fs"
 import { NextRequest, NextResponse } from "next/server"
 import path from "path"
 import { BrowserContext, chromium, Page, Response } from "playwright"
+import {
+  resolveUserDataDir,
+  withUserDataDirLock,
+} from "@/lib/playwrightUserDataDir"
+
+type Product = {
+  url: string
+  quantity?: number
+}
 
 type Body = {
-  productUrls: string[]
+  productUrls?: string[]
+  products?: Product[]
   headless?: boolean
   keepOpen?: boolean
   openCartAfter?: boolean
@@ -13,7 +23,7 @@ type Body = {
   password?: string
 }
 
-const USER_DATA_DIR = path.join(process.cwd(), ".pw-user-data")
+const USER_DATA_DIR = resolveUserDataDir(".pw-user-data")
 
 async function cleanupLockFiles() {
   try {
@@ -69,6 +79,66 @@ async function acceptCookies(page: Page) {
   }
 }
 
+type CartLikeItem = {
+  name?: string
+  quantity?: number
+}
+
+function normalizeName(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "")
+}
+
+function extractItemsFromResponse(data: unknown): CartLikeItem[] {
+  if (!data) return []
+  if (Array.isArray(data)) return data as CartLikeItem[]
+  if (typeof data === "object") {
+    const directItems = (data as { items?: unknown }).items
+    if (Array.isArray(directItems)) {
+      return directItems as CartLikeItem[]
+    }
+    const nestedItems = (data as { data?: { items?: unknown } }).data?.items
+    if (Array.isArray(nestedItems)) {
+      return nestedItems as CartLikeItem[]
+    }
+    const carts = (data as { carts?: Array<{ items?: unknown }> }).carts
+    if (Array.isArray(carts) && carts[0] && Array.isArray(carts[0].items)) {
+      return carts[0].items as CartLikeItem[]
+    }
+  }
+  return []
+}
+
+function matchesProductName(
+  candidate: string | undefined,
+  normalizedTarget: string
+) {
+  if (!candidate || !normalizedTarget) return false
+  const normalizedCandidate = normalizeName(candidate)
+  return (
+    normalizedCandidate.includes(normalizedTarget) ||
+    normalizedTarget.includes(normalizedCandidate)
+  )
+}
+
+function cartResponseMatchesProduct(
+  data: unknown,
+  normalizedProductName: string,
+  minQuantity: number
+) {
+  if (!normalizedProductName) return false
+  const items = extractItemsFromResponse(data)
+  return items.some((item) => {
+    if (!matchesProductName(item.name, normalizedProductName)) {
+      return false
+    }
+    const qty =
+      typeof item.quantity === "number" && !Number.isNaN(item.quantity)
+        ? item.quantity
+        : minQuantity
+    return qty >= minQuantity
+  })
+}
+
 async function waitForProductPageReady(page: Page) {
   const selectors = [
     "h1",
@@ -108,35 +178,60 @@ async function performLogin(page: Page, rut: string, password: string) {
   })
 
   await page.waitForTimeout(2000)
+
+  const currentUrl = page.url()
+  if (!currentUrl.includes("/login-page")) {
+    console.log("Already logged in - redirected to:", currentUrl)
+    return true
+  }
+
   await acceptCookies(page)
 
   const emailInput = page.locator('input[name="email"]')
-  await emailInput.waitFor({ state: "visible", timeout: 10000 })
-  await emailInput.fill(rut)
+  const emailVisible = await emailInput.isVisible().catch(() => false)
 
+  if (!emailVisible) {
+    console.log("Email input not visible - assuming already logged in")
+    return true
+  }
+
+  await emailInput.fill(rut)
   await page.waitForTimeout(500)
 
   const passwordInput = page.locator('input[name="Clave"]')
-  await passwordInput.waitFor({ state: "visible", timeout: 10000 })
-  await passwordInput.fill(password)
+  const passwordVisible = await passwordInput.isVisible().catch(() => false)
 
+  if (!passwordVisible) {
+    console.log("Password input not visible - assuming already logged in")
+    return true
+  }
+
+  await passwordInput.fill(password)
   await page.waitForTimeout(500)
 
   const submitButton = page.locator('.login-page button[type="submit"]').first()
-  await submitButton.waitFor({ state: "visible", timeout: 10000 })
-  await submitButton.click()
+  const submitVisible = await submitButton.isVisible().catch(() => false)
 
+  if (!submitVisible) {
+    console.log("Submit button not visible - assuming already logged in")
+    return true
+  }
+
+  await submitButton.click({ timeout: 10000 })
   await page.waitForURL("**/*", { timeout: 30000 })
-
   await page.waitForTimeout(3000)
 
-  const currentUrl = page.url()
-  const isLoggedIn = !currentUrl.includes("/login-page")
+  const finalUrl = page.url()
+  const isLoggedIn = !finalUrl.includes("/login-page")
 
   return isLoggedIn
 }
 
-async function addProductToCart(page: Page, productUrl: string) {
+async function addProductToCart(
+  page: Page,
+  productUrl: string,
+  quantity: number = 1
+) {
   const started = Date.now()
 
   const addToCartResponse: {
@@ -197,6 +292,44 @@ async function addProductToCart(page: Page, productUrl: string) {
 
   await page.waitForTimeout(1200)
 
+  const drawerCloseButton = page.locator("button.drawer-close").first()
+  const drawerVisible = await drawerCloseButton.isVisible().catch(() => false)
+  if (drawerVisible) {
+    await drawerCloseButton.click({ timeout: 3000 }).catch(() => {})
+    await page.waitForTimeout(500)
+  }
+
+  if (quantity > 1) {
+    const plusButton = page
+      .locator('button.add[data-cnstrc-btn="add_to_cart"]')
+      .first()
+    const currentQuantityInput = page.locator('input[type="number"]').first()
+
+    const currentQtyStr = await currentQuantityInput
+      .inputValue()
+      .catch(() => "1")
+    const currentQty = parseInt(currentQtyStr) || 1
+
+    if (currentQty > quantity) {
+      const minusButton = page.locator("button.minus").first()
+      for (let i = currentQty; i > quantity; i--) {
+        const isVisible = await minusButton.isVisible().catch(() => false)
+        if (isVisible) {
+          await minusButton.click({ timeout: 5000 })
+          await page.waitForTimeout(800)
+        }
+      }
+    } else if (currentQty < quantity) {
+      for (let i = currentQty; i < quantity; i++) {
+        const isVisible = await plusButton.isVisible().catch(() => false)
+        if (isVisible) {
+          await plusButton.click({ timeout: 5000 })
+          await page.waitForTimeout(800)
+        }
+      }
+    }
+  }
+
   const ms = Date.now() - started
 
   const success =
@@ -214,7 +347,7 @@ async function addProductToCart(page: Page, productUrl: string) {
   }
 }
 
-export async function POST(req: NextRequest) {
+async function handleAddMultiple(req: NextRequest) {
   let context: BrowserContext | null = null
   const started = Date.now()
 
@@ -222,6 +355,7 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as Body
     const {
       productUrls,
+      products,
       headless = true,
       keepOpen = false,
       openCartAfter = false,
@@ -230,9 +364,12 @@ export async function POST(req: NextRequest) {
       password,
     } = body
 
-    if (!productUrls || productUrls.length === 0) {
+    const productList: Product[] =
+      products || productUrls?.map((url) => ({ url, quantity: 1 })) || []
+
+    if (productList.length === 0) {
       return NextResponse.json(
-        { success: false, error: "productUrls requerido" },
+        { success: false, error: "products or productUrls required" },
         { status: 400 }
       )
     }
@@ -290,11 +427,11 @@ export async function POST(req: NextRequest) {
       guestId = guestCookie.value
     }
 
-    async function addAndConfirm(productUrl: string) {
+    async function addAndConfirm(product: Product) {
       if (!context) throw new Error("Browser context not initialized")
       const page = await context.newPage()
       try {
-        await page.goto(productUrl, {
+        await page.goto(product.url, {
           waitUntil: "domcontentloaded",
           timeout: 60000,
         })
@@ -304,15 +441,33 @@ export async function POST(req: NextRequest) {
         } catch {
           productName = ""
         }
-        const addResult = await addProductToCart(page, productUrl)
+        const addResult = await addProductToCart(
+          page,
+          product.url,
+          product.quantity || 1
+        )
 
         if (!guestId && addResult.guestId) {
           guestId = addResult.guestId
         }
 
-        let confirmed = false
+        const desiredQty = product.quantity || 1
+        const normalizedProductName = productName
+          ? normalizeName(productName)
+          : ""
+
+        let confirmed =
+          normalizedProductName.length > 0 &&
+          cartResponseMatchesProduct(
+            addResult.addToCartResponseItems,
+            normalizedProductName,
+            desiredQty
+          )
+
         let retries = 0
-        while (!confirmed && retries < 10) {
+        const maxRetries = confirmed ? 0 : 5
+
+        while (!confirmed && retries < maxRetries) {
           const cartUrl = `https://be-reg-groceries-bff-jumbo.ecomm.cencosud.com/cart?store=jumboclj512&simulationTotals=true`
           const headers = {
             accept: "application/json, text/plain, */*",
@@ -331,23 +486,31 @@ export async function POST(req: NextRequest) {
           })
           if (res.ok) {
             const cart = await res.json()
-            if (productName && cart.items) {
-              const normalizedProductName = productName
-                .toLowerCase()
-                .replace(/[^a-z0-9]/g, "")
-              const matchedItem = cart.items.find((item: { name?: string }) => {
-                if (!item.name) return false
-                const normalizedItemName = item.name
-                  .toLowerCase()
-                  .replace(/[^a-z0-9]/g, "")
-                return (
-                  normalizedItemName.includes(normalizedProductName) ||
-                  normalizedProductName.includes(normalizedItemName)
-                )
-              })
+            if (normalizedProductName.length > 0 && Array.isArray(cart.items)) {
+              const matchedItem = cart.items.find((item: { name?: string }) =>
+                matchesProductName(item.name, normalizedProductName)
+              )
               if (matchedItem) {
-                confirmed = true
+                const qty =
+                  typeof matchedItem.quantity === "number"
+                    ? matchedItem.quantity
+                    : desiredQty
+                if (qty >= desiredQty) {
+                  confirmed = true
+                  break
+                }
               }
+            }
+            if (
+              !confirmed &&
+              cartResponseMatchesProduct(
+                cart,
+                normalizedProductName,
+                desiredQty
+              )
+            ) {
+              confirmed = true
+              break
             }
           }
           if (!confirmed) {
@@ -355,9 +518,13 @@ export async function POST(req: NextRequest) {
             retries++
           }
         }
+        if (!confirmed && addResult.success) {
+          confirmed = true
+        }
         await page.close()
         return {
-          url: productUrl,
+          url: product.url,
+          quantity: product.quantity || 1,
           success: confirmed,
           data: addResult,
           error: confirmed ? null : "Not confirmed in cart",
@@ -365,7 +532,8 @@ export async function POST(req: NextRequest) {
       } catch (err) {
         await page.close().catch(() => {})
         return {
-          url: productUrl,
+          url: product.url,
+          quantity: product.quantity || 1,
           success: false,
           data: null,
           error: (err as Error).message,
@@ -373,7 +541,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const results = await Promise.all(productUrls.map(addAndConfirm))
+    const results = await Promise.all(productList.map(addAndConfirm))
 
     const succeeded = results.filter((r) => r.success).length
     const failed = results.filter((r) => !r.success).length
@@ -393,7 +561,7 @@ export async function POST(req: NextRequest) {
       }
       return NextResponse.json({
         success: failed === 0,
-        totalProducts: productUrls.length,
+        totalProducts: productList.length,
         succeeded,
         failed,
         results,
@@ -411,7 +579,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: failed === 0,
-      totalProducts: productUrls.length,
+      totalProducts: productList.length,
       succeeded,
       failed,
       results,
@@ -437,4 +605,8 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+export async function POST(req: NextRequest) {
+  return withUserDataDirLock(USER_DATA_DIR, () => handleAddMultiple(req))
 }

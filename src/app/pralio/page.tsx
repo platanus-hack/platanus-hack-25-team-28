@@ -1,14 +1,17 @@
 "use client"
 
-import { api } from "@/convex/_generated/api"
-import { useAction } from "convex/react"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export default function PralioTestPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [urls, setUrls] = useState("")
   const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState<string | null>(null)
+  const [cartInfo, setCartInfo] = useState<{
+    ready: boolean
+    count: number
+  } | null>(null)
   const [result, setResult] = useState<{
     success: boolean
     totalProducts: number
@@ -18,44 +21,157 @@ export default function PralioTestPage() {
     results?: unknown[]
   } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [checkoutTriggered, setCheckoutTriggered] = useState(false)
+  const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const addMultipleProducts = useAction(
-    api.cartBrowser.addMultipleProductsToCart
-  )
+  useEffect(() => {
+    return () => {
+      if (pollTimeoutRef.current) {
+        clearTimeout(pollTimeoutRef.current)
+        pollTimeoutRef.current = null
+      }
+    }
+  }, [])
+
+  const checkJobStatus = async (jobId: string) => {
+    const response = await fetch(`/api/jumbo/add-multiple-async?jobId=${jobId}`)
+    const data = await response.json()
+
+    if (data.status === "completed") {
+      if (checkoutTriggered) {
+        return true
+      }
+      setCheckoutTriggered(true)
+      setResult(data.result)
+      setStatus("Products added! Waiting for browser to close...")
+
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+
+      setStatus("Proceeding to checkout...")
+
+      try {
+        const purchaseResponse = await fetch("/api/jumbo/complete-purchase", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ headless: false }),
+        })
+
+        const purchaseData = await purchaseResponse.json()
+
+        if (purchaseData.success) {
+          setStatus("Purchase completed successfully!")
+        } else {
+          setError(`Checkout failed: ${purchaseData.error}`)
+        }
+      } catch (err) {
+        setError(
+          `Checkout error: ${err instanceof Error ? err.message : "Unknown error"}`
+        )
+      }
+
+      setLoading(false)
+      setStatus(null)
+      setCartInfo(null)
+      return true
+    } else if (data.status === "failed") {
+      setError(data.error || "Job failed")
+      setLoading(false)
+      setStatus(null)
+      setCartInfo(null)
+      setCheckoutTriggered(false)
+      return true
+    } else if (data.status === "running") {
+      const progress = data.progress
+      if (progress) {
+        setCartInfo({
+          ready: progress.cartReady ?? false,
+          count: progress.currentCartCount ?? 0,
+        })
+      }
+
+      const ready =
+        progress?.cartReady && (progress.currentCartCount ?? 0) > 0
+          ? `🛒 Cart ready (${progress.currentCartCount} items)`
+          : "⏳ Preparing cart..."
+
+      setStatus(`${ready} - Adding products...`)
+      return false
+    } else {
+      setStatus("Starting job...")
+      return false
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setResult(null)
     setError(null)
+    setStatus("Starting job...")
+    setCheckoutTriggered(false)
+    if (pollTimeoutRef.current) {
+      clearTimeout(pollTimeoutRef.current)
+      pollTimeoutRef.current = null
+    }
 
     try {
-      const productUrls = urls
+      const productLines = urls
         .split("\n")
-        .map((url) => url.trim())
-        .filter((url) => url.length > 0)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
 
-      if (productUrls.length === 0) {
-        throw new Error("Please enter at least one product URL")
+      if (productLines.length === 0) {
+        throw new Error("Please enter at least one product")
       }
 
       if (!username || !password) {
         throw new Error("Please enter username and password")
       }
 
-      const response = await addMultipleProducts({
-        productUrls,
-        loginFirst: true,
-        username,
-        password,
-        headless: false,
+      const products = productLines.map((line) => {
+        const parts = line.split(",").map((p) => p.trim())
+        const url = parts[0]
+        const quantity = parts[1] ? parseInt(parts[1], 10) : 1
+        return { url, quantity: isNaN(quantity) ? 1 : quantity }
       })
 
-      setResult(response)
+      const response = await fetch("/api/jumbo/add-multiple-async", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          products,
+          loginFirst: true,
+          username,
+          password,
+          headless: false,
+          openCartAfter: true,
+        }),
+      })
+
+      const { jobId } = await response.json()
+
+      if (pollTimeoutRef.current) {
+        clearTimeout(pollTimeoutRef.current)
+        pollTimeoutRef.current = null
+      }
+
+      const poll = async () => {
+        const done = await checkJobStatus(jobId)
+        if (!done) {
+          pollTimeoutRef.current = setTimeout(poll, 2000)
+        } else {
+          if (pollTimeoutRef.current) {
+            clearTimeout(pollTimeoutRef.current)
+            pollTimeoutRef.current = null
+          }
+        }
+      }
+
+      poll()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred")
-    } finally {
       setLoading(false)
+      setStatus(null)
     }
   }
 
@@ -109,7 +225,7 @@ export default function PralioTestPage() {
                 htmlFor="urls"
                 className="mb-2 block text-sm font-medium text-gray-700"
               >
-                Product URLs (one per line)
+                Products (URL and Quantity)
               </label>
               <textarea
                 id="urls"
@@ -117,11 +233,12 @@ export default function PralioTestPage() {
                 onChange={(e) => setUrls(e.target.value)}
                 rows={8}
                 className="w-full rounded-md border border-gray-300 px-4 py-2 font-mono text-sm focus:border-transparent focus:ring-2 focus:ring-green-500"
-                placeholder="https://www.jumbo.cl/producto1&#10;https://www.jumbo.cl/producto2&#10;https://www.jumbo.cl/producto3"
+                placeholder="https://www.jumbo.cl/producto1,2&#10;https://www.jumbo.cl/producto2,3&#10;https://www.jumbo.cl/producto3,1"
                 required
               />
               <p className="mt-2 text-sm text-gray-500">
-                Enter Jumbo product URLs, one per line
+                Enter product URL and quantity (comma-separated), one per line.
+                Example: url,quantity
               </p>
             </div>
 
@@ -152,7 +269,7 @@ export default function PralioTestPage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Processing...
+                  {status || "Processing..."}
                 </span>
               ) : (
                 "Add Products to Cart"

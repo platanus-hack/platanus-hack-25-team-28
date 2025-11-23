@@ -2,8 +2,12 @@ import fs from "fs"
 import { NextResponse } from "next/server"
 import path from "path"
 import { BrowserContext, chromium, Page } from "playwright"
+import {
+  resolveUserDataDir,
+  withUserDataDirLock,
+} from "@/lib/playwrightUserDataDir"
 
-const USER_DATA_DIR = path.join(process.cwd(), ".pw-user-data")
+const USER_DATA_DIR = resolveUserDataDir(".pw-user-data")
 
 async function cleanupLockFiles() {
   try {
@@ -66,30 +70,51 @@ async function performLogin(page: Page, rut: string, password: string) {
   })
 
   await page.waitForTimeout(2000)
+
+  const currentUrl = page.url()
+  if (!currentUrl.includes("/login-page")) {
+    console.log("Already logged in - redirected to:", currentUrl)
+    return true
+  }
+
   await acceptCookies(page)
 
   const emailInput = page.locator('input[name="email"]')
-  await emailInput.waitFor({ state: "visible", timeout: 10000 })
-  await emailInput.fill(rut)
+  const emailVisible = await emailInput.isVisible().catch(() => false)
 
+  if (!emailVisible) {
+    console.log("Email input not visible - assuming already logged in")
+    return true
+  }
+
+  await emailInput.fill(rut)
   await page.waitForTimeout(500)
 
   const passwordInput = page.locator('input[name="Clave"]')
-  await passwordInput.waitFor({ state: "visible", timeout: 10000 })
-  await passwordInput.fill(password)
+  const passwordVisible = await passwordInput.isVisible().catch(() => false)
 
+  if (!passwordVisible) {
+    console.log("Password input not visible - assuming already logged in")
+    return true
+  }
+
+  await passwordInput.fill(password)
   await page.waitForTimeout(500)
 
   const submitButton = page.locator('.login-page button[type="submit"]').first()
-  await submitButton.waitFor({ state: "visible", timeout: 10000 })
-  await submitButton.click()
+  const submitVisible = await submitButton.isVisible().catch(() => false)
 
+  if (!submitVisible) {
+    console.log("Submit button not visible - assuming already logged in")
+    return true
+  }
+
+  await submitButton.click({ timeout: 10000 })
   await page.waitForURL("**/*", { timeout: 30000 })
-
   await page.waitForTimeout(3000)
 
-  const currentUrl = page.url()
-  const isLoggedIn = !currentUrl.includes("/login-page")
+  const finalUrl = page.url()
+  const isLoggedIn = !finalUrl.includes("/login-page")
 
   return isLoggedIn
 }
@@ -99,7 +124,7 @@ type LoginBody = {
   password: string
 }
 
-export async function POST(req: Request) {
+async function handleLogin(req: Request) {
   let context: BrowserContext | null = null
 
   try {
@@ -172,4 +197,8 @@ export async function POST(req: Request) {
       { status: 500 }
     )
   }
+}
+
+export async function POST(req: Request) {
+  return withUserDataDirLock(USER_DATA_DIR, () => handleLogin(req))
 }

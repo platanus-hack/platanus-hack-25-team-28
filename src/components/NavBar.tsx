@@ -18,6 +18,15 @@ export default function NavBar() {
 
     if (!nav || !logo) return
 
+    // Update CSS variable with navbar height
+    const updateNavbarHeight = () => {
+      const height = nav.getBoundingClientRect().height
+      document.documentElement.style.setProperty(
+        "--navbar-height",
+        `${height}px`
+      )
+    }
+
     // Initial State
     gsap.set(nav, {
       boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
@@ -25,7 +34,12 @@ export default function NavBar() {
       paddingBottom: "1rem",
       backgroundColor: "rgba(255, 255, 255, 0.85)",
       backdropFilter: "blur(4px)",
+      onComplete: updateNavbarHeight,
     })
+
+    // Update height on scroll/resize
+    updateNavbarHeight()
+    window.addEventListener("resize", updateNavbarHeight)
 
     const tl = gsap.timeline({
       scrollTrigger: {
@@ -46,6 +60,7 @@ export default function NavBar() {
         backgroundColor: "rgba(255, 255, 255, 0.85)",
         backdropFilter: "blur(4px)",
         borderBottom: "0px solid transparent",
+        onUpdate: updateNavbarHeight,
       },
       0
     ).to(
@@ -56,6 +71,10 @@ export default function NavBar() {
       },
       0
     )
+
+    return () => {
+      window.removeEventListener("resize", updateNavbarHeight)
+    }
   }, [])
 
   const scrollToSection = (id: string) => {

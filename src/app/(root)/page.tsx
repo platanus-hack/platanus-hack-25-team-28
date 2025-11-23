@@ -38,7 +38,7 @@ export default function Home() {
   const [liderCartItems, setLiderCartItems] = useState<CartItem[]>([])
   const [unimarcCartItems, setUnimarcCartItems] = useState<CartItem[]>([])
   const [jumboCartItems, setJumboCartItems] = useState<CartItem[]>([])
-  const [activeStore, setActiveStore] = useState<StoreName>("Lider")
+  const [activeStore, setActiveStore] = useState<StoreName>("Jumbo")
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isSidebarReady, setIsSidebarReady] = useState(false)
   const hasRestoredCart = useRef(false)
@@ -163,6 +163,7 @@ export default function Home() {
           price: p.price || p.minPrice || 0,
           quantity: p.quantity || 1,
           imageUrl:
+            p.imageUrl ||
             "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
           category: p.category || "Otros",
           url: `#`,
@@ -376,8 +377,8 @@ export default function Home() {
             <Footer />
           </div>
           {/* Desktop Sidebar Column */}
-          <div className="relative hidden w-[350px] shrink-0 lg:block">
-            <div className="sticky top-0 h-screen">
+          <div className="relative hidden w-[450px] shrink-0 lg:mr-0 lg:block">
+            <div className="sticky top-[var(--navbar-height)] h-[calc(100vh-var(--navbar-height))] w-full">
               <CartDrawer
                 isOpen={isCartOpen}
                 onClose={() => setIsCartOpen(false)}

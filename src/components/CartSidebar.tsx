@@ -201,7 +201,7 @@ const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
 
         {/* Sidebar Container */}
         <div
-          className={`fixed inset-y-0 right-0 z-50 flex w-full max-w-md transform flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:relative lg:h-full lg:w-full lg:transform-none lg:rounded-none lg:border-l lg:border-gray-200 lg:shadow-none ${isOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"} `}
+          className={`fixed inset-y-0 right-0 z-50 flex w-full max-w-md transform flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:relative lg:mr-0 lg:h-full lg:w-full lg:transform-none lg:rounded-none lg:border-l lg:border-gray-200 lg:shadow-none ${isOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"} `}
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-gray-100 bg-white p-6 lg:rounded-t-3xl">
@@ -225,7 +225,10 @@ const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
           </div>
 
           {/* List */}
-          <div className="min-h-0 flex-1 overflow-y-auto p-4" ref={listRef}>
+          <div
+            className="scrollbar-hide min-h-0 flex-1 overflow-y-auto p-4"
+            ref={listRef}
+          >
             {items.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-text-muted opacity-50">
                 <ShoppingCart size={48} className="mb-4" />
