@@ -18,6 +18,7 @@ import { CartSidebarRef } from "@/components/CartSidebar"
 import NavBar from "@/components/NavBar"
 import { api } from "@/convex/_generated/api"
 import { useAction } from "convex/react"
+import { InteractiveRevealBackground } from "@/components/InteractiveRevealBackground"
 
 // Ensure plugins are registered
 if (typeof window !== "undefined") {
@@ -64,8 +65,6 @@ export default function Home() {
         name: p.name,
         price: p.minPrice || 0,
         quantity: 1,
-        image:
-          "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
         imageUrl:
           "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
         category: p.category || "Otros",
@@ -136,9 +135,11 @@ export default function Home() {
   }
 
   return (
-    <main className="relative min-h-screen w-full bg-bg-page">
+    <main className="relative min-h-screen w-full">
       <NavBar />
-      <Hero onFillCart={handleSearch} isLoading={isLoading} />
+      <InteractiveRevealBackground>
+        <Hero onFillCart={handleSearch} isLoading={isLoading} />
+      </InteractiveRevealBackground>
 
       {showResults && (
         <div

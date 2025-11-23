@@ -23,10 +23,11 @@ export default function NavBar() {
 
     // Initial State
     gsap.set(nav, {
-      boxShadow: "0px 0px 0px rgba(0,0,0,0)",
+      boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
       paddingTop: "1.5rem",
       paddingBottom: "1.5rem",
-      backgroundColor: "rgba(245, 245, 247, 0)",
+      backgroundColor: "rgba(255, 255, 255, 0.85)",
+      backdropFilter: "blur(4px)",
     })
 
     const tl = gsap.timeline({
@@ -44,10 +45,10 @@ export default function NavBar() {
         paddingTop: "0.75rem",
         paddingBottom: "0.75rem",
         boxShadow:
-          "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
-        backgroundColor: "rgba(255, 255, 255, 0.8)",
-        backdropFilter: "blur(12px)",
-        borderBottom: "1px solid rgba(0,0,0,0.05)",
+          "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+        backgroundColor: "rgba(255, 255, 255, 0.85)",
+        backdropFilter: "blur(4px)",
+        borderBottom: "0px solid transparent",
       },
       0
     ).to(
@@ -70,7 +71,12 @@ export default function NavBar() {
   return (
     <nav
       ref={navRef}
-      className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-gray-200/50 px-6 transition-colors duration-300 md:px-12"
+      className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-transparent px-6 transition-colors duration-300 md:px-12"
+      style={{
+        backgroundColor: "rgba(255, 255, 255, 0.85)",
+        backdropFilter: "blur(4px)",
+        boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+      }}
     >
       <div
         ref={logoRef}
