@@ -1,19 +1,16 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
-import { ShoppingCart } from "lucide-react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { Button } from "@/components/ui/button"
-import { Dialog } from "@/components/ui/dialog"
+import { ShoppingCart } from "lucide-react"
+import { useEffect, useRef } from "react"
+import NavBarAuth from "./NavBarAuth"
 
 gsap.registerPlugin(ScrollTrigger)
 
 export default function NavBar() {
   const navRef = useRef<HTMLElement>(null)
   const logoRef = useRef<HTMLDivElement>(null)
-  const [showLoginModal, setShowLoginModal] = useState(false)
-  const [showSignupModal, setShowSignupModal] = useState(false)
 
   useEffect(() => {
     const nav = navRef.current
@@ -111,134 +108,7 @@ export default function NavBar() {
           Futuro IA
         </button>
       </div>
-
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowLoginModal(true)}
-        >
-          Iniciar sesión
-        </Button>
-        <Button
-          variant="default"
-          size="sm"
-          onClick={() => setShowSignupModal(true)}
-        >
-          Registrarse
-        </Button>
-      </div>
-
-      <Dialog
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        title="Iniciar sesión"
-      >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            setShowLoginModal(false)
-          }}
-          className="space-y-4"
-        >
-          <div>
-            <label
-              htmlFor="login-email"
-              className="mb-1 block text-sm font-medium text-text-main"
-            >
-              Email
-            </label>
-            <input
-              id="login-email"
-              type="email"
-              required
-              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:ring-2 focus:ring-accent-primary focus:outline-none"
-              placeholder="tu@email.com"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="login-password"
-              className="mb-1 block text-sm font-medium text-text-main"
-            >
-              Contraseña
-            </label>
-            <input
-              id="login-password"
-              type="password"
-              required
-              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:ring-2 focus:ring-accent-primary focus:outline-none"
-              placeholder="••••••••"
-            />
-          </div>
-          <Button type="submit" className="w-full" variant="default">
-            Iniciar sesión
-          </Button>
-        </form>
-      </Dialog>
-
-      <Dialog
-        isOpen={showSignupModal}
-        onClose={() => setShowSignupModal(false)}
-        title="Registrarse"
-      >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            setShowSignupModal(false)
-          }}
-          className="space-y-4"
-        >
-          <div>
-            <label
-              htmlFor="signup-name"
-              className="mb-1 block text-sm font-medium text-text-main"
-            >
-              Nombre
-            </label>
-            <input
-              id="signup-name"
-              type="text"
-              required
-              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:ring-2 focus:ring-accent-primary focus:outline-none"
-              placeholder="Tu nombre"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="signup-email"
-              className="mb-1 block text-sm font-medium text-text-main"
-            >
-              Email
-            </label>
-            <input
-              id="signup-email"
-              type="email"
-              required
-              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:ring-2 focus:ring-accent-primary focus:outline-none"
-              placeholder="tu@email.com"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="signup-password"
-              className="mb-1 block text-sm font-medium text-text-main"
-            >
-              Contraseña
-            </label>
-            <input
-              id="signup-password"
-              type="password"
-              required
-              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-text-main focus:ring-2 focus:ring-accent-primary focus:outline-none"
-              placeholder="••••••••"
-            />
-          </div>
-          <Button type="submit" className="w-full" variant="default">
-            Registrarse
-          </Button>
-        </form>
-      </Dialog>
+      <NavBarAuth />
     </nav>
   )
 }

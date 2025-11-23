@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as _lib_authFunctions from "../_lib/authFunctions.js";
 import type * as cartBrowser from "../cartBrowser.js";
 import type * as functions_legacy from "../functions/legacy.js";
 import type * as functions_products from "../functions/products.js";
@@ -27,6 +28,8 @@ import type * as rag_retrieval from "../rag/retrieval.js";
 import type * as rag_types from "../rag/types.js";
 import type * as recommendations from "../recommendations.js";
 import type * as seed from "../seed.js";
+import type * as users_helpers from "../users/helpers.js";
+import type * as users_queries from "../users/queries.js";
 
 import type {
   ApiFromModules,
@@ -35,6 +38,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "_lib/authFunctions": typeof _lib_authFunctions;
   cartBrowser: typeof cartBrowser;
   "functions/legacy": typeof functions_legacy;
   "functions/products": typeof functions_products;
@@ -54,6 +58,8 @@ declare const fullApi: ApiFromModules<{
   "rag/types": typeof rag_types;
   recommendations: typeof recommendations;
   seed: typeof seed;
+  "users/helpers": typeof users_helpers;
+  "users/queries": typeof users_queries;
 }>;
 
 /**
