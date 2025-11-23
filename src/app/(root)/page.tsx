@@ -18,7 +18,8 @@ import { CartSidebarRef } from "@/components/CartSidebar"
 import { InteractiveRevealBackground } from "@/components/InteractiveRevealBackground"
 import NavBar from "@/components/NavBar"
 import { api } from "@/convex/_generated/api"
-import { useAction } from "convex/react"
+import { useAction, useMutation } from "convex/react"
+import { useRouter } from "next/navigation"
 
 // Ensure plugins are registered
 if (typeof window !== "undefined") {
@@ -45,6 +46,33 @@ export default function Home() {
   const mobileCartRef = useRef<CartSidebarRef>(null)
 
   const recommendProducts = useAction(api.recommendations.recommendProducts)
+  const createCart = useMutation(api.carts.createCart)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const pendingCheckout = sessionStorage.getItem("pendingCheckout")
+      if (pendingCheckout && !sessionStorage.getItem("checkoutCartId")) {
+        const createPendingCart = async () => {
+          try {
+            const { storeName, items } = JSON.parse(pendingCheckout)
+            const result = await createCart({
+              storeName,
+              items,
+            })
+            if (result?.cartId) {
+              sessionStorage.removeItem("pendingCheckout")
+              sessionStorage.setItem("checkoutCartId", result.cartId)
+              router.push("/checkout")
+            }
+          } catch (error) {
+            console.error("Error creating cart from pending checkout:", error)
+          }
+        }
+        createPendingCart()
+      }
+    }
+  }, [createCart, router])
 
   // Check if sidebar is ready
   useEffect(() => {
@@ -220,6 +248,41 @@ export default function Home() {
     return liderCartItems
   }
 
+  const handleCheckout = async () => {
+    const activeCartItems = getActiveCartItems()
+
+    if (activeCartItems.length === 0) {
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      const itemsWithoutId = activeCartItems.map((item) => {
+        const { id, ...itemWithoutId } = item as CartItem & { id?: string }
+        return itemWithoutId
+      })
+
+      const result = await createCart({
+        storeName: activeStore,
+        items: itemsWithoutId,
+      })
+
+      if (result?.cartId) {
+        sessionStorage.setItem("checkoutCartId", result.cartId)
+        router.push("/checkout")
+      } else {
+        throw new Error("No se recibió un ID de carrito")
+      }
+    } catch (error) {
+      console.error("Error creating cart:", error)
+      alert(
+        `Error al crear el carrito: ${error instanceof Error ? error.message : "Error desconocido"}`
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <main className="relative min-h-screen w-full">
       <NavBar />
@@ -268,6 +331,7 @@ export default function Home() {
                 liderCartCount={liderCartItems.length}
                 unimarcCartCount={unimarcCartItems.length}
                 jumboCartCount={jumboCartItems.length}
+                onCheckout={handleCheckout}
               />
             </div>
           </div>
@@ -287,6 +351,7 @@ export default function Home() {
           liderCartCount={liderCartItems.length}
           unimarcCartCount={unimarcCartItems.length}
           jumboCartCount={jumboCartItems.length}
+          onCheckout={handleCheckout}
         />
       </div>
     </main>

@@ -123,7 +123,7 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
           <div className="hero-text-element inline-block rounded-2xl bg-white/80 px-6 py-4 shadow-sm backdrop-blur-sm">
             <h1 className="text-5xl leading-[1.1] font-bold tracking-tight text-text-main md:text-7xl">
               Pide tus compras <br className="hidden md:block" />
-              <span className="text-accent-primary">sin pensar</span> en{" "}
+              <span className="text-accent-primary">sin pensar</span>, en{" "}
               <br className="hidden md:block" />
               segundos.
             </h1>

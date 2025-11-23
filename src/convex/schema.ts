@@ -90,4 +90,27 @@ export default defineSchema({
     // INDEX 3: Catalog browsing
     // Used if we want to list all products available in a specific store.
     .index("by_store", ["storeId"]),
+
+  // 4. Carts: User shopping carts
+  carts: defineTable({
+    userId: v.optional(v.string()), // WorkOS user ID (optional for guest carts)
+    storeId: v.id("stores"),
+    status: v.union(v.literal("pending"), v.literal("completed")),
+    createdAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_status", ["userId", "status"]),
+
+  // 5. Cart Items: Items in a cart (intermediate table)
+  cart_items: defineTable({
+    cartId: v.id("carts"),
+    productId: v.optional(v.id("products")),
+    externalSku: v.string(), // For products not in DB
+    quantity: v.number(),
+    price: v.number(), // Snapshot at cart creation
+    name: v.string(), // Product name snapshot
+    imageUrl: v.optional(v.string()),
+    category: v.optional(v.string()),
+  }).index("by_cart", ["cartId"]),
 })

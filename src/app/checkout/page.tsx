@@ -3,8 +3,11 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { CartItem, StoreName } from "@/types"
+import { api } from "@/convex/_generated/api"
+import { Id } from "@/convex/_generated/dataModel"
+import { StoreName } from "@/types"
 import { formatCurrency } from "@/utils/cartUtils"
+import { useMutation, useQuery } from "convex/react"
 import {
   CreditCard,
   Lock,
@@ -15,63 +18,8 @@ import {
   ShoppingBag,
 } from "lucide-react"
 import Image from "next/image"
-import { useState } from "react"
-
-const mockCartItems: CartItem[] = [
-  {
-    name: "Leche Colun Entera 1L",
-    sku: "123456",
-    url: "#",
-    price: 1290,
-    imageUrl: "https://via.placeholder.com/80",
-    category: "Lácteos",
-    store: "Lider",
-    date: new Date().toISOString(),
-    quantity: 2,
-  },
-  {
-    name: "Pan de Molde Bimbo Clásico 680g",
-    sku: "123457",
-    url: "#",
-    price: 2390,
-    imageUrl: "https://via.placeholder.com/80",
-    category: "Panadería",
-    store: "Lider",
-    date: new Date().toISOString(),
-    quantity: 1,
-  },
-  {
-    name: "Huevos Colorados x12",
-    sku: "123458",
-    url: "#",
-    price: 3490,
-    imageUrl: "https://via.placeholder.com/80",
-    category: "Lácteos",
-    store: "Lider",
-    date: new Date().toISOString(),
-    quantity: 1,
-  },
-  {
-    name: "Arroz Grado 1 1kg",
-    sku: "123459",
-    url: "#",
-    price: 1290,
-    imageUrl: "https://via.placeholder.com/80",
-    category: "Abarrotes",
-    store: "Lider",
-    date: new Date().toISOString(),
-    quantity: 3,
-  },
-]
-
-const mockStore: StoreName = "Lider"
-
-const subtotal = mockCartItems.reduce(
-  (sum, item) => sum + item.price * item.quantity,
-  0
-)
-const shipping = 0
-const total = subtotal + shipping
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 function SectionHeader({
   title,
@@ -116,6 +64,114 @@ function SectionHeader({
 
 export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("credit-card")
+  const [cartId, setCartId] = useState<Id<"carts"> | null>(null)
+  const [isCreatingCart, setIsCreatingCart] = useState(false)
+  const createCart = useMutation(api.carts.createCart)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedCartId = sessionStorage.getItem("checkoutCartId")
+      if (storedCartId) {
+        setCartId(storedCartId as Id<"carts">)
+      } else {
+        const pendingCheckout = sessionStorage.getItem("pendingCheckout")
+        if (pendingCheckout) {
+          const createPendingCart = async () => {
+            try {
+              setIsCreatingCart(true)
+              const { storeName, items } = JSON.parse(pendingCheckout)
+              const result = await createCart({
+                storeName,
+                items,
+              })
+              if (result?.cartId) {
+                sessionStorage.removeItem("pendingCheckout")
+                sessionStorage.setItem("checkoutCartId", result.cartId)
+                setCartId(result.cartId)
+              }
+            } catch (error) {
+              console.error("Error creating cart from pending checkout:", error)
+            } finally {
+              setIsCreatingCart(false)
+            }
+          }
+          createPendingCart()
+        }
+      }
+    }
+  }, [createCart])
+
+  const cart = useQuery(api.carts.getCartById, cartId ? { cartId } : "skip")
+
+  if (isCreatingCart) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-bg-page">
+        <div className="text-center">
+          <p className="text-text-muted">Creando tu carrito...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!cartId) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-bg-page">
+        <div className="text-center">
+          <h1 className="mb-2 text-2xl font-bold text-text-main">
+            No hay carrito seleccionado
+          </h1>
+          <p className="text-text-muted">
+            Por favor, selecciona productos y haz clic en "Ir a pagar"
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (cart === undefined) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-bg-page">
+        <div className="text-center">
+          <p className="text-text-muted">Cargando carrito...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (cart === null) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-bg-page">
+        <div className="text-center">
+          <h1 className="mb-2 text-2xl font-bold text-text-main">
+            Carrito no encontrado
+          </h1>
+          <p className="text-text-muted">
+            El carrito que buscas no existe o ha expirado
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  const cartItems = cart.items.map((item) => ({
+    name: item.name,
+    sku: item.externalSku,
+    url: "#",
+    price: item.price,
+    imageUrl: item.imageUrl || "https://via.placeholder.com/80",
+    category: item.category || "Otros",
+    store: cart.storeName as StoreName,
+    date: new Date(cart.createdAt).toISOString(),
+    quantity: item.quantity,
+  }))
+
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  )
+  const shipping = 0
+  const total = subtotal + shipping
 
   return (
     <div className="min-h-screen bg-bg-page">
@@ -334,7 +390,7 @@ export default function CheckoutPage() {
                     </h2>
                   </div>
                   <div className="rounded-full bg-accent-primary/10 px-3 py-1.5 text-xs font-bold text-accent-primary">
-                    {mockStore}
+                    {cart.storeName}
                   </div>
                 </div>
               </div>
@@ -342,11 +398,11 @@ export default function CheckoutPage() {
               <div className="p-0">
                 {/* Items List */}
                 <div className="max-h-[400px] space-y-4 overflow-y-auto p-6">
-                  {mockCartItems.map((item, index) => (
+                  {cartItems.map((item, index) => (
                     <div
                       key={item.sku}
                       className={`group flex gap-4 rounded-xl border p-3 transition-all ${
-                        index < mockCartItems.length - 1
+                        index < cartItems.length - 1
                           ? "border-b border-gray-100 pb-4"
                           : "border-transparent"
                       } hover:border-gray-200 hover:bg-gray-50/50`}

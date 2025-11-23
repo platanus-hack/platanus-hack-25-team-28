@@ -10,6 +10,7 @@
 
 import type * as _lib_authFunctions from "../_lib/authFunctions.js";
 import type * as cartBrowser from "../cartBrowser.js";
+import type * as carts from "../carts.js";
 import type * as functions_legacy from "../functions/legacy.js";
 import type * as functions_products from "../functions/products.js";
 import type * as importData from "../importData.js";
@@ -44,6 +45,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   "_lib/authFunctions": typeof _lib_authFunctions;
   cartBrowser: typeof cartBrowser;
+  carts: typeof carts;
   "functions/legacy": typeof functions_legacy;
   "functions/products": typeof functions_products;
   importData: typeof importData;

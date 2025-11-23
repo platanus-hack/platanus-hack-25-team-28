@@ -23,6 +23,7 @@ interface CartSidebarProps {
   onClose: () => void // for mobile
   onUpdateQuantity?: (sku: string, quantity: number) => void
   activeStore?: StoreName
+  onCheckout?: () => void
 }
 
 const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
@@ -34,6 +35,7 @@ const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
       onClose,
       onUpdateQuantity,
       activeStore = "Lider",
+      onCheckout,
     },
     ref
   ) => {
@@ -363,7 +365,7 @@ const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
           </div>
 
           {/* Footer / Totals */}
-          <div className="border-t border-gray-100 bg-gray-50 p-6 lg:rounded-b-3xl">
+          <div className="relative border-t border-gray-100 bg-gray-50 p-6 lg:rounded-b-3xl">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-text-muted">Productos</span>
               <span className="font-semibold">{totalQuantity}</span>
@@ -386,9 +388,22 @@ const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
             <div className="mt-4 text-center text-[10px] text-gray-400">
               Precios de referencia · {activeStore} · Demo sin compra real
             </div>
-            <button className="mt-4 w-full rounded-xl bg-black py-3.5 font-bold text-white shadow-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-xl active:scale-95">
-              Ir a pagar (Demo)
-            </button>
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={async (e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  if (onCheckout && items.length > 0) {
+                    await onCheckout()
+                  }
+                }}
+                disabled={!onCheckout || items.length === 0}
+                className="w-full rounded-xl bg-black py-3.5 font-bold text-white shadow-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+              >
+                Ir a pagar
+              </button>
+            </div>
           </div>
         </div>
       </>
