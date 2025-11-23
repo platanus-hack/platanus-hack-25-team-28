@@ -9,6 +9,7 @@ import { StoreName } from "@/types"
 import { formatCurrency } from "@/utils/cartUtils"
 import { useMutation, useQuery } from "convex/react"
 import {
+  ArrowLeft,
   CreditCard,
   Lock,
   Mail,
@@ -173,10 +174,22 @@ export default function CheckoutPage() {
   const shipping = 0
   const total = subtotal + shipping
 
+  const handleGoBack = () => {
+    router.push("/")
+  }
+
   return (
     <div className="min-h-screen bg-bg-page">
       <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
         <div className="mb-8">
+          <Button
+            variant="ghost"
+            onClick={handleGoBack}
+            className="mb-4 -ml-2 flex items-center gap-2 text-text-muted hover:text-text-main"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Volver al chat
+          </Button>
           <h1 className="text-4xl font-bold tracking-tight text-text-main">
             Finalizar compra
           </h1>

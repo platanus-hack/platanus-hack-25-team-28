@@ -18,7 +18,8 @@ import { CartSidebarRef } from "@/components/CartSidebar"
 import { InteractiveRevealBackground } from "@/components/InteractiveRevealBackground"
 import NavBar from "@/components/NavBar"
 import { api } from "@/convex/_generated/api"
-import { useAction, useMutation } from "convex/react"
+import { Id } from "@/convex/_generated/dataModel"
+import { useAction, useMutation, useQuery } from "convex/react"
 import { useRouter } from "next/navigation"
 
 // Ensure plugins are registered
@@ -40,6 +41,7 @@ export default function Home() {
   const [activeStore, setActiveStore] = useState<StoreName>("Lider")
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isSidebarReady, setIsSidebarReady] = useState(false)
+  const hasRestoredCart = useRef(false)
 
   // Use separate refs for desktop and mobile to avoid collision
   const desktopCartRef = useRef<CartSidebarRef>(null)
@@ -48,6 +50,22 @@ export default function Home() {
   const recommendProducts = useAction(api.recommendations.recommendProducts)
   const createCart = useMutation(api.carts.createCart)
   const router = useRouter()
+
+  const [checkoutCartId, setCheckoutCartId] = useState<Id<"carts"> | null>(null)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedCartId = sessionStorage.getItem("checkoutCartId")
+      if (storedCartId) {
+        setCheckoutCartId(storedCartId as Id<"carts">)
+      }
+    }
+  }, [])
+
+  const cartFromCheckout = useQuery(
+    api.carts.getCartById,
+    checkoutCartId ? { cartId: checkoutCartId } : "skip"
+  )
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -73,6 +91,47 @@ export default function Home() {
       }
     }
   }, [createCart, router])
+
+  useEffect(() => {
+    if (
+      cartFromCheckout &&
+      !hasRestoredCart.current &&
+      typeof window !== "undefined"
+    ) {
+      const storedCartId = sessionStorage.getItem("checkoutCartId")
+      if (storedCartId && cartFromCheckout.items.length > 0) {
+        hasRestoredCart.current = true
+        const restoredItems: CartItem[] = cartFromCheckout.items.map(
+          (item) => ({
+            sku: item.externalSku,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            imageUrl: item.imageUrl || "https://via.placeholder.com/80",
+            category: item.category || "Otros",
+            url: "#",
+            store: cartFromCheckout.storeName as StoreName,
+            date: new Date(cartFromCheckout.createdAt).toISOString(),
+          })
+        )
+
+        if (cartFromCheckout.storeName === "Lider") {
+          setLiderCartItems(restoredItems)
+          setActiveStore("Lider")
+        } else if (cartFromCheckout.storeName === "Unimarc") {
+          setUnimarcCartItems(restoredItems)
+          setActiveStore("Unimarc")
+        } else if (cartFromCheckout.storeName === "Jumbo") {
+          setJumboCartItems(restoredItems)
+          setActiveStore("Jumbo")
+        }
+
+        setShowResults(true)
+        setShowChat(true)
+        setIsCartOpen(true)
+      }
+    }
+  }, [cartFromCheckout])
 
   // Check if sidebar is ready
   useEffect(() => {
