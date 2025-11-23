@@ -1,102 +1,91 @@
 import { v } from "convex/values"
-import { action, internalMutation, internalQuery } from "../_generated/server"
 import { api, internal } from "../_generated/api"
+import { action, internalMutation, internalQuery } from "../_generated/server"
 import { OpenAIEmbeddingProvider } from "./providers/openaiEmbedding"
 
 export const generateEmbeddings = action({
   args: {
-    cursor: v.optional(v.string()),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const limit = args.limit ?? 2300
-    const result = await ctx.runQuery(
+    const limit = args.limit ?? 500
+    const { products } = await ctx.runQuery(
       internal.rag.embeddings.getProductsBatch,
-      {
-        cursor: args.cursor,
-        limit,
-      }
+      { limit }
     )
+    
+    // Filter out products that already have embeddings, just in case
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const productsToEmbed = products.filter((p: any) => !p.embedding)
 
-    const { products, nextCursor, isDone } = result
-
-    if (products.length === 0 && isDone) {
-      console.log("Finished generating embeddings (no more products).")
+    if (productsToEmbed.length === 0) {
+      console.log("Embedding generation complete (no more products without embeddings).")
       return
     }
 
-    // Filter for products that actually need embeddings (or process all if desired)
-    // The user said "make it so all current products need embeddings", so we could just process all.
-    // But to be safe and efficient, we check if it's missing.
-    // If the user WANTS to regenerate, they can pass a flag, but for now let's just fill gaps.
-    // Actually, to "make it so all... need", I will assume we process any that are missing.
-    const productsToEmbed = products.filter((p) => !p.embedding)
+    console.log(`Generating embeddings for ${productsToEmbed.length} products...`)
+    
+    const apiKey = process.env.OPENAI_API_KEY || ""
+    const provider = new OpenAIEmbeddingProvider(apiKey)
 
-    if (productsToEmbed.length > 0) {
-      console.log(
-        `Generating embeddings for ${productsToEmbed.length} products (batch size: ${products.length})...`
-      )
-      const apiKey = process.env.OPENAI_API_KEY || ""
-      const provider = new OpenAIEmbeddingProvider(apiKey)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const texts = productsToEmbed.map((p: any) => {
+      return `${p.name} ${p.brand ? `(${p.brand})` : ""}. Categoria: ${p.category}. Tags: ${p.tags.join(", ")}. Descripcion: ${p.description || ""}`
+    })
 
-      const texts = productsToEmbed.map((p) => {
-        return `${p.name} ${p.brand ? `(${p.brand})` : ""}. Categoria: ${p.category}. Tags: ${p.tags.join(", ")}. Descripcion: ${p.description || ""}`
-      })
-
+    try {
       const embeddings = await provider.embed(texts)
 
-      for (let i = 0; i < productsToEmbed.length; i++) {
-        await ctx.runMutation(internal.rag.embeddings.updateProductEmbedding, {
-          id: productsToEmbed[i]._id,
+      await ctx.runMutation(internal.rag.embeddings.updateProductEmbeddingsBatch, {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        updates: productsToEmbed.map((p: any, i: number) => ({
+          id: p._id,
           embedding: embeddings[i],
-        })
-      }
-      console.log(`Updated ${productsToEmbed.length} products.`)
-    } else {
-      console.log(
-        `Batch of ${products.length} processed, no embeddings needed.`
-      )
-    }
+        })),
+      })
 
-    // Recursively call to process more if there is a next cursor
-    if (!isDone && nextCursor) {
+      console.log(`Updated ${productsToEmbed.length} products.`)
+
+      // Recursively schedule the next batch
       await ctx.scheduler.runAfter(0, api.rag.embeddings.generateEmbeddings, {
-        cursor: nextCursor,
         limit,
       })
-    } else {
-      console.log("Embedding generation complete.")
+    } catch (error) {
+      console.error("Error generating embeddings:", error)
+      // Optional: Schedule retry or stop? 
+      // For now, we stop to avoid infinite error loops, or we could retry.
+      // Let's stop and log.
     }
   },
 })
 
 export const getProductsBatch = internalQuery({
   args: {
-    cursor: v.optional(v.string()),
     limit: v.number(),
   },
   handler: async (ctx, args) => {
-    // Use paginate to avoid full table scans.
-    // We iterate over ALL products and filter in the action.
-    const result = await ctx.db
+    const products = await ctx.db
       .query("products")
-      .order("desc") // Order doesn't strictly matter for batching, but consistent order helps
-      .paginate({ cursor: args.cursor ?? null, numItems: args.limit })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((q: any) => q.eq(q.field("embedding"), undefined))
+      .take(args.limit)
 
-    return {
-      products: result.page,
-      isDone: result.isDone,
-      nextCursor: result.continueCursor,
-    }
+    return { products }
   },
 })
 
-export const updateProductEmbedding = internalMutation({
+export const updateProductEmbeddingsBatch = internalMutation({
   args: {
-    id: v.id("products"),
-    embedding: v.array(v.float64()),
+    updates: v.array(
+      v.object({
+        id: v.id("products"),
+        embedding: v.array(v.float64()),
+      })
+    ),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.id, { embedding: args.embedding })
+    for (const update of args.updates) {
+      await ctx.db.patch(update.id, { embedding: update.embedding })
+    }
   },
 })

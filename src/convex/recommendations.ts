@@ -5,7 +5,7 @@ import { action, query } from "./_generated/server"
 import { PromptAgent } from "./rag/agents/promptAgent"
 import { SelectionAgent } from "./rag/agents/selectionAgent"
 import { OpenAIEmbeddingProvider } from "./rag/providers/openaiEmbedding"
-import { EnrichedPrice, EnrichedProduct } from "./rag/types"
+import { EnrichedPrice, EnrichedProduct, StoreRecommendation } from "./rag/types"
 
 export const recommendProducts = action({
   args: {
@@ -30,73 +30,111 @@ export const recommendProducts = action({
       args.conversationHistory || []
     )
     const embeddingProvider = new OpenAIEmbeddingProvider(apiKey)
+    const selectionAgent = new SelectionAgent(anthropicKey)
 
-    // 1. Generate embeddings for queries (one per category)
-    const searchResults = new Map<string, number>() // productId -> score
+    const stores = await ctx.runQuery(api.recommendations.getAllStores, {})
+    const storeRecommendations: StoreRecommendation[] = []
 
-    if (analysis.categories.length > 0) {
-      for (const catAnalysis of analysis.categories) {
-        // Use category and keywords for a focused search query
-        // This prevents "bleeding" of context (e.g. "meat" in prompt affecting "beers" search)
-        const queryText = `${catAnalysis.category} ${catAnalysis.keywords.join(" ")}`
-        const queryEmbedding = (await embeddingProvider.embed([queryText]))[0]
+    // Define categories per store
+    const storeCategories: Record<string, string[]> = {
+      "Jumbo": ["carnes-y-pescados", "frutas-y-verduras", "lacteos-huevos-y-congelados", "quesos-y-fiambres", "despensa", "panaderia-y-pasteleria", "licores-bebidas-y-aguas", "chocolates-galletas-y-snacks"],
+      "Lider": ["bebidas", "cerdo", "congelados", "despensa", "frutas y verduras", "lacteos", "licores", "limpieza", "panaderia", "pescados y mariscos", "pollo", "quesos y fiambres", "vacuno"],
+      "Unimarc": ["bebidas-y-licores", "carnes", "congelados", "desayuno-y-dulces", "despensa", "frutas-y-verduras", "lacteos-huevos-y-refrigerados", "panaderia-y-pasteleria", "quesos-y-fiambres"]
+    }
 
-        // 2. Perform Vector Search per category
-        // Note: We use the normalized category name if possible, but vector search filter expects exact match.
-        // If DB categories are capitalized (e.g. "Meat"), and agent returns "carnes-y-pescados", we have a mismatch.
-        // We need to map agent categories to DB categories or rely on semantic search without filter if mismatch.
-        // For now, let's try to map or just search without filter if we can't map.
-        // Actually, the previous fallback logic suggests we might just want to search globally if we are unsure.
-        // But let's try to use the filter if we can.
-        // Given the mismatch issues seen before, let's do a global vector search but boost/filter in post-processing?
-        // No, vector search is most effective with filters.
+    await Promise.all(
+      stores.map(async (store) => {
+        const categories = storeCategories[store.name] || []
+        
+        // 1. Analyze prompt for this store
+        const analysis = await agent.analyze(
+          args.userPrompt,
+          args.conversationHistory || [],
+          categories
+        )
 
-        // Let's assume for now we search globally but use the keywords to guide it.
-        // Or we can try to map the agent category to the DB category.
-        // Since we don't have a reliable map, let's do a global search for each query.
+        // 2. Vector Search
+        const searchResults = new Map<string, number>()
+        
+        if (analysis.categories.length > 0) {
+          for (const catAnalysis of analysis.categories) {
+            const queryText = `${catAnalysis.category} ${catAnalysis.keywords.join(" ")}`
+            const queryEmbedding = (await embeddingProvider.embed([queryText]))[0]
 
-        const results = await ctx.vectorSearch("products", "by_embedding", {
-          vector: queryEmbedding,
-          limit: 10,
-          // filter: (q) => q.eq("category", catAnalysis.category) // Disabled due to mismatch risk
-        })
+            const results = await ctx.vectorSearch("products", "by_embedding", {
+              vector: queryEmbedding,
+              limit: 10,
+            })
 
-        for (const result of results) {
-          const existingScore = searchResults.get(result._id) || 0
-          // Keep the highest score if found multiple times
-          if (result._score > existingScore) {
+            for (const result of results) {
+              const existingScore = searchResults.get(result._id) || 0
+              if (result._score > existingScore) {
+                searchResults.set(result._id, result._score)
+              }
+            }
+          }
+        } else {
+          const queryEmbedding = (await embeddingProvider.embed([analysis.cleanedPrompt]))[0]
+          const results = await ctx.vectorSearch("products", "by_embedding", {
+            vector: queryEmbedding,
+            limit: 20,
+          })
+          for (const result of results) {
             searchResults.set(result._id, result._score)
           }
         }
-      }
-    } else {
-      // Fallback: Global search with just the prompt
-      const queryEmbedding = (
-        await embeddingProvider.embed([analysis.cleanedPrompt])
-      )[0]
-      const results = await ctx.vectorSearch("products", "by_embedding", {
-        vector: queryEmbedding,
-        limit: 20,
+
+        // 3. Fetch and Filter Products
+        const productIds = Array.from(searchResults.keys()) as Id<"products">[]
+        const products = await ctx.runQuery(
+          api.myFunctions.getEnrichedProductsByIds,
+          { ids: productIds }
+        )
+
+        const storeProducts = products
+          .filter((p) =>
+            p.prices.some(
+              (price) => price.storeId === store._id && price.inStock
+            )
+          )
+          .map((p) => {
+            const storePrice = p.prices.find(
+              (price) => price.storeId === store._id
+            )!
+            return {
+              ...p,
+              prices: [storePrice],
+              minPrice: storePrice.currentPrice,
+              maxPrice: storePrice.currentPrice,
+            }
+          })
+
+        if (storeProducts.length === 0) return
+
+        // 4. Selection Agent
+        const recommendation = await selectionAgent.generateRecommendation(
+          analysis.cleanedPrompt,
+          storeProducts,
+          store.name
+        )
+
+        const selectedProducts = recommendation.selectedProducts || []
+        const totalCost = selectedProducts.reduce(
+          (sum, p) => sum + (p.minPrice || 0) * p.quantity,
+          0
+        )
+
+        storeRecommendations.push({
+          storeId: store._id,
+          storeName: store.name,
+          recommendation: recommendation.recommendation || "Aquí tienes tu recomendación.",
+          selectedProducts: selectedProducts.map((p) => ({
+            ...p,
+            prices: p.prices || [],
+          })),
+          totalCost,
+        })
       })
-      for (const result of results) {
-        searchResults.set(result._id, result._score)
-      }
-    }
-
-    // 3. Fetch full product details
-    const productIds = Array.from(searchResults.keys()) as Id<"products">[]
-    const products = await ctx.runQuery(
-      api.myFunctions.getEnrichedProductsByIds,
-      {
-        ids: productIds,
-      }
-    )
-
-    // 4. Selection Agent
-    const selectionAgent = new SelectionAgent(anthropicKey)
-    const recommendation = await selectionAgent.generateRecommendation(
-      analysis.cleanedPrompt,
-      products
     )
 
     return {
@@ -108,9 +146,16 @@ export const recommendProducts = action({
         category: p.category,
         minPrice: p.minPrice,
         maxPrice: p.maxPrice,
-        quantity: p.quantity,
+        quantity: p.quantity
       })),
     }
+  },
+})
+
+export const getAllStores = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("stores").collect()
   },
 })
 

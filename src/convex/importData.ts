@@ -126,6 +126,13 @@ async function processSingleItem(ctx: MutationCtx, storeId: any, item: any) {
       tags: [item.category],
       description: item.description ?? undefined,
       imageUrl: item.image_url,
+      productUrl: item.product_url ?? undefined,
+      sku: item.sku ?? undefined,
+      embedding: item.embedding ?? undefined,
+    })
+  } else if (item.embedding) {
+    await ctx.db.patch(productId, {
+      embedding: item.embedding,
     })
   }
 
@@ -143,6 +150,7 @@ async function processSingleItem(ctx: MutationCtx, storeId: any, item: any) {
       current_price: BigInt(item.price),
       in_stock: item.in_stock,
       sku: item.sku,
+      productUrl: item.product_url ?? undefined,
       promotions: item.promo_text
         ? { type: "text", description: item.promo_text }
         : undefined,

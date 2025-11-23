@@ -24,10 +24,19 @@ export class PromptAgent {
 
   async analyze(
     userMessage: string,
-    history: ConversationMessage[] = []
+    history: ConversationMessage[] = [],
+    availableCategories: string[] = []
   ): Promise<PromptAnalysis> {
     const promptConfig = getPromptAgentConfig()
-    const systemPrompt = promptConfig.system
+    
+    const categoriesList = availableCategories.length > 0 
+      ? availableCategories.map(c => `- "${c}"`).join("\n")
+      : `- "general"` // Fallback if no categories provided
+
+    const systemPrompt = formatTemplate(promptConfig.system, {
+      categories_list: categoriesList
+    })
+
     const userPrompt = formatTemplate(promptConfig.user_template || "", {
       history: this.formatHistory(history.slice(-6)) || "Sin historial.",
       user_message: userMessage,
