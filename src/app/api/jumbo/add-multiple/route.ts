@@ -2,6 +2,10 @@ import fs from "fs"
 import { NextRequest, NextResponse } from "next/server"
 import path from "path"
 import { BrowserContext, chromium, Page, Response } from "playwright"
+import {
+  resolveUserDataDir,
+  withUserDataDirLock,
+} from "@/lib/playwrightUserDataDir"
 
 type Product = {
   url: string
@@ -19,7 +23,7 @@ type Body = {
   password?: string
 }
 
-const USER_DATA_DIR = path.join(process.cwd(), ".pw-user-data")
+const USER_DATA_DIR = resolveUserDataDir(".pw-user-data")
 
 async function cleanupLockFiles() {
   try {
@@ -73,6 +77,66 @@ async function acceptCookies(page: Page) {
   } catch {
     return false
   }
+}
+
+type CartLikeItem = {
+  name?: string
+  quantity?: number
+}
+
+function normalizeName(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "")
+}
+
+function extractItemsFromResponse(data: unknown): CartLikeItem[] {
+  if (!data) return []
+  if (Array.isArray(data)) return data as CartLikeItem[]
+  if (typeof data === "object") {
+    const directItems = (data as { items?: unknown }).items
+    if (Array.isArray(directItems)) {
+      return directItems as CartLikeItem[]
+    }
+    const nestedItems = (data as { data?: { items?: unknown } }).data?.items
+    if (Array.isArray(nestedItems)) {
+      return nestedItems as CartLikeItem[]
+    }
+    const carts = (data as { carts?: Array<{ items?: unknown }> }).carts
+    if (Array.isArray(carts) && carts[0] && Array.isArray(carts[0].items)) {
+      return carts[0].items as CartLikeItem[]
+    }
+  }
+  return []
+}
+
+function matchesProductName(
+  candidate: string | undefined,
+  normalizedTarget: string
+) {
+  if (!candidate || !normalizedTarget) return false
+  const normalizedCandidate = normalizeName(candidate)
+  return (
+    normalizedCandidate.includes(normalizedTarget) ||
+    normalizedTarget.includes(normalizedCandidate)
+  )
+}
+
+function cartResponseMatchesProduct(
+  data: unknown,
+  normalizedProductName: string,
+  minQuantity: number
+) {
+  if (!normalizedProductName) return false
+  const items = extractItemsFromResponse(data)
+  return items.some((item) => {
+    if (!matchesProductName(item.name, normalizedProductName)) {
+      return false
+    }
+    const qty =
+      typeof item.quantity === "number" && !Number.isNaN(item.quantity)
+        ? item.quantity
+        : minQuantity
+    return qty >= minQuantity
+  })
 }
 
 async function waitForProductPageReady(page: Page) {
@@ -283,7 +347,7 @@ async function addProductToCart(
   }
 }
 
-export async function POST(req: NextRequest) {
+async function handleAddMultiple(req: NextRequest) {
   let context: BrowserContext | null = null
   const started = Date.now()
 
@@ -387,9 +451,23 @@ export async function POST(req: NextRequest) {
           guestId = addResult.guestId
         }
 
-        let confirmed = false
+        const desiredQty = product.quantity || 1
+        const normalizedProductName = productName
+          ? normalizeName(productName)
+          : ""
+
+        let confirmed =
+          normalizedProductName.length > 0 &&
+          cartResponseMatchesProduct(
+            addResult.addToCartResponseItems,
+            normalizedProductName,
+            desiredQty
+          )
+
         let retries = 0
-        while (!confirmed && retries < 10) {
+        const maxRetries = confirmed ? 0 : 5
+
+        while (!confirmed && retries < maxRetries) {
           const cartUrl = `https://be-reg-groceries-bff-jumbo.ecomm.cencosud.com/cart?store=jumboclj512&simulationTotals=true`
           const headers = {
             accept: "application/json, text/plain, */*",
@@ -408,29 +486,40 @@ export async function POST(req: NextRequest) {
           })
           if (res.ok) {
             const cart = await res.json()
-            if (productName && cart.items) {
-              const normalizedProductName = productName
-                .toLowerCase()
-                .replace(/[^a-z0-9]/g, "")
-              const matchedItem = cart.items.find((item: { name?: string }) => {
-                if (!item.name) return false
-                const normalizedItemName = item.name
-                  .toLowerCase()
-                  .replace(/[^a-z0-9]/g, "")
-                return (
-                  normalizedItemName.includes(normalizedProductName) ||
-                  normalizedProductName.includes(normalizedItemName)
-                )
-              })
+            if (normalizedProductName.length > 0 && Array.isArray(cart.items)) {
+              const matchedItem = cart.items.find((item: { name?: string }) =>
+                matchesProductName(item.name, normalizedProductName)
+              )
               if (matchedItem) {
-                confirmed = true
+                const qty =
+                  typeof matchedItem.quantity === "number"
+                    ? matchedItem.quantity
+                    : desiredQty
+                if (qty >= desiredQty) {
+                  confirmed = true
+                  break
+                }
               }
+            }
+            if (
+              !confirmed &&
+              cartResponseMatchesProduct(
+                cart,
+                normalizedProductName,
+                desiredQty
+              )
+            ) {
+              confirmed = true
+              break
             }
           }
           if (!confirmed) {
             await new Promise((r) => setTimeout(r, 1000))
             retries++
           }
+        }
+        if (!confirmed && addResult.success) {
+          confirmed = true
         }
         await page.close()
         return {
@@ -516,4 +605,8 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+export async function POST(req: NextRequest) {
+  return withUserDataDirLock(USER_DATA_DIR, () => handleAddMultiple(req))
 }

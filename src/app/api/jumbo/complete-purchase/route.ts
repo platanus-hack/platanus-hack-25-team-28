@@ -1,9 +1,13 @@
+import {
+  resolveUserDataDir,
+  withUserDataDirLock,
+} from "@/lib/playwrightUserDataDir"
 import fs from "fs"
 import { NextRequest, NextResponse } from "next/server"
 import path from "path"
-import { BrowserContext, chromium } from "playwright"
+import { BrowserContext, Page, chromium } from "playwright"
 
-const USER_DATA_DIR = path.join(process.cwd(), ".pw-user-data")
+const USER_DATA_DIR = resolveUserDataDir(".pw-user-data")
 
 async function cleanupLockFiles() {
   try {
@@ -24,7 +28,77 @@ async function cleanupLockFiles() {
   } catch {}
 }
 
-export async function POST(req: NextRequest) {
+async function findVisibleSelector(page: Page, selectors: string[]) {
+  for (const selector of selectors) {
+    try {
+      const locator = page.locator(selector).first()
+      if (await locator.isVisible().catch(() => false)) {
+        return { selector, locator }
+      }
+    } catch {}
+  }
+  return null
+}
+
+async function waitForPaymentOutcome(page: Page) {
+  const insufficientSelectors = [
+    "text=/saldo insuficiente/i",
+    "text=/fondos insuficientes/i",
+    "text=/pago fue rechazado/i",
+    "text=/pago rechazado/i",
+    "text=/No pudimos procesar tu pago/i",
+  ]
+  const successSelectors = [
+    "text=/gracias por tu compra/i",
+    "text=/orden confirmada/i",
+    "text=/pedido confirmado/i",
+    "text=/compra realizada/i",
+  ]
+
+  const maxMs = 20000
+  const start = Date.now()
+
+  while (Date.now() - start < maxMs) {
+    const insufficient = await findVisibleSelector(page, insufficientSelectors)
+    if (insufficient) {
+      return {
+        status: "insufficient" as const,
+        selector: insufficient.selector,
+      }
+    }
+
+    const success = await findVisibleSelector(page, successSelectors)
+    if (success) {
+      return { status: "success" as const, selector: success.selector }
+    }
+
+    await page.waitForTimeout(500)
+  }
+
+  return { status: "unknown" as const }
+}
+
+async function dismissPaymentModal(page: Page) {
+  const dismissSelectors = [
+    "button:has-text('Entendido')",
+    "button:has-text('Cerrar')",
+    "button:has-text('Aceptar')",
+    "button:has-text('Volver')",
+  ]
+  for (const selector of dismissSelectors) {
+    try {
+      const locator = page.locator(selector).first()
+      if (await locator.isVisible().catch(() => false)) {
+        await locator.click({ timeout: 2000 }).catch(() => {})
+        await page.waitForTimeout(500)
+        return true
+      }
+    } catch {}
+  }
+  return false
+}
+
+async function handleCompletePurchase(req: NextRequest) {
   let context: BrowserContext | null = null
 
   try {
@@ -206,14 +280,25 @@ export async function POST(req: NextRequest) {
     await page.waitForTimeout(1000)
 
     await pagarButton.click({ timeout: 10000 })
-    await page.waitForTimeout(5000)
+    const paymentOutcome = await waitForPaymentOutcome(page)
+    if (paymentOutcome.status === "insufficient") {
+      await dismissPaymentModal(page).catch(() => {})
+    }
 
     const currentUrl = page.url()
 
+    try {
+      if (context) {
+        await context.close()
+        await cleanupLockFiles()
+      }
+    } catch {}
+
     return NextResponse.json({
-      success: true,
+      success: paymentOutcome.status === "success",
       message: "Purchase completed successfully - clicked Pagar button",
       currentUrl,
+      paymentOutcome: paymentOutcome.status,
     })
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : String(err)
@@ -238,4 +323,8 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+export async function POST(req: NextRequest) {
+  return withUserDataDirLock(USER_DATA_DIR, () => handleCompletePurchase(req))
 }

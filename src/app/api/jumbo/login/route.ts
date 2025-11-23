@@ -2,8 +2,12 @@ import fs from "fs"
 import { NextResponse } from "next/server"
 import path from "path"
 import { BrowserContext, chromium, Page } from "playwright"
+import {
+  resolveUserDataDir,
+  withUserDataDirLock,
+} from "@/lib/playwrightUserDataDir"
 
-const USER_DATA_DIR = path.join(process.cwd(), ".pw-user-data")
+const USER_DATA_DIR = resolveUserDataDir(".pw-user-data")
 
 async function cleanupLockFiles() {
   try {
@@ -120,7 +124,7 @@ type LoginBody = {
   password: string
 }
 
-export async function POST(req: Request) {
+async function handleLogin(req: Request) {
   let context: BrowserContext | null = null
 
   try {
@@ -193,4 +197,8 @@ export async function POST(req: Request) {
       { status: 500 }
     )
   }
+}
+
+export async function POST(req: Request) {
+  return withUserDataDirLock(USER_DATA_DIR, () => handleLogin(req))
 }

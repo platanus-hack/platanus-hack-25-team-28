@@ -68,7 +68,6 @@ export const listProducts = query({
           tags: p.tags || [],
           description: p.description,
           imageId: p.imageId,
-          imageUrl: p.imageUrl,
           prices,
           minPrice,
           maxPrice,

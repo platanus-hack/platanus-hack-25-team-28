@@ -1,7 +1,12 @@
 // app/api/lider/open-browser/route.ts
+import fs from "fs"
 import { NextRequest, NextResponse } from "next/server"
 import path from "path"
 import { BrowserContext, chromium, Page, Response } from "playwright"
+import {
+  resolveUserDataDir,
+  withUserDataDirLock,
+} from "@/lib/playwrightUserDataDir"
 
 type Body = {
   productUrl: string
@@ -10,7 +15,7 @@ type Body = {
   slowMoMs?: number // para ver mejor los clicks
 }
 
-const USER_DATA_DIR = path.join(process.cwd(), ".pw-user-data-lider")
+const USER_DATA_DIR = resolveUserDataDir(".pw-user-data-lider")
 
 async function acceptCookies(page: Page) {
   // Lider cookie banners
@@ -128,7 +133,7 @@ async function getCartFromPage(page: Page) {
   })
 }
 
-export async function POST(req: NextRequest) {
+async function handleLiderOpenBrowser(req: NextRequest) {
   let context: BrowserContext | null = null
   let page: Page | null = null
 
@@ -721,4 +726,8 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+export async function POST(req: NextRequest) {
+  return withUserDataDirLock(USER_DATA_DIR, () => handleLiderOpenBrowser(req))
 }
