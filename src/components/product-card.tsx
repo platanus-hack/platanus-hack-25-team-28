@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/card"
 import { Doc } from "@/convex/_generated/dataModel"
 import { ShoppingCart } from "lucide-react"
-import Image from "next/image"
 
 interface ProductCardProps {
   product: Doc<"products">
@@ -25,19 +24,15 @@ export function ProductCard({
 }: ProductCardProps) {
   return (
     <Card className="w-full max-w-sm overflow-hidden transition-all hover:shadow-lg">
-      <div className="bg-muted/20 relative aspect-square overflow-hidden">
-        {product.imageUrl ? (
-          <Image
-            src={product.imageUrl}
-            alt={product.name}
-            fill
-            className="object-contain"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        ) : (
-          <div className="text-muted-foreground/20 absolute inset-0 flex items-center justify-center text-4xl font-bold select-none">
-            {product.name.charAt(0)}
-          </div>
+      <div className="bg-muted/20 relative aspect-square">
+        {/* Placeholder for image since we don't have real storage URLs yet */}
+        <div className="text-muted-foreground/20 absolute inset-0 flex items-center justify-center text-4xl font-bold select-none">
+          {product.name.charAt(0)}
+        </div>
+        {product.imageId && (
+          // Ideally use Next.js Image or a storage URL component here
+          // <img src={url} alt={product.name} className="object-cover w-full h-full" />
+          <span className="sr-only">Image available</span>
         )}
       </div>
 

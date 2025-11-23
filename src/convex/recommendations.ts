@@ -80,7 +80,6 @@ export const recommendProducts = action({
         maxPrice: p.maxPrice,
         quantity: p.quantity,
         store: rec.storeName,
-        imageUrl: p.imageUrl,
         // Add price details for the specific store if needed, or just use the enriched data
         price: p.prices.find((pr) => pr.storeName === rec.storeName)
           ?.currentPrice,
