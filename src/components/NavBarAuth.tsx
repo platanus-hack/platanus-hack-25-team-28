@@ -12,6 +12,11 @@ export default function NavBarAuth() {
   return (
     <div className="flex items-center gap-2">
       <Authenticated>
+        <Link href={"/sign-out" as Route}>
+          <Button variant="ghost" size="sm">
+            Cerrar sesión
+          </Button>
+        </Link>
         <Avatar className="rounded-lg">
           {user?.profilePictureUrl && (
             <AvatarImage src={user?.profilePictureUrl} alt={user?.email} />
@@ -23,11 +28,6 @@ export default function NavBarAuth() {
             />
           </AvatarFallback>
         </Avatar>
-        <Link href={"/sign-out" as Route}>
-          <Button variant="ghost" size="sm">
-            Cerrar sesión
-          </Button>
-        </Link>
       </Authenticated>
       <Unauthenticated>
         <Button variant="default" size="sm" asChild>
