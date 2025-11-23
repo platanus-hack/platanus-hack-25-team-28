@@ -65,8 +65,6 @@ export default function Home() {
         name: p.name,
         price: p.minPrice || 0,
         quantity: 1,
-        image:
-          "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
         imageUrl:
           "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
         category: p.category || "Otros",
@@ -137,13 +135,13 @@ export default function Home() {
   }
 
   return (
-      <main className="relative min-h-screen w-full">
-        <NavBar />
-        <InteractiveRevealBackground>
-          <Hero onFillCart={handleSearch} isLoading={isLoading} />
-        </InteractiveRevealBackground>
+    <main className="relative min-h-screen w-full">
+      <NavBar />
+      <InteractiveRevealBackground>
+        <Hero onFillCart={handleSearch} isLoading={isLoading} />
+      </InteractiveRevealBackground>
 
-        {showResults && (
+      {showResults && (
         <div
           id="results-section"
           className="flex min-h-screen flex-col lg:flex-row"
@@ -195,6 +193,6 @@ export default function Home() {
           onUpdateQuantity={handleUpdateQuantity}
         />
       </div>
-      </main>
+    </main>
   )
 }

@@ -65,6 +65,7 @@ export default function ChatInterface({
     // For the initial load, we assume the parent component (page.tsx) already fetched the products
     // so we just show the summary message.
 
+
     const aiMsg: Message = {
       id: (Date.now() + 1).toString(),
       role: "assistant",
