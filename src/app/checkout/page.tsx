@@ -123,7 +123,7 @@ export default function CheckoutPage() {
             No hay carrito seleccionado
           </h1>
           <p className="text-text-muted">
-            Por favor, selecciona productos y haz clic en "Ir a pagar"
+            Por favor, selecciona productos y haz clic en &quot;Ir a pagar&quot;
           </p>
         </div>
       </div>

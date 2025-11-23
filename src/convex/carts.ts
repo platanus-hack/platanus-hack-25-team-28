@@ -23,7 +23,7 @@ export const createCart = mutation({
     const identity = await ctx.auth.getUserIdentity()
     const userId = identity?.subject
 
-    let store = await ctx.db
+    const store = await ctx.db
       .query("stores")
       .filter((q) => q.eq(q.field("name"), args.storeName))
       .first()
