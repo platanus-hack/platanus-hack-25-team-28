@@ -16,6 +16,18 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "unimarc.vtexassets.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "jumbocl.vteximg.com.br",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 }
