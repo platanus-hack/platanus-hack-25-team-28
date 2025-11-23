@@ -118,7 +118,7 @@ export default function Home() {
                 "checkoutCartId",
                 JSON.stringify({ cartId: result.cartId })
               )
-              router.push("/checkout")
+              router.push("/checkout" as Route)
             }
           } catch (error) {
             console.error("Error creating cart from pending checkout:", error)
@@ -369,7 +369,7 @@ export default function Home() {
           "checkoutCartId",
           JSON.stringify({ cartId: result.cartId })
         )
-        router.push("/checkout")
+        router.push("/checkout" as Route)
       } else {
         throw new Error("No se recibió un ID de carrito")
       }
