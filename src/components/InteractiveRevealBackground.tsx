@@ -25,6 +25,7 @@ export function InteractiveRevealBackground({
     Array<{ x: number; y: number; alpha: number; size: number }>
   >([])
   const requestRef = useRef<number | null>(null)
+  const [isCanvasReady, setIsCanvasReady] = React.useState(false)
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -50,6 +51,9 @@ export function InteractiveRevealBackground({
         // Draw initial white background immediately after resize
         ctx.fillStyle = "#f5f5f7"
         ctx.fillRect(0, 0, canvas.width, canvas.height)
+        
+        // Mark canvas as ready after initial draw
+        setIsCanvasReady(true)
       }
     }
 
@@ -253,13 +257,12 @@ export function InteractiveRevealBackground({
   }, [revealRadius, testMode])
 
   return (
-    <div
-      ref={containerRef}
-      className="relative min-h-screen overflow-hidden"
-    >
-      {/* Background image layer - LOWEST z-index */}
+    <div ref={containerRef} className="relative min-h-screen overflow-hidden">
+      {/* Background image layer - LOWEST z-index, only show when canvas is ready */}
       <div
-        className="absolute inset-0 -z-20 hidden bg-cover bg-center lg:block"
+        className={`absolute inset-0 -z-20 bg-cover bg-center transition-opacity duration-300 lg:block ${
+          isCanvasReady ? "opacity-100" : "opacity-0"
+        }`}
         style={{ backgroundImage: `url(${backgroundImageUrl})` }}
         aria-hidden="true"
       />
