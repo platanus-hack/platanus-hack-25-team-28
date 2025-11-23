@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as cartBrowser from "../cartBrowser.js";
 import type * as functions_legacy from "../functions/legacy.js";
 import type * as functions_products from "../functions/products.js";
 import type * as importData from "../importData.js";
@@ -34,6 +35,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  cartBrowser: typeof cartBrowser;
   "functions/legacy": typeof functions_legacy;
   "functions/products": typeof functions_products;
   importData: typeof importData;
