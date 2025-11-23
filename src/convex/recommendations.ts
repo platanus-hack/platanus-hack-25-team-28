@@ -25,6 +25,10 @@ export const recommendProducts = action({
     const apiKey = process.env.OPENAI_API_KEY || ""
     const anthropicKey = process.env.ANTHROPIC_API_KEY || ""
     const agent = new PromptAgent(anthropicKey)
+    const analysis = await agent.analyze(
+      args.userPrompt,
+      args.conversationHistory || []
+    )
     const embeddingProvider = new OpenAIEmbeddingProvider(apiKey)
     const selectionAgent = new SelectionAgent(anthropicKey)
 
@@ -134,7 +138,16 @@ export const recommendProducts = action({
     )
 
     return {
-      storeRecommendations,
+      analysis,
+      recommendation: recommendation.recommendation,
+      selectedProducts: recommendation.selectedProducts.map((p) => ({
+        id: p._id,
+        name: p.name,
+        category: p.category,
+        minPrice: p.minPrice,
+        maxPrice: p.maxPrice,
+        quantity: p.quantity
+      })),
     }
   },
 })
