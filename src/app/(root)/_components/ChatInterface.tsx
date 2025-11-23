@@ -219,7 +219,9 @@ export default function ChatInterface({
                   ? "animate-pulse bg-red-500 text-white hover:bg-red-600"
                   : "text-gray-500 hover:bg-gray-100"
               }`}
-              title={isListening ? "Detener grabación" : "Iniciar grabación de voz"}
+              title={
+                isListening ? "Detener grabación" : "Iniciar grabación de voz"
+              }
             >
               <Mic size={20} />
             </button>
