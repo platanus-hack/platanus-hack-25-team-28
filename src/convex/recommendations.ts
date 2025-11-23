@@ -1,15 +1,7 @@
 import { v } from "convex/values"
-import { api } from "./_generated/api"
-import { Id } from "./_generated/dataModel"
 import { action, query } from "./_generated/server"
-import { PromptAgent } from "./rag/agents/promptAgent"
-import { SelectionAgent } from "./rag/agents/selectionAgent"
-import { OpenAIEmbeddingProvider } from "./rag/providers/openaiEmbedding"
-import {
-  EnrichedPrice,
-  EnrichedProduct,
-  StoreRecommendation,
-} from "./rag/types"
+import { StoreAgent } from "./rag/agents/storeAgent"
+import { EnrichedPrice, EnrichedProduct } from "./rag/types"
 
 export const recommendProducts = action({
   args: {
@@ -28,174 +20,71 @@ export const recommendProducts = action({
   handler: async (ctx, args) => {
     const apiKey = process.env.OPENAI_API_KEY || ""
     const anthropicKey = process.env.ANTHROPIC_API_KEY || ""
-    const agent = new PromptAgent(anthropicKey)
-    const analysis = await agent.analyze(
-      args.userPrompt,
-      args.conversationHistory || []
-    )
-    const embeddingProvider = new OpenAIEmbeddingProvider(apiKey)
-    const selectionAgent = new SelectionAgent(anthropicKey)
 
-    const stores = await ctx.runQuery(api.recommendations.getAllStores, {})
-    const storeRecommendations: StoreRecommendation[] = []
+    // Run three store agents in parallel
+    const liderAgent = new StoreAgent("Lider", apiKey, anthropicKey)
+    const unimarcAgent = new StoreAgent("Unimarc", apiKey, anthropicKey)
+    const jumboAgent = new StoreAgent("Jumbo", apiKey, anthropicKey)
 
-    // Define categories per store
-    const storeCategories: Record<string, string[]> = {
-      Jumbo: [
-        "carnes-y-pescados",
-        "frutas-y-verduras",
-        "lacteos-huevos-y-congelados",
-        "quesos-y-fiambres",
-        "despensa",
-        "panaderia-y-pasteleria",
-        "licores-bebidas-y-aguas",
-        "chocolates-galletas-y-snacks",
-      ],
-      Lider: [
-        "bebidas",
-        "cerdo",
-        "congelados",
-        "despensa",
-        "frutas y verduras",
-        "lacteos",
-        "licores",
-        "limpieza",
-        "panaderia",
-        "pescados y mariscos",
-        "pollo",
-        "quesos y fiambres",
-        "vacuno",
-      ],
-      Unimarc: [
-        "bebidas-y-licores",
-        "carnes",
-        "congelados",
-        "desayuno-y-dulces",
-        "despensa",
-        "frutas-y-verduras",
-        "lacteos-huevos-y-refrigerados",
-        "panaderia-y-pasteleria",
-        "quesos-y-fiambres",
-      ],
-    }
+    const [liderResult, unimarcResult, jumboResult] = await Promise.all([
+      liderAgent
+        .recommendForStore(ctx, args.userPrompt, args.conversationHistory || [])
+        .catch((err) => {
+          console.error("Lider agent error:", err)
+          return null
+        }),
+      unimarcAgent
+        .recommendForStore(ctx, args.userPrompt, args.conversationHistory || [])
+        .catch((err) => {
+          console.error("Unimarc agent error:", err)
+          return null
+        }),
+      jumboAgent
+        .recommendForStore(ctx, args.userPrompt, args.conversationHistory || [])
+        .catch((err) => {
+          console.error("Jumbo agent error:", err)
+          return null
+        }),
+    ])
 
-    await Promise.all(
-      stores.map(async (store) => {
-        const categories = storeCategories[store.name] || []
+    // Filter out null results (failed agents)
+    const storeRecommendations = [
+      liderResult,
+      unimarcResult,
+      jumboResult,
+    ].filter((r) => r !== null) as Array<{
+      storeName: "Lider" | "Unimarc" | "Jumbo"
+      analysis: {
+        cleanedPrompt: string
+        categories: Array<{ category: string; keywords: string[] }>
+        budget?: number
+      }
+      recommendation: {
+        recommendation: string
+        selectedProducts: Array<
+          EnrichedProduct & { quantity: number; store?: string }
+        >
+      }
+    }>
 
-        // 1. Analyze prompt for this store
-        const analysis = await agent.analyze(
-          args.userPrompt,
-          args.conversationHistory || [],
-          categories
-        )
-
-        // 2. Vector Search
-        const searchResults = new Map<string, number>()
-
-        if (analysis.categories.length > 0) {
-          for (const catAnalysis of analysis.categories) {
-            const queryText = `${catAnalysis.category} ${catAnalysis.keywords.join(" ")}`
-            const queryEmbedding = (
-              await embeddingProvider.embed([queryText])
-            )[0]
-
-            const results = await ctx.vectorSearch("products", "by_embedding", {
-              vector: queryEmbedding,
-              limit: 10,
-            })
-
-            for (const result of results) {
-              const existingScore = searchResults.get(result._id) || 0
-              if (result._score > existingScore) {
-                searchResults.set(result._id, result._score)
-              }
-            }
-          }
-        } else {
-          const queryEmbedding = (
-            await embeddingProvider.embed([analysis.cleanedPrompt])
-          )[0]
-          const results = await ctx.vectorSearch("products", "by_embedding", {
-            vector: queryEmbedding,
-            limit: 20,
-          })
-          for (const result of results) {
-            searchResults.set(result._id, result._score)
-          }
-        }
-
-        // 3. Fetch and Filter Products
-        const productIds = Array.from(searchResults.keys()) as Id<"products">[]
-        const products = await ctx.runQuery(
-          api.myFunctions.getEnrichedProductsByIds,
-          { ids: productIds }
-        )
-
-        const storeProducts = products
-          .filter((p) =>
-            p.prices.some(
-              (price) => price.storeId === store._id && price.inStock
-            )
-          )
-          .map((p) => {
-            const storePrice = p.prices.find(
-              (price) => price.storeId === store._id
-            )!
-            return {
-              ...p,
-              prices: [storePrice],
-              minPrice: storePrice.currentPrice,
-              maxPrice: storePrice.currentPrice,
-            }
-          })
-
-        if (storeProducts.length === 0) return
-
-        // 4. Selection Agent
-        const recommendation = await selectionAgent.generateRecommendation(
-          analysis.cleanedPrompt,
-          storeProducts
-        )
-
-        const selectedProducts = recommendation.selectedProducts || []
-        const totalCost = selectedProducts.reduce(
-          (sum, p) => sum + (p.minPrice || 0) * p.quantity,
-          0
-        )
-
-        storeRecommendations.push({
-          storeId: store._id,
-          storeName: store.name,
-          recommendation:
-            recommendation.recommendation || "Aquí tienes tu recomendación.",
-          selectedProducts: selectedProducts.map((p) => ({
-            ...p,
-            prices: p.prices || [],
-          })),
-          totalCost,
-        })
-      })
-    )
-
-    // Return the first store recommendation if available, otherwise return empty structure
-    const firstRecommendation = storeRecommendations[0]
-    return {
-      analysis,
-      recommendation:
-        firstRecommendation?.recommendation ||
-        "No hay recomendaciones disponibles.",
-      selectedProducts:
-        firstRecommendation?.selectedProducts.map((p) => ({
-          id: p._id,
-          name: p.name,
-          category: p.category,
-          minPrice: p.minPrice,
-          maxPrice: p.maxPrice,
-          quantity: p.quantity,
-        })) || [],
-      storeRecommendations,
-    }
+    // Use decision agent to combine results
+    return storeRecommendations.map((rec) => ({
+      storeName: rec.storeName,
+      analysis: rec.analysis,
+      recommendation: rec.recommendation.recommendation,
+      selectedProducts: rec.recommendation.selectedProducts.map((p) => ({
+        id: p._id,
+        name: p.name,
+        category: p.category,
+        minPrice: p.minPrice,
+        maxPrice: p.maxPrice,
+        quantity: p.quantity,
+        store: rec.storeName,
+        // Add price details for the specific store if needed, or just use the enriched data
+        price: p.prices.find((pr) => pr.storeName === rec.storeName)
+          ?.currentPrice,
+      })),
+    }))
   },
 })
 

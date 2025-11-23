@@ -1,28 +1,39 @@
 import CartSidebar, { CartSidebarRef } from "@/components/CartSidebar"
-import { CartItem } from "@/types"
+import { CartItem, StoreName } from "@/types"
 import clsx from "clsx"
+import StoreTabs from "./StoreTabs"
 
 interface CartDrawerProps {
   isOpen: boolean
   onClose: () => void
   cart: CartItem[]
+  activeStore: StoreName
+  onStoreChange: (store: StoreName) => void
   sidebarRef?: React.RefObject<CartSidebarRef | null>
   className?: string
   onUpdateQuantity?: (sku: string, quantity: number) => void
+  liderCartCount: number
+  unimarcCartCount: number
+  jumboCartCount: number
 }
 
 export default function CartDrawer({
   isOpen,
   onClose,
   cart,
+  activeStore,
+  onStoreChange,
   sidebarRef,
   className,
   onUpdateQuantity,
+  liderCartCount,
+  unimarcCartCount,
+  jumboCartCount,
 }: CartDrawerProps) {
   return (
     <div
       className={clsx(
-        "z-30 h-full overflow-hidden border-l border-gray-200 bg-white shadow-2xl transition-all duration-500 ease-in-out",
+        "z-30 h-[100dvh] overflow-hidden border-l border-gray-200 bg-white shadow-2xl transition-all duration-500 ease-in-out",
         // Mobile: Fixed overlay. Desktop: Controlled by parent via className or defaults
         "fixed top-0 right-0 bottom-0 lg:static",
         isOpen
@@ -31,7 +42,16 @@ export default function CartDrawer({
         className
       )}
     >
-      <div className="relative h-full w-full">
+      <div className="relative flex h-full w-full flex-col">
+        {/* Store Tabs */}
+        <StoreTabs
+          activeStore={activeStore}
+          onStoreChange={onStoreChange}
+          liderCartCount={liderCartCount}
+          unimarcCartCount={unimarcCartCount}
+          jumboCartCount={jumboCartCount}
+        />
+
         {/* Mobile Close Button */}
         <button
           onClick={onClose}
@@ -56,17 +76,20 @@ export default function CartDrawer({
           </svg>
         </button>
 
-        <CartSidebar
-          items={cart}
-          total={cart.reduce(
-            (acc, item) => acc + item.price * item.quantity,
-            0
-          )}
-          isOpen={isOpen}
-          onClose={onClose}
-          ref={sidebarRef}
-          onUpdateQuantity={onUpdateQuantity}
-        />
+        <div className="flex-1 overflow-hidden">
+          <CartSidebar
+            items={cart}
+            total={cart.reduce(
+              (acc, item) => acc + item.price * item.quantity,
+              0
+            )}
+            isOpen={isOpen}
+            onClose={onClose}
+            ref={sidebarRef}
+            onUpdateQuantity={onUpdateQuantity}
+            activeStore={activeStore}
+          />
+        </div>
       </div>
     </div>
   )

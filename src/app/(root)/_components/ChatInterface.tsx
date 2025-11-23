@@ -98,7 +98,8 @@ export default function ChatInterface({
       userPrompt: input,
       conversationHistory: history,
     })
-      .then((result) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .then((result: any) => {
         const aiMsg: Message = {
           id: (Date.now() + 1).toString(),
           role: "assistant",
@@ -114,29 +115,22 @@ export default function ChatInterface({
           result.selectedProducts.length > 0 &&
           onUpdateCart
         ) {
-          // Convert to CartItem format
+          // Convert to CartItem format, preserving store information
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const newItems: any = result.selectedProducts.map((p) => ({
+          const newItems: any = result.selectedProducts.map((p: any) => ({
             id: p.id,
+            sku: p.id,
             name: p.name,
             price: p.minPrice || 0,
             quantity: p.quantity || 1,
-            image:
-              "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop", // Placeholder or fetch real image if available
-            category: p.category,
+            imageUrl:
+              "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
+            category: p.category || "Otros",
+            store: p.store || "Lider",
+            url: `#`,
+            date: new Date().toISOString(),
           }))
-          // We might want to merge with existing items or replace?
-          // For now, let's append or replace based on logic.
-          // The prompt might be "add milk", so we should probably append.
-          // But if the user says "replace everything", we should replace.
-          // The current backend logic returns a list of "selectedProducts" based on the query.
-          // It doesn't explicitly say "append" or "replace".
-          // Let's assume we append for now, or maybe the user wants to see *only* these products?
-          // Given the "SmartShoppingGrid" context, maybe we should just add them.
-
-          // Actually, let's just pass the new items to the parent and let it decide?
-          // Or just call onUpdateCart with the new list.
-          // Let's append for now.
+          // Append new items to carts (they will be distributed to correct stores by handleUpdateCart)
           onUpdateCart(newItems)
         }
       })
