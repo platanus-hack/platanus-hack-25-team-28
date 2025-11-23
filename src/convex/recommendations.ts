@@ -27,18 +27,24 @@ export const recommendProducts = action({
     const jumboAgent = new StoreAgent("Jumbo", apiKey, anthropicKey)
 
     const [liderResult, unimarcResult, jumboResult] = await Promise.all([
-      liderAgent.recommendForStore(ctx, args.userPrompt, args.conversationHistory || []).catch((err) => {
-        console.error("Lider agent error:", err)
-        return null
-      }),
-      unimarcAgent.recommendForStore(ctx, args.userPrompt, args.conversationHistory || []).catch((err) => {
-        console.error("Unimarc agent error:", err)
-        return null
-      }),
-      jumboAgent.recommendForStore(ctx, args.userPrompt, args.conversationHistory || []).catch((err) => {
-        console.error("Jumbo agent error:", err)
-        return null
-      }),
+      liderAgent
+        .recommendForStore(ctx, args.userPrompt, args.conversationHistory || [])
+        .catch((err) => {
+          console.error("Lider agent error:", err)
+          return null
+        }),
+      unimarcAgent
+        .recommendForStore(ctx, args.userPrompt, args.conversationHistory || [])
+        .catch((err) => {
+          console.error("Unimarc agent error:", err)
+          return null
+        }),
+      jumboAgent
+        .recommendForStore(ctx, args.userPrompt, args.conversationHistory || [])
+        .catch((err) => {
+          console.error("Jumbo agent error:", err)
+          return null
+        }),
     ])
 
     // Filter out null results (failed agents)
@@ -55,7 +61,9 @@ export const recommendProducts = action({
       }
       recommendation: {
         recommendation: string
-        selectedProducts: Array<EnrichedProduct & { quantity: number; store?: string }>
+        selectedProducts: Array<
+          EnrichedProduct & { quantity: number; store?: string }
+        >
       }
     }>
 
@@ -73,7 +81,8 @@ export const recommendProducts = action({
         quantity: p.quantity,
         store: rec.storeName,
         // Add price details for the specific store if needed, or just use the enriched data
-        price: p.prices.find((pr) => pr.storeName === rec.storeName)?.currentPrice,
+        price: p.prices.find((pr) => pr.storeName === rec.storeName)
+          ?.currentPrice,
       })),
     }))
   },

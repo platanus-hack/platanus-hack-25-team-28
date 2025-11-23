@@ -52,8 +52,10 @@ export default function StoreTabs({
             onClick={() => onStoreChange(store.name)}
             className={clsx(
               "relative flex-1 px-4 py-3 text-sm font-medium transition-all duration-200",
-              "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent-primary",
-              isActive ? activeColorClass : "text-text-muted hover:text-text-main"
+              "hover:bg-gray-50 focus:ring-2 focus:ring-accent-primary focus:outline-none focus:ring-inset",
+              isActive
+                ? activeColorClass
+                : "text-text-muted hover:text-text-main"
             )}
           >
             <div className="flex items-center justify-center gap-2">
@@ -73,7 +75,7 @@ export default function StoreTabs({
             {isActive && (
               <div
                 className={clsx(
-                  "absolute bottom-0 left-0 right-0 h-0.5",
+                  "absolute right-0 bottom-0 left-0 h-0.5",
                   activeBorderClass
                 )}
               />
@@ -84,4 +86,3 @@ export default function StoreTabs({
     </div>
   )
 }
-

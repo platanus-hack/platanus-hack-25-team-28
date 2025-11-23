@@ -26,7 +26,17 @@ interface CartSidebarProps {
 }
 
 const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
-  ({ items = [], total, isOpen, onClose, onUpdateQuantity, activeStore = "Lider" }, ref) => {
+  (
+    {
+      items = [],
+      total,
+      isOpen,
+      onClose,
+      onUpdateQuantity,
+      activeStore = "Lider",
+    },
+    ref
+  ) => {
     const listRef = useRef<HTMLDivElement>(null)
     const totalRef = useRef<HTMLSpanElement>(null)
     const [pendingRemoval, setPendingRemoval] = useState<string | null>(null)

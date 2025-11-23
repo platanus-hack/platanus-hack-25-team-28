@@ -10,7 +10,11 @@ export const getStoreIds = query({
 
     for (const store of stores) {
       const storeName = store.name as StoreName
-      if (storeName === "Lider" || storeName === "Unimarc" || storeName === "Jumbo") {
+      if (
+        storeName === "Lider" ||
+        storeName === "Unimarc" ||
+        storeName === "Jumbo"
+      ) {
         storeMap[storeName] = store._id
       }
     }
@@ -18,4 +22,3 @@ export const getStoreIds = query({
     return storeMap
   },
 })
-

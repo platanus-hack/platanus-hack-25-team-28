@@ -1,7 +1,11 @@
 import { ChatAnthropic } from "@langchain/anthropic"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
 import { formatTemplate, getPromptAgentConfig } from "../promptLoader"
-import { getStoreCategories, mapCategoryToStore, StoreName } from "../storeConfig"
+import {
+  getStoreCategories,
+  mapCategoryToStore,
+  StoreName,
+} from "../storeConfig"
 import { ConversationMessage, PromptAnalysis } from "../types"
 
 export class PromptAgent {
@@ -27,7 +31,7 @@ export class PromptAgent {
 
   private getSystemPrompt(): string {
     const baseConfig = getPromptAgentConfig()
-    
+
     if (!this.storeName) {
       // Use default prompt from YAML file
       return baseConfig.system
@@ -35,9 +39,7 @@ export class PromptAgent {
 
     // Build store-specific system prompt
     const storeCategories = getStoreCategories(this.storeName)
-    const categoriesList = storeCategories
-      .map((cat) => `- "${cat}"`)
-      .join("\n")
+    const categoriesList = storeCategories.map((cat) => `- "${cat}"`).join("\n")
 
     return `Eres un agente que toma el mensaje del usuario y lo deja listo para un flujo RAG de compras.
 Objetivo: limpiar y estructurar la petición sin limitarla, preservando datos clave como cantidad de personas, presupuesto, productos deseados, ocasión, restricciones y preferencias.
@@ -111,7 +113,7 @@ Reglas generales:
     }
 
     const parsed = JSON.parse(jsonMatch[0])
-    
+
     // Map categories to store-specific format if storeName is provided
     let categories: Array<{ category: string; keywords: string[] }> = []
     if (Array.isArray(parsed.categories)) {

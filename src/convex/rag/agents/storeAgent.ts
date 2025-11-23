@@ -3,7 +3,12 @@ import { Id } from "../../_generated/dataModel"
 import { ActionCtx } from "../../_generated/server"
 import { OpenAIEmbeddingProvider } from "../providers/openaiEmbedding"
 import { StoreName } from "../storeConfig"
-import { EnrichedPrice, EnrichedProduct, PromptAnalysis, RecommendationResult } from "../types"
+import {
+  EnrichedPrice,
+  EnrichedProduct,
+  PromptAnalysis,
+  RecommendationResult,
+} from "../types"
 import { PromptAgent } from "./promptAgent"
 import { SelectionAgent } from "./selectionAgent"
 
@@ -12,11 +17,7 @@ export class StoreAgent {
   private apiKey: string
   private anthropicKey: string
 
-  constructor(
-    storeName: StoreName,
-    apiKey: string,
-    anthropicKey: string
-  ) {
+  constructor(storeName: StoreName, apiKey: string, anthropicKey: string) {
     this.storeName = storeName
     this.apiKey = apiKey
     this.anthropicKey = anthropicKey
@@ -25,7 +26,10 @@ export class StoreAgent {
   async recommendForStore(
     ctx: ActionCtx,
     userPrompt: string,
-    conversationHistory: Array<{ role: "user" | "assistant"; content: string }> = []
+    conversationHistory: Array<{
+      role: "user" | "assistant"
+      content: string
+    }> = []
   ): Promise<{
     analysis: PromptAnalysis
     recommendation: RecommendationResult
@@ -85,13 +89,18 @@ export class StoreAgent {
 
     // 4. Fetch full product details and filter by store
     const productIds = Array.from(searchResults.keys()) as Id<"products">[]
-    const allProducts = await ctx.runQuery(api.recommendations.getEnrichedProductsByIds, {
-      ids: productIds,
-    })
+    const allProducts = await ctx.runQuery(
+      api.recommendations.getEnrichedProductsByIds,
+      {
+        ids: productIds,
+      }
+    )
 
     // Filter products to only include those available in this store
     const storeProducts = allProducts.filter((product: EnrichedProduct) =>
-      product.prices.some((price: EnrichedPrice) => price.storeId === storeId && price.inStock)
+      product.prices.some(
+        (price: EnrichedPrice) => price.storeId === storeId && price.inStock
+      )
     )
 
     // 5. Selection Agent
@@ -117,4 +126,3 @@ export class StoreAgent {
     }
   }
 }
-

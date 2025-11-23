@@ -68,4 +68,3 @@ export function mapCategoryToStore(
 
   return null
 }
-

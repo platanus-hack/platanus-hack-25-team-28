@@ -1,6 +1,10 @@
 import { ChatAnthropic } from "@langchain/anthropic"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
-import { EnrichedProduct, RecommendationResult, SelectedProduct } from "../types"
+import {
+  EnrichedProduct,
+  RecommendationResult,
+  SelectedProduct,
+} from "../types"
 import { StoreName } from "../storeConfig"
 
 export type StoreRecommendation = {
@@ -26,7 +30,9 @@ export class DecisionAgent {
 
   async combineRecommendations(
     storeRecommendations: StoreRecommendation[]
-  ): Promise<RecommendationResult & { storeAssignments: Map<string, StoreName> }> {
+  ): Promise<
+    RecommendationResult & { storeAssignments: Map<string, StoreName> }
+  > {
     // If only one store has recommendations, return it
     if (storeRecommendations.length === 1) {
       const single = storeRecommendations[0]
@@ -127,4 +133,3 @@ Genera un mensaje unificado para el usuario.`
     }
   }
 }
-
