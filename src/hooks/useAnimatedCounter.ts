@@ -51,5 +51,3 @@ export function useAnimatedCounter(
 
   return currentValue
 }
-
-

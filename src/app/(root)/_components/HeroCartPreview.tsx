@@ -135,7 +135,7 @@ export default function HeroCartPreview() {
           {phase === "TYPING" && (
             <div className="mb-6 min-h-[200px]">
               <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                <p className="text-xs font-semibold tracking-wider text-text-muted uppercase">
                   Prompt
                 </p>
                 <p className="mt-2 text-sm text-text-main">
@@ -198,7 +198,9 @@ export default function HeroCartPreview() {
               {/* Total */}
               <div className="border-t border-gray-100 pt-2">
                 <div className="flex items-end justify-between">
-                  <span className="text-sm text-text-muted">Total estimado</span>
+                  <span className="text-sm text-text-muted">
+                    Total estimado
+                  </span>
                   <span
                     className={`text-2xl font-bold ${getAccentTextClass(currentScenario.accent)}`}
                   >
@@ -213,4 +215,3 @@ export default function HeroCartPreview() {
     </div>
   )
 }
-

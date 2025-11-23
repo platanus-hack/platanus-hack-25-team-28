@@ -14,7 +14,12 @@ import {
 
 export type Supermarket = "Jumbo" | "Lider" | "Unimarc"
 export type AccentColor = "green" | "blue" | "red"
-export type Phase = "TYPING" | "PROCESSING" | "SHOW_CART" | "HOLD" | "TRANSITION"
+export type Phase =
+  | "TYPING"
+  | "PROCESSING"
+  | "SHOW_CART"
+  | "HOLD"
+  | "TRANSITION"
 
 export interface MockCartItem {
   name: string
@@ -37,7 +42,12 @@ const scenarios: Scenario[] = [
     accent: "green",
     prompt: "Quiero hacer un asado para 4",
     items: [
-      { name: "Carne Asada Premium", quantity: "1.5kg", price: 12990, icon: Drumstick },
+      {
+        name: "Carne Asada Premium",
+        quantity: "1.5kg",
+        price: 12990,
+        icon: Drumstick,
+      },
       { name: "Pan Familiar", quantity: "2x", price: 3990, icon: Croissant },
       { name: "Cerveza Pack 6", quantity: "1x", price: 6990, icon: Package },
       { name: "Papas 2kg", quantity: "1x", price: 1990, icon: Carrot },
@@ -63,7 +73,12 @@ const scenarios: Scenario[] = [
       { name: "Mantequilla 250g", quantity: "1x", price: 1990, icon: Package },
       { name: "Café Molido 500g", quantity: "1x", price: 4990, icon: Coffee },
       { name: "Queso Gouda 250g", quantity: "1x", price: 3990, icon: Package },
-      { name: "Mermelada 340g", quantity: "1x", price: 1490, icon: UtensilsCrossed },
+      {
+        name: "Mermelada 340g",
+        quantity: "1x",
+        price: 1490,
+        icon: UtensilsCrossed,
+      },
     ],
   },
 ]
@@ -167,7 +182,14 @@ export function useCartSimulation(options: UseCartSimulationOptions = {}) {
       }, transitionDuration)
       timersRef.current.push(timer)
     }
-  }, [phase, currentScenarioIndex, typingDuration, processingDuration, holdDuration, transitionDuration])
+  }, [
+    phase,
+    currentScenarioIndex,
+    typingDuration,
+    processingDuration,
+    holdDuration,
+    transitionDuration,
+  ])
 
   return {
     currentScenario,
@@ -177,4 +199,3 @@ export function useCartSimulation(options: UseCartSimulationOptions = {}) {
     isTransitioning,
   }
 }
-
