@@ -128,6 +128,11 @@ async function processSingleItem(ctx: MutationCtx, storeId: any, item: any) {
       imageUrl: item.image_url,
       productUrl: item.product_url ?? undefined,
       sku: item.sku ?? undefined,
+      embedding: item.embedding ?? undefined,
+    })
+  } else if (item.embedding) {
+    await ctx.db.patch(productId, {
+      embedding: item.embedding,
     })
   }
 
