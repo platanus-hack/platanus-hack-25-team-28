@@ -254,8 +254,8 @@ export default function Home() {
             <Footer />
           </div>
           {/* Desktop Sidebar Column */}
-          <div className="relative hidden w-[350px] shrink-0 lg:block">
-            <div className="sticky top-[var(--navbar-height)] h-[calc(100vh-var(--navbar-height))]">
+          <div className="relative hidden w-[450px] shrink-0 lg:mr-0 lg:block">
+            <div className="sticky top-[var(--navbar-height)] h-[calc(100vh-var(--navbar-height))] w-full">
               <CartDrawer
                 isOpen={isCartOpen}
                 onClose={() => setIsCartOpen(false)}

@@ -35,22 +35,24 @@ export default function CartDrawer({
       className={clsx(
         "z-30 max-h-[100dvh] overflow-hidden border-l border-gray-200 bg-white shadow-2xl transition-all duration-500 ease-in-out",
         // Mobile: Fixed overlay starting below navbar. Desktop: Controlled by parent via className or defaults
-        "fixed top-[var(--navbar-height)] right-0 bottom-0 h-[calc(100dvh-var(--navbar-height))] lg:static lg:h-full",
+        "fixed top-[var(--navbar-height)] right-0 bottom-0 h-[calc(100dvh-var(--navbar-height))] lg:static lg:h-full lg:w-full lg:mr-0",
         isOpen
-          ? "w-[85vw] translate-x-0 lg:w-[350px] lg:translate-x-0"
+          ? "w-[85vw] translate-x-0 lg:w-full lg:translate-x-0"
           : "w-[85vw] translate-x-full lg:w-0 lg:translate-x-0 lg:border-none",
         className
       )}
     >
       <div className="relative flex h-full max-h-full w-full flex-col overflow-hidden">
-        {/* Store Tabs */}
-        <StoreTabs
-          activeStore={activeStore}
-          onStoreChange={onStoreChange}
-          liderCartCount={liderCartCount}
-          unimarcCartCount={unimarcCartCount}
-          jumboCartCount={jumboCartCount}
-        />
+        {/* Store Tabs - positioned to touch navbar bottom */}
+        <div className="flex-shrink-0">
+          <StoreTabs
+            activeStore={activeStore}
+            onStoreChange={onStoreChange}
+            liderCartCount={liderCartCount}
+            unimarcCartCount={unimarcCartCount}
+            jumboCartCount={jumboCartCount}
+          />
+        </div>
 
         {/* Mobile Close Button */}
         <button

@@ -25,7 +25,7 @@ export default function StoreTabs({
   ]
 
   return (
-    <div className="flex border-b border-gray-200 bg-white">
+    <div className="flex border-b border-gray-200 bg-white m-0">
       {stores.map((store) => {
         const isActive = activeStore === store.name
         let activeColorClass = "text-accent-primary"

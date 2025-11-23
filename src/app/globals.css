@@ -51,6 +51,18 @@
   background-color: rgba(0, 0, 0, 0.2);
 }
 
+/* Hide scrollbar for cart component */
+.scrollbar-hide {
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari and Opera */
+  width: 0 !important;
+  height: 0 !important;
+}
+
 /* GSAP Helper Classes if needed */
 .gsap-marker-scroller-start,
 .gsap-marker-scroller-end,
