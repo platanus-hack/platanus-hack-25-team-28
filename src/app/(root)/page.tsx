@@ -16,6 +16,7 @@ import SmartShoppingGrid from "./_components/SmartShoppingGrid"
 
 import { CartSidebarRef } from "@/components/CartSidebar"
 import { InteractiveRevealBackground } from "@/components/InteractiveRevealBackground"
+import { JumboLoginModal } from "@/components/JumboLoginModal"
 import NavBar from "@/components/NavBar"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
@@ -41,6 +42,7 @@ export default function Home() {
   const [activeStore, setActiveStore] = useState<StoreName>("Jumbo")
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isSidebarReady, setIsSidebarReady] = useState(false)
+  const [isJumboLoginModalOpen, setIsJumboLoginModalOpen] = useState(false)
   const hasRestoredCart = useRef(false)
 
   // Use separate refs for desktop and mobile to avoid collision
@@ -307,7 +309,7 @@ export default function Home() {
     return liderCartItems
   }
 
-  const handleCheckout = async () => {
+  const proceedWithCheckout = async () => {
     const activeCartItems = getActiveCartItems()
 
     if (activeCartItems.length === 0) {
@@ -341,6 +343,31 @@ export default function Home() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleCheckout = async () => {
+    const activeCartItems = getActiveCartItems()
+
+    if (activeCartItems.length === 0) {
+      return
+    }
+
+    if (activeStore === "Jumbo") {
+      setIsJumboLoginModalOpen(true)
+    } else {
+      await proceedWithCheckout()
+    }
+  }
+
+  const handleJumboLoginSubmit = (credentials: {
+    username: string
+    password: string
+  }) => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("jumboCredentials", JSON.stringify(credentials))
+    }
+    setIsJumboLoginModalOpen(false)
+    proceedWithCheckout()
   }
 
   return (
@@ -414,6 +441,13 @@ export default function Home() {
           onCheckout={handleCheckout}
         />
       </div>
+
+      {/* Jumbo Login Modal */}
+      <JumboLoginModal
+        isOpen={isJumboLoginModalOpen}
+        onClose={() => setIsJumboLoginModalOpen(false)}
+        onSubmit={handleJumboLoginSubmit}
+      />
     </main>
   )
 }
