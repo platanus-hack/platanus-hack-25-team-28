@@ -3,7 +3,17 @@ import { authkitMiddleware } from "@workos-inc/authkit-nextjs"
 export default authkitMiddleware({
   middlewareAuth: {
     enabled: true,
-    unauthenticatedPaths: ["/", "/sign-in", "/sign-up"],
+    unauthenticatedPaths: [
+      "/",
+      "/sign-in",
+      "/sign-up",
+      "/api/jumbo/login",
+      "/api/jumbo/add-multiple",
+      "/api/jumbo/add-multiple-async",
+      "/api/jumbo/open-browser",
+      "/api/jumbo/complete-purchase",
+      "/pralio",
+    ],
   },
 })
 
