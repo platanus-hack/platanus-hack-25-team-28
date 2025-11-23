@@ -1,9 +1,10 @@
 "use client"
 
 import { api } from "@/convex/_generated/api"
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition"
 import { CartItem } from "@/types"
 import { useAction } from "convex/react"
-import { Send, Sparkles } from "lucide-react"
+import { Mic, Send, Sparkles } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { ChatMessage, Message } from "./chat/ChatMessage"
 import { TypingIndicator } from "./chat/TypingIndicator"
@@ -23,6 +24,29 @@ export default function ChatInterface({
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
+
+  const {
+    isListening,
+    isSupported,
+    error: speechError,
+    transcript,
+    startListening,
+    stopListening,
+  } = useSpeechRecognition({
+    language: "es-ES",
+    onResult: (text) => {
+      setInput(text)
+    },
+  })
+
+  useEffect(() => {
+    if (transcript) {
+      const timer = setTimeout(() => {
+        setInput(transcript)
+      }, 0)
+      return () => clearTimeout(timer)
+    }
+  }, [transcript])
 
   // Ref for the scrollable container, NOT the end div
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -180,15 +204,42 @@ export default function ChatInterface({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Escribe tu mensaje..."
-          className="w-full rounded-xl border border-gray-200 bg-white p-4 pr-12 shadow-sm transition-all outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20"
+          className="w-full rounded-xl border border-gray-200 bg-white p-4 pr-24 shadow-sm transition-all outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20"
         />
-        <button
-          type="submit"
-          disabled={!input.trim() || isTyping}
-          className="absolute top-1/2 right-2 -translate-y-1/2 rounded-lg p-2 text-accent-primary transition-colors hover:bg-accent-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Send size={20} />
-        </button>
+        <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">
+          {isSupported && (
+            <button
+              type="button"
+              onClick={() => {
+                if (isListening) {
+                  stopListening()
+                } else {
+                  startListening()
+                }
+              }}
+              className={`rounded-lg p-2 transition-colors ${
+                isListening
+                  ? "animate-pulse bg-red-500 text-white hover:bg-red-600"
+                  : "text-gray-500 hover:bg-gray-100"
+              }`}
+              title={
+                isListening ? "Detener grabación" : "Iniciar grabación de voz"
+              }
+            >
+              <Mic size={20} />
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={!input.trim() || isTyping}
+            className="rounded-lg p-2 text-accent-primary transition-colors hover:bg-accent-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Send size={20} />
+          </button>
+        </div>
+        {speechError && (
+          <p className="mt-2 text-xs text-red-500">{speechError}</p>
+        )}
       </form>
     </div>
   )

@@ -1,8 +1,9 @@
 "use client"
 
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition"
 import { formatCurrency } from "@/utils/cartUtils"
 import gsap from "gsap"
-import { ArrowRight, Loader2, ShoppingBag, Sparkles } from "lucide-react"
+import { ArrowRight, Loader2, Mic, ShoppingBag, Sparkles } from "lucide-react"
 import React, { useEffect, useRef, useState } from "react"
 
 interface HeroProps {
@@ -16,6 +17,29 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
   const textRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLFormElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
+
+  const {
+    isListening,
+    isSupported,
+    error: speechError,
+    transcript,
+    startListening,
+    stopListening,
+  } = useSpeechRecognition({
+    language: "es-ES",
+    onResult: (text) => {
+      setPrompt(text)
+    },
+  })
+
+  useEffect(() => {
+    if (transcript) {
+      const timer = setTimeout(() => {
+        setPrompt(transcript)
+      }, 0)
+      return () => clearTimeout(timer)
+    }
+  }, [transcript])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -125,27 +149,57 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Quiero armar un carro para un asado para 6 personas..."
-                className="flex-1 border-none bg-transparent px-4 py-3 text-lg text-text-main placeholder:text-gray-400 focus:outline-none"
+                className="flex-1 border-none bg-transparent px-4 py-3 pr-12 text-lg text-text-main placeholder:text-gray-400 focus:outline-none"
                 disabled={isLoading}
               />
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="flex min-w-[140px] transform items-center justify-center gap-2 rounded-xl bg-accent-primary px-6 py-3 font-semibold text-white shadow-md transition-colors duration-100 hover:bg-blue-700 hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-80"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span className="hidden sm:inline">Pensando...</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="hidden sm:inline">Llenar carro</span>
-                    <ArrowRight className="h-5 w-5" />
-                  </>
+              <div className="flex items-center gap-2">
+                {isSupported && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isListening) {
+                        stopListening()
+                      } else {
+                        startListening()
+                      }
+                    }}
+                    disabled={isLoading}
+                    className={`rounded-lg p-2 transition-colors ${
+                      isListening
+                        ? "animate-pulse bg-red-500 text-white hover:bg-red-600"
+                        : "text-gray-500 hover:bg-gray-100"
+                    } disabled:cursor-not-allowed disabled:opacity-50`}
+                    title={
+                      isListening
+                        ? "Detener grabación"
+                        : "Iniciar grabación de voz"
+                    }
+                  >
+                    <Mic size={20} />
+                  </button>
                 )}
-              </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="flex min-w-[140px] transform items-center justify-center gap-2 rounded-xl bg-accent-primary px-6 py-3 font-semibold text-white shadow-md transition-colors duration-100 hover:bg-blue-700 hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-80"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span className="hidden sm:inline">Pensando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="hidden sm:inline">Llenar carro</span>
+                      <ArrowRight className="h-5 w-5" />
+                    </>
+                  )}
+                </button>
+              </div>
             </form>
+            {speechError && (
+              <p className="mt-2 text-xs text-red-500">{speechError}</p>
+            )}
 
             <div className="mt-4 flex flex-wrap gap-2">
               {["Desayuno rápido", "Limpieza mensual", "Once con amigos"].map(
