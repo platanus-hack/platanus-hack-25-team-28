@@ -1,10 +1,10 @@
 "use client"
 
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition"
-import { formatCurrency } from "@/utils/cartUtils"
 import gsap from "gsap"
-import { ArrowRight, Loader2, Mic, ShoppingBag, Sparkles } from "lucide-react"
+import { ArrowRight, Loader2, Mic, Sparkles } from "lucide-react"
 import React, { useEffect, useRef, useState } from "react"
+import HeroCartPreview from "./HeroCartPreview"
 
 interface HeroProps {
   onFillCart: (prompt: string) => void
@@ -16,7 +16,6 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLFormElement>(null)
-  const cardRef = useRef<HTMLDivElement>(null)
 
   const {
     isListening,
@@ -68,34 +67,6 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
         stagger: 0.15,
         ease: "power3.out",
       })
-
-      // Card Floating Animation
-      gsap.to(cardRef.current, {
-        y: -15,
-        duration: 2.5,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-      })
-
-      // Card Parallax with Mouse - Enhanced to follow cursor
-      const handleMouseMove = (e: MouseEvent) => {
-        if (!cardRef.current) return
-        const { clientX, clientY } = e
-        const xPos = (clientX / window.innerWidth - 0.5) * 12
-        const yPos = (clientY / window.innerHeight - 0.5) * 12
-
-        gsap.to(cardRef.current, {
-          rotateY: xPos,
-          rotateX: -yPos,
-          transformPerspective: 1000,
-          duration: 0.4,
-          ease: "power2.out",
-        })
-      }
-
-      window.addEventListener("mousemove", handleMouseMove)
-      return () => window.removeEventListener("mousemove", handleMouseMove)
     }, containerRef)
 
     return () => ctx.revert()
@@ -218,88 +189,7 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
         </div>
 
         {/* Right Column: Floating Card */}
-        <div
-          className="hidden justify-center lg:flex"
-          style={{ perspective: "1000px" }}
-        >
-          <div
-            ref={cardRef}
-            className="relative w-[380px] rounded-3xl border border-gray-100 bg-white p-6 shadow-2xl"
-            style={{ transformStyle: "preserve-3d" }}
-          >
-            {/* Card Header */}
-            <div className="mb-6 flex items-center justify-between border-b border-gray-100 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-success/10 text-accent-success">
-                  <ShoppingBag size={20} />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold tracking-wider text-text-muted uppercase">
-                    Tu Carro
-                  </p>
-                  <p className="font-bold text-text-main">Jumbo</p>
-                </div>
-              </div>
-              <span className="rounded bg-gray-100 px-2 py-1 font-mono text-xs text-gray-500">
-                #8392
-              </span>
-            </div>
-
-            {/* Mini Items */}
-            <div className="mb-6 space-y-3">
-              {[
-                {
-                  name: "Pan Molde Ideal",
-                  quantity: "2x",
-                  price: "$3.990",
-                  emoji: "🍞",
-                },
-                {
-                  name: "Leche Entera 1L",
-                  quantity: "3x",
-                  price: "$2.490",
-                  emoji: "🥛",
-                },
-                {
-                  name: "Huevos Docena",
-                  quantity: "1x",
-                  price: "$4.200",
-                  emoji: "🥚",
-                },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-gray-50"
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 text-2xl">
-                    {item.emoji}
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <div className="text-sm font-medium text-text-main">
-                      {item.name}
-                    </div>
-                    <div className="text-xs text-text-muted">
-                      {item.quantity}
-                    </div>
-                  </div>
-                  <div className="text-sm font-semibold text-text-main">
-                    {item.price}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Total */}
-            <div className="border-t border-gray-100 pt-2">
-              <div className="flex items-end justify-between">
-                <span className="text-sm text-text-muted">Total estimado</span>
-                <span className="text-2xl font-bold text-accent-success">
-                  {formatCurrency(10680)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <HeroCartPreview />
       </div>
     </section>
   )
