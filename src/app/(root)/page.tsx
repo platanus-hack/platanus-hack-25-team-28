@@ -56,12 +56,44 @@ export default function Home() {
 
   const [checkoutCartId, setCheckoutCartId] = useState<Id<"carts"> | null>(null)
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedCartId = sessionStorage.getItem("checkoutCartId")
-      if (storedCartId) {
-        setCheckoutCartId(storedCartId as Id<"carts">)
+  const readStoredCheckoutCartId = () => {
+    if (typeof window === "undefined") return null
+    const raw = sessionStorage.getItem("checkoutCartId")
+    if (!raw) return null
+    let candidate: string | null = raw
+    if (raw.trim().startsWith("{")) {
+      try {
+        const parsed = JSON.parse(raw)
+        if (typeof parsed === "string") {
+          candidate = parsed
+        } else if (
+          parsed &&
+          typeof parsed === "object" &&
+          typeof parsed.cartId === "string"
+        ) {
+          candidate = parsed.cartId
+        } else {
+          candidate = null
+        }
+      } catch {
+        candidate = null
       }
+    }
+    if (
+      candidate &&
+      /^[A-Za-z0-9_-]{16,}$/.test(candidate) &&
+      !candidate.includes("conversation")
+    ) {
+      return candidate as Id<"carts">
+    }
+    sessionStorage.removeItem("checkoutCartId")
+    return null
+  }
+
+  useEffect(() => {
+    const parsedId = readStoredCheckoutCartId()
+    if (parsedId) {
+      setCheckoutCartId(parsedId)
     }
   }, [])
 
@@ -83,8 +115,11 @@ export default function Home() {
             })
             if (result?.cartId) {
               sessionStorage.removeItem("pendingCheckout")
-              sessionStorage.setItem("checkoutCartId", result.cartId)
-              router.push("/checkout" as Route)
+              sessionStorage.setItem(
+                "checkoutCartId",
+                JSON.stringify({ cartId: result.cartId })
+              )
+              router.push("/checkout")
             }
           } catch (error) {
             console.error("Error creating cart from pending checkout:", error)
@@ -331,8 +366,11 @@ export default function Home() {
       })
 
       if (result?.cartId) {
-        sessionStorage.setItem("checkoutCartId", result.cartId)
-        router.push("/checkout" as Route)
+        sessionStorage.setItem(
+          "checkoutCartId",
+          JSON.stringify({ cartId: result.cartId })
+        )
+        router.push("/checkout")
       } else {
         throw new Error("No se recibió un ID de carrito")
       }

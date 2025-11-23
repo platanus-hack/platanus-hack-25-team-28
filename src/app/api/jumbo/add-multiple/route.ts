@@ -376,10 +376,11 @@ async function addProductToCart(
 
   const ms = Date.now() - started
 
-  const success =
+  const statusOk =
     (addToCartResponse.status ?? 0) >= 200 &&
-    (addToCartResponse.status ?? 0) < 300 &&
-    afterCount >= targetCount
+    (addToCartResponse.status ?? 0) < 300
+  const countReached = afterCount >= targetCount
+  const success = statusOk || countReached
 
   return {
     success,

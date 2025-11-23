@@ -67,7 +67,15 @@ export const getCartById = query({
     cartId: v.id("carts"),
   },
   handler: async (ctx, args) => {
-    const cart = await ctx.db.get(args.cartId)
+    let cart
+    try {
+      cart = await ctx.db.get(args.cartId)
+    } catch (error) {
+      // Handle case where cartId is invalid or from wrong table
+      console.error("Error fetching cart:", error)
+      return null
+    }
+
     if (!cart) {
       return null
     }

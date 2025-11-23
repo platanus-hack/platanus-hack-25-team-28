@@ -1,5 +1,6 @@
 "use client"
 
+import { JumboLoginModal } from "@/components/JumboLoginModal"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,7 +21,7 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 function SectionHeader({
   title,
@@ -67,43 +68,206 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("credit-card")
   const [cartId, setCartId] = useState<Id<"carts"> | null>(null)
   const [isCreatingCart, setIsCreatingCart] = useState(false)
+  const [isJumboModalOpen, setIsJumboModalOpen] = useState(false)
   const createCart = useMutation(api.carts.createCart)
   const router = useRouter()
+  const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const parseStoredCartId = () => {
+    if (typeof window === "undefined") return null
+    const raw = sessionStorage.getItem("checkoutCartId")
+    if (!raw) return null
+    let candidate: string | null = raw
+    if (raw.trim().startsWith("{")) {
+      try {
+        const parsed = JSON.parse(raw)
+        if (typeof parsed === "string") {
+          candidate = parsed
+        } else if (
+          parsed &&
+          typeof parsed === "object" &&
+          typeof parsed.cartId === "string"
+        ) {
+          candidate = parsed.cartId
+        } else {
+          candidate = null
+        }
+      } catch {
+        candidate = null
+      }
+    }
+    if (
+      candidate &&
+      /^[A-Za-z0-9_-]{16,}$/.test(candidate) &&
+      !candidate.includes("conversation")
+    ) {
+      return candidate as Id<"carts">
+    }
+    sessionStorage.removeItem("checkoutCartId")
+    return null
+  }
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedCartId = sessionStorage.getItem("checkoutCartId")
-      if (storedCartId) {
-        setCartId(storedCartId as Id<"carts">)
-      } else {
-        const pendingCheckout = sessionStorage.getItem("pendingCheckout")
-        if (pendingCheckout) {
-          const createPendingCart = async () => {
-            try {
-              setIsCreatingCart(true)
-              const { storeName, items } = JSON.parse(pendingCheckout)
-              const result = await createCart({
-                storeName,
-                items,
-              })
-              if (result?.cartId) {
-                sessionStorage.removeItem("pendingCheckout")
-                sessionStorage.setItem("checkoutCartId", result.cartId)
-                setCartId(result.cartId)
-              }
-            } catch (error) {
-              console.error("Error creating cart from pending checkout:", error)
-            } finally {
-              setIsCreatingCart(false)
+    const storedId = parseStoredCartId()
+    if (storedId) {
+      setCartId(storedId)
+    } else if (typeof window !== "undefined") {
+      const pendingCheckout = sessionStorage.getItem("pendingCheckout")
+      if (pendingCheckout) {
+        const createPendingCart = async () => {
+          try {
+            setIsCreatingCart(true)
+            const { storeName, items } = JSON.parse(pendingCheckout)
+            const result = await createCart({
+              storeName,
+              items,
+            })
+            if (result?.cartId) {
+              sessionStorage.removeItem("pendingCheckout")
+              sessionStorage.setItem(
+                "checkoutCartId",
+                JSON.stringify({ cartId: result.cartId })
+              )
+              setCartId(result.cartId)
             }
+          } catch (error) {
+            console.error("Error creating cart from pending checkout:", error)
+          } finally {
+            setIsCreatingCart(false)
           }
-          createPendingCart()
         }
+        createPendingCart()
       }
     }
   }, [createCart])
 
   const cart = useQuery(api.carts.getCartById, cartId ? { cartId } : "skip")
+
+  useEffect(() => {
+    return () => {
+      if (pollTimeoutRef.current) {
+        clearTimeout(pollTimeoutRef.current)
+        pollTimeoutRef.current = null
+      }
+    }
+  }, [])
+
+  const getStoredJumboCredentials = () => {
+    if (typeof window === "undefined") return null
+    const raw = sessionStorage.getItem("jumboCredentials")
+    if (!raw) return null
+    try {
+      const parsed = JSON.parse(raw) as {
+        username?: string
+        password?: string
+      }
+      if (
+        typeof parsed?.username === "string" &&
+        typeof parsed?.password === "string"
+      ) {
+        return parsed as { username: string; password: string }
+      }
+      sessionStorage.removeItem("jumboCredentials")
+    } catch {
+      sessionStorage.removeItem("jumboCredentials")
+    }
+    return null
+  }
+
+  const checkJobStatus = async (jobId: string) => {
+    const response = await fetch(`/api/jumbo/add-multiple-async?jobId=${jobId}`)
+    const data = await response.json()
+
+    if (data.status === "completed") {
+      // proceed to complete purchase
+      try {
+        const purchaseResponse = await fetch("/api/jumbo/complete-purchase", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ headless: false }),
+        })
+        const purchaseData = await purchaseResponse.json()
+        return { done: true, success: purchaseData.success }
+      } catch (err) {
+        console.error("Error completing purchase:", err)
+        return { done: true, success: false }
+      }
+    } else if (data.status === "failed") {
+      console.error("Jumbo job failed:", data.error)
+      return { done: true, success: false }
+    } else {
+      return { done: false }
+    }
+  }
+
+  const handleJumboSubmit = async (credentials: {
+    username: string
+    password: string
+  }) => {
+    // Build products from cart items
+    if (!cart || cartItems.length === 0) {
+      console.warn("No cart items to send to Jumbo")
+      setIsJumboModalOpen(false)
+      return
+    }
+
+    const products = cartItems.map((p) => ({
+      url: p.url,
+      quantity: p.quantity,
+    }))
+
+    try {
+      setIsCreatingCart(true)
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("jumboCredentials", JSON.stringify(credentials))
+      }
+
+      const response = await fetch("/api/jumbo/add-multiple-async", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          products,
+          loginFirst: true,
+          username: credentials.username,
+          password: credentials.password,
+          headless: false,
+          openCartAfter: true,
+        }),
+      })
+
+      const { jobId } = await response.json()
+
+      const poll = async () => {
+        try {
+          const res = await checkJobStatus(jobId)
+          if (!res.done) {
+            pollTimeoutRef.current = setTimeout(poll, 2000)
+          } else {
+            // finished
+            if (!res.success) {
+              console.error("Jumbo flow finished with errors")
+            }
+            if (pollTimeoutRef.current) {
+              clearTimeout(pollTimeoutRef.current)
+              pollTimeoutRef.current = null
+            }
+            setIsJumboModalOpen(false)
+            setIsCreatingCart(false)
+          }
+        } catch (err) {
+          console.error("Polling error:", err)
+          setIsJumboModalOpen(false)
+          setIsCreatingCart(false)
+        }
+      }
+
+      poll()
+    } catch (err) {
+      console.error("Error starting Jumbo job:", err)
+      setIsCreatingCart(false)
+      setIsJumboModalOpen(false)
+    }
+  }
 
   if (isCreatingCart) {
     return (
@@ -380,6 +544,14 @@ export default function CheckoutPage() {
               <Button
                 size="lg"
                 className="w-full rounded-xl bg-black py-4 text-base font-bold text-white shadow-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-xl active:scale-95"
+                onClick={() => {
+                  const storedCredentials = getStoredJumboCredentials()
+                  if (storedCredentials) {
+                    handleJumboSubmit(storedCredentials)
+                  } else {
+                    setIsJumboModalOpen(true)
+                  }
+                }}
               >
                 Realizar pedido
               </Button>
@@ -492,6 +664,12 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+
+      <JumboLoginModal
+        isOpen={isJumboModalOpen}
+        onClose={() => setIsJumboModalOpen(false)}
+        onSubmit={handleJumboSubmit}
+      />
     </div>
   )
 }
