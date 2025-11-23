@@ -8,6 +8,7 @@ interface CartDrawerProps {
   cart: CartItem[]
   sidebarRef?: React.RefObject<CartSidebarRef | null>
   className?: string
+  onUpdateQuantity?: (sku: string, quantity: number) => void
 }
 
 export default function CartDrawer({
@@ -16,6 +17,7 @@ export default function CartDrawer({
   cart,
   sidebarRef,
   className,
+  onUpdateQuantity,
 }: CartDrawerProps) {
   return (
     <div
@@ -56,10 +58,14 @@ export default function CartDrawer({
 
         <CartSidebar
           items={cart}
-          total={cart.reduce((acc, item) => acc + item.price, 0)}
+          total={cart.reduce(
+            (acc, item) => acc + item.price * item.quantity,
+            0
+          )}
           isOpen={isOpen}
           onClose={onClose}
           ref={sidebarRef}
+          onUpdateQuantity={onUpdateQuantity}
         />
       </div>
     </div>

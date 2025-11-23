@@ -60,12 +60,18 @@ export default function Home() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newItems: any = result.selectedProducts.map((p) => ({
         id: p.id,
+        sku: p.id, // Use id as sku for now (products from API use id)
         name: p.name,
         price: p.minPrice || 0,
         quantity: 1,
         image:
           "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
-        category: p.category,
+        imageUrl:
+          "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
+        category: p.category || "Otros",
+        url: `#`,
+        store: "Lider",
+        date: new Date().toISOString(),
       }))
 
       setAllProducts(newItems)
@@ -116,6 +122,19 @@ export default function Home() {
     // For now, just updating the cart is enough for the chat interaction.
   }
 
+  const handleUpdateQuantity = (sku: string, quantity: number) => {
+    setCartItems((prev) => {
+      if (quantity <= 0) {
+        // Remove item from cart
+        return prev.filter((item) => item.sku !== sku)
+      }
+      // Update quantity for existing item
+      return prev.map((item) =>
+        item.sku === sku ? { ...item, quantity } : item
+      )
+    })
+  }
+
   return (
     <main className="relative min-h-screen w-full bg-bg-page">
       <NavBar />
@@ -156,6 +175,7 @@ export default function Home() {
                 cart={cartItems}
                 sidebarRef={desktopCartRef}
                 className="h-full"
+                onUpdateQuantity={handleUpdateQuantity}
               />
             </div>
           </div>
@@ -169,6 +189,7 @@ export default function Home() {
           onClose={() => setIsCartOpen(false)}
           cart={cartItems}
           sidebarRef={mobileCartRef}
+          onUpdateQuantity={handleUpdateQuantity}
         />
       </div>
     </main>
