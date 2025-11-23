@@ -132,6 +132,7 @@ export const getProductsByIds = query({
           tags: product.tags || [],
           description: product.description,
           imageId: product.imageId,
+          imageUrl: product.imageUrl,
           prices,
           minPrice,
           maxPrice,

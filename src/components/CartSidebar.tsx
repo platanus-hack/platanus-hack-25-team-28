@@ -4,6 +4,7 @@ import { CartItem, StoreName } from "@/types"
 import { formatCurrency } from "@/utils/cartUtils"
 import gsap from "gsap"
 import { Minus, Plus, ShoppingCart, X } from "lucide-react"
+import Image from "next/image"
 import {
   forwardRef,
   useEffect,
@@ -289,12 +290,19 @@ const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
                             }`}
                           >
                             <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-white p-1">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={item.imageUrl}
-                                alt={item.name}
-                                className="h-full w-full object-contain"
-                              />
+                              {item.imageUrl ? (
+                                <Image
+                                  src={item.imageUrl}
+                                  alt={item.name}
+                                  width={48}
+                                  height={48}
+                                  className="h-full w-full object-contain"
+                                />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
+                                  ?
+                                </div>
+                              )}
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-medium text-text-main">

@@ -77,8 +77,9 @@ export default function Home() {
           price: p.price || p.minPrice || 0,
           quantity: p.quantity || 1,
           imageUrl:
-            p.imageUrl ||
-            "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
+            p.imageUrl && p.imageUrl.trim() !== ""
+              ? p.imageUrl
+              : "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
           category: p.category || "Otros",
           url: `#`,
           store: storeName,

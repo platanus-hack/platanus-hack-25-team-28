@@ -28,6 +28,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "i5.walmartimages.cl",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 }
