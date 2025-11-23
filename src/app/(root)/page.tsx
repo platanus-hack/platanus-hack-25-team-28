@@ -18,6 +18,7 @@ import { CartSidebarRef } from "@/components/CartSidebar"
 import NavBar from "@/components/NavBar"
 import { api } from "@/convex/_generated/api"
 import { useAction } from "convex/react"
+import { InteractiveRevealBackground } from "@/components/InteractiveRevealBackground"
 
 // Ensure plugins are registered
 if (typeof window !== "undefined") {
@@ -136,11 +137,13 @@ export default function Home() {
   }
 
   return (
-    <main className="relative min-h-screen w-full bg-bg-page">
-      <NavBar />
-      <Hero onFillCart={handleSearch} isLoading={isLoading} />
+      <main className="relative min-h-screen w-full">
+        <NavBar />
+        <InteractiveRevealBackground>
+          <Hero onFillCart={handleSearch} isLoading={isLoading} />
+        </InteractiveRevealBackground>
 
-      {showResults && (
+        {showResults && (
         <div
           id="results-section"
           className="flex min-h-screen flex-col lg:flex-row"
@@ -192,6 +195,6 @@ export default function Home() {
           onUpdateQuantity={handleUpdateQuantity}
         />
       </div>
-    </main>
+      </main>
   )
 }
