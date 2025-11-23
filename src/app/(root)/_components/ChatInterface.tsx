@@ -1,10 +1,7 @@
 "use client"
 
-import { api } from "@/convex/_generated/api"
-import { useSpeechRecognition } from "@/hooks/useSpeechRecognition"
 import { CartItem } from "@/types"
-import { useAction } from "convex/react"
-import { Mic, Send, Sparkles } from "lucide-react"
+import { Sparkles } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { ChatMessage, Message } from "./chat/ChatMessage"
 import { TypingIndicator } from "./chat/TypingIndicator"
@@ -20,33 +17,8 @@ export default function ChatInterface({
   cartItems,
   onUpdateCart,
 }: ChatInterfaceProps) {
-  const recommendProducts = useAction(api.recommendations.recommendProducts)
   const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
-
-  const {
-    isListening,
-    isSupported,
-    error: speechError,
-    transcript,
-    startListening,
-    stopListening,
-  } = useSpeechRecognition({
-    language: "es-ES",
-    onResult: (text) => {
-      setInput(text)
-    },
-  })
-
-  useEffect(() => {
-    if (transcript) {
-      const timer = setTimeout(() => {
-        setInput(transcript)
-      }, 0)
-      return () => clearTimeout(timer)
-    }
-  }, [transcript])
 
   // Ref for the scrollable container, NOT the end div
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -98,84 +70,12 @@ export default function ChatInterface({
     setIsTyping(false)
   }, [initialPrompt, cartItems]) // Only run when these change initially
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim()) return
-
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input,
-    }
-
-    setMessages((prev) => [...prev, userMsg])
-    setInput("")
-    setIsTyping(true)
-
-    // Call the API
-    const history = messages.map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    }))
-
-    recommendProducts({
-      userPrompt: input,
-      conversationHistory: history,
-    })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .then((result: any) => {
-        const aiMsg: Message = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content:
-            result.recommendation || "Aquí tienes los productos recomendados.",
-        }
-        setMessages((prev) => [...prev, aiMsg])
-        setIsTyping(false)
-
-        // Update cart if products were returned
-        if (
-          result.selectedProducts &&
-          result.selectedProducts.length > 0 &&
-          onUpdateCart
-        ) {
-          // Convert to CartItem format, preserving store information
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const newItems: any = result.selectedProducts.map((p: any) => ({
-            id: p.id,
-            sku: p.id,
-            name: p.name,
-            price: p.minPrice || 0,
-            quantity: p.quantity || 1,
-            imageUrl:
-              "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
-            category: p.category || "Otros",
-            store: p.store || "Lider",
-            url: `#`,
-            date: new Date().toISOString(),
-          }))
-          // Append new items to carts (they will be distributed to correct stores by handleUpdateCart)
-          onUpdateCart(newItems)
-        }
-      })
-      .catch((err) => {
-        console.error("Error fetching recommendations:", err)
-        setIsTyping(false)
-        const errorMsg: Message = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: "Lo siento, hubo un error al procesar tu solicitud.",
-        }
-        setMessages((prev) => [...prev, errorMsg])
-      })
-  }
-
   return (
     <div className="mx-auto flex h-full max-w-3xl flex-col p-4 md:p-6">
       {/* Scrollable Container wrapping Header + Messages */}
       <div
         ref={scrollContainerRef}
-        className="scrollbar-hide mb-6 flex-1 space-y-6 overflow-y-auto pr-2"
+        className="scrollbar-hide flex-1 space-y-6 overflow-y-auto pr-2"
       >
         {/* Header - Now inside scrollable area */}
         <div className="pt-2 pb-2 text-center">
@@ -196,51 +96,6 @@ export default function ChatInterface({
 
         {isTyping && <TypingIndicator />}
       </div>
-
-      {/* Input Area - Stays fixed at bottom of flex container */}
-      <form onSubmit={handleSubmit} className="relative shrink-0">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Escribe tu mensaje..."
-          className="w-full rounded-xl border border-gray-200 bg-white p-4 pr-24 shadow-sm transition-all outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20"
-        />
-        <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">
-          {isSupported && (
-            <button
-              type="button"
-              onClick={() => {
-                if (isListening) {
-                  stopListening()
-                } else {
-                  startListening()
-                }
-              }}
-              className={`rounded-lg p-2 transition-colors ${
-                isListening
-                  ? "animate-pulse bg-red-500 text-white hover:bg-red-600"
-                  : "text-gray-500 hover:bg-gray-100"
-              }`}
-              title={
-                isListening ? "Detener grabación" : "Iniciar grabación de voz"
-              }
-            >
-              <Mic size={20} />
-            </button>
-          )}
-          <button
-            type="submit"
-            disabled={!input.trim() || isTyping}
-            className="rounded-lg p-2 text-accent-primary transition-colors hover:bg-accent-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Send size={20} />
-          </button>
-        </div>
-        {speechError && (
-          <p className="mt-2 text-xs text-red-500">{speechError}</p>
-        )}
-      </form>
     </div>
   )
 }
