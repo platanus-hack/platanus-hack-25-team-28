@@ -71,3 +71,11 @@ export type ConversationMessage = {
   content: string
   timestamp?: number
 }
+
+export type StoreRecommendation = {
+  storeId: Id<"stores">
+  storeName: string
+  recommendation: string
+  selectedProducts: SelectedProduct[]
+  totalCost: number
+}
