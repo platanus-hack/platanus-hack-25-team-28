@@ -28,10 +28,26 @@ export default function SmartShoppingGrid({
   const gridRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
   const flyersRef = useRef<HTMLElement[]>([])
+  const hasAnimatedRef = useRef(false)
+  const onItemAddedRef = useRef(onItemAdded)
+
+  // Keep ref updated with latest callback
+  React.useEffect(() => {
+    onItemAddedRef.current = onItemAdded
+  }, [onItemAdded])
 
   // Changed to useEffect to ensure DOM is ready and prevent blocking
   React.useEffect(() => {
-    if (!items.length || !cartListRef.current || !canStart) return
+    if (
+      !items.length ||
+      !cartListRef.current ||
+      !canStart ||
+      hasAnimatedRef.current
+    ) {
+      return
+    }
+
+    hasAnimatedRef.current = true
 
     const ctx = gsap.context((self) => {
       const tl = gsap.timeline({
@@ -50,7 +66,7 @@ export default function SmartShoppingGrid({
       // We create a parallel timeline or just use a timeout in real React world, but here in GSAP context:
 
       const fallbackTimer = setTimeout(() => {
-        items.forEach((item) => onItemAdded(item))
+        items.forEach((item) => onItemAddedRef.current(item))
       }, 10000)
 
       // Add cleanup to the context
@@ -93,7 +109,7 @@ export default function SmartShoppingGrid({
             const sidebarApi = cartListRef.current
 
             if (!card || !sidebarApi) {
-              onItemAdded(item)
+              onItemAddedRef.current(item)
               return
             }
 
@@ -123,7 +139,7 @@ export default function SmartShoppingGrid({
 
             // Validate destRect - if it looks wrong (e.g. hidden), fallback immediately
             if (!destRect || destRect.width <= 0 || destRect.height <= 0) {
-              onItemAdded(item)
+              onItemAddedRef.current(item)
               if (document.body.contains(flyer)) {
                 document.body.removeChild(flyer)
               }
@@ -136,7 +152,7 @@ export default function SmartShoppingGrid({
                 if (document.body.contains(flyer)) {
                   document.body.removeChild(flyer)
                 }
-                onItemAdded(item)
+                onItemAddedRef.current(item)
               },
             })
 
@@ -199,8 +215,10 @@ export default function SmartShoppingGrid({
         }
       })
       flyersRef.current = []
+      hasAnimatedRef.current = false // reset if the component unmounts
     }
-  }, [items, cartListRef, canStart, onItemAdded, onAnimationComplete])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items.length, canStart, onAnimationComplete])
 
   return (
     <section
@@ -221,7 +239,7 @@ export default function SmartShoppingGrid({
         >
           {items.map((item, index) => (
             <div
-              key={`${item.sku}-${index}`}
+              key={item.sku}
               ref={(el) => {
                 cardRefs.current[index] = el
               }}
