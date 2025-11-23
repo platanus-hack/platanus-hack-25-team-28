@@ -51,7 +51,7 @@ export function InteractiveRevealBackground({
         // Draw initial white background immediately after resize
         ctx.fillStyle = "#f5f5f7"
         ctx.fillRect(0, 0, canvas.width, canvas.height)
-        
+
         // Mark canvas as ready after initial draw
         setIsCanvasReady(true)
       }
