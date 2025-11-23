@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
           total: body.products?.length || body.productUrls?.length || 0,
           cartReady: false,
           currentCartCount: 0,
-        }
+        },
       })
 
       try {

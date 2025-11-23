@@ -33,7 +33,8 @@ export async function POST(req: NextRequest) {
           current: current ?? existingJob.progress?.current ?? 0,
           total: total ?? existingJob.progress?.total ?? 0,
           cartReady: cartReady ?? existingJob.progress?.cartReady ?? false,
-          currentCartCount: currentCartCount ?? existingJob.progress?.currentCartCount ?? 0,
+          currentCartCount:
+            currentCartCount ?? existingJob.progress?.currentCartCount ?? 0,
         },
       })
     } else {

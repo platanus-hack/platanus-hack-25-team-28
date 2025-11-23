@@ -240,12 +240,14 @@ async function addProductToCart(
       .locator('button.add[data-cnstrc-btn="add_to_cart"]')
       .first()
     const currentQuantityInput = page.locator('input[type="number"]').first()
-    
-    const currentQtyStr = await currentQuantityInput.inputValue().catch(() => "1")
+
+    const currentQtyStr = await currentQuantityInput
+      .inputValue()
+      .catch(() => "1")
     const currentQty = parseInt(currentQtyStr) || 1
-    
+
     if (currentQty > quantity) {
-      const minusButton = page.locator('button.minus').first()
+      const minusButton = page.locator("button.minus").first()
       for (let i = currentQty; i > quantity; i--) {
         const isVisible = await minusButton.isVisible().catch(() => false)
         if (isVisible) {
