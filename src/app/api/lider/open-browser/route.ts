@@ -103,7 +103,8 @@ async function getCartFromPage(page: Page) {
     // Try to intercept GraphQL responses or read from localStorage/cookies
     try {
       // Check if there's cart info in localStorage
-      const cartData = localStorage.getItem("cart") || localStorage.getItem("cartId")
+      const cartData =
+        localStorage.getItem("cart") || localStorage.getItem("cartId")
       if (cartData) {
         try {
           return JSON.parse(cartData)
@@ -171,7 +172,7 @@ export async function POST(req: NextRequest) {
     })
 
     page = await context.newPage()
-    
+
     // Enhanced stealth: Override webdriver detection
     await page.addInitScript(() => {
       // Remove webdriver flag
@@ -192,7 +193,9 @@ export async function POST(req: NextRequest) {
       if (originalQuery) {
         ;(window.navigator as any).permissions.query = (parameters: any) =>
           parameters.name === "notifications"
-            ? Promise.resolve({ state: Notification.permission } as PermissionStatus)
+            ? Promise.resolve({
+                state: Notification.permission,
+              } as PermissionStatus)
             : originalQuery(parameters)
       }
 
@@ -208,7 +211,9 @@ export async function POST(req: NextRequest) {
 
       // Override getParameter to avoid detection
       const getParameter = WebGLRenderingContext.prototype.getParameter
-      WebGLRenderingContext.prototype.getParameter = function (parameter: number) {
+      WebGLRenderingContext.prototype.getParameter = function (
+        parameter: number
+      ) {
         if (parameter === 37445) {
           return "Intel Inc."
         }
@@ -233,7 +238,10 @@ export async function POST(req: NextRequest) {
 
     page.on("response", async (res: Response) => {
       const url = res.url()
-      if (url.includes("/orchestra/graphql") || url.includes("/orchestra/cartxo/graphql")) {
+      if (
+        url.includes("/orchestra/graphql") ||
+        url.includes("/orchestra/cartxo/graphql")
+      ) {
         try {
           const data = await res.json().catch(() => null)
           if (data) {
@@ -249,80 +257,90 @@ export async function POST(req: NextRequest) {
 
     // First, navigate to homepage to establish session and bypass PerimeterX
     console.log("Navigating to homepage first to establish session...")
-    
+
     // Simulate human-like behavior: move mouse randomly
     await page.mouse.move(100, 100)
     await page.waitForTimeout(500)
-    
+
     await page.goto("https://www.lider.cl", {
       waitUntil: "domcontentloaded",
       timeout: 60000,
     })
-    
+
     // Simulate reading the page (human behavior)
     await page.mouse.move(400, 300)
     await page.waitForTimeout(2000)
     await page.mouse.move(800, 500)
     await page.waitForTimeout(2000)
-    
+
     // Scroll a bit (human behavior)
     await page.evaluate(() => {
       window.scrollTo(0, 300)
     })
     await page.waitForTimeout(3000)
-    
+
     // Check if homepage was blocked
     const homepageInfo = await page.evaluate(() => ({
       url: window.location.href,
-      isBlocked: window.location.href.includes("/blocked") || document.title.includes("Robot"),
+      isBlocked:
+        window.location.href.includes("/blocked") ||
+        document.title.includes("Robot"),
     }))
-    
+
     if (homepageInfo.isBlocked) {
-      console.log("Homepage blocked, waiting for PerimeterX challenge (up to 90 seconds)...")
+      console.log(
+        "Homepage blocked, waiting for PerimeterX challenge (up to 90 seconds)..."
+      )
       // Wait up to 90 seconds for challenge to complete automatically
       try {
         await page.waitForFunction(
-          () => !window.location.href.includes("/blocked") && !document.title.includes("Robot"),
+          () =>
+            !window.location.href.includes("/blocked") &&
+            !document.title.includes("Robot"),
           { timeout: 90000 }
         )
         console.log("PerimeterX challenge completed automatically!")
         await page.waitForTimeout(5000)
       } catch (error) {
         // If still blocked after 90 seconds, try one more navigation
-        console.log("Challenge didn't complete automatically, trying direct navigation...")
+        console.log(
+          "Challenge didn't complete automatically, trying direct navigation..."
+        )
         await page.goto("https://www.lider.cl", {
           waitUntil: "domcontentloaded",
           timeout: 60000,
         })
         await page.waitForTimeout(10000)
-        
+
         const retryInfo = await page.evaluate(() => ({
           url: window.location.href,
-          isBlocked: window.location.href.includes("/blocked") || document.title.includes("Robot"),
+          isBlocked:
+            window.location.href.includes("/blocked") ||
+            document.title.includes("Robot"),
         }))
-        
+
         if (retryInfo.isBlocked) {
           // Even with headless: false, PerimeterX might require manual interaction
           // Return a helpful error message
           throw new Error(
             "PerimeterX requiere interacción manual. Por favor, completa el desafío en el navegador que se abrió. " +
-            "Después de completarlo una vez, las cookies se guardarán y funcionará automáticamente en futuras ejecuciones."
+              "Después de completarlo una vez, las cookies se guardarán y funcionará automáticamente en futuras ejecuciones."
           )
         }
       }
     }
-    
+
     // Accept cookies on homepage
     await acceptCookies(page)
     await page.waitForTimeout(2000)
 
     // Now navigate to product page
     console.log("Navigating to product page...")
-    
+
     // More human-like behavior
     await page.mouse.move(600, 400)
     await page.waitForTimeout(1000)
-    
+
     await page.goto(productUrl, {
       waitUntil: "domcontentloaded",
       timeout: 60000,
@@ -356,8 +374,11 @@ export async function POST(req: NextRequest) {
         title: document.title,
         url: window.location.href,
         bodyText: document.body?.textContent?.substring(0, 200) || "",
-        hasPerimeterX: document.body?.textContent?.includes("PerimeterX") || false,
-        isBlocked: window.location.href.includes("/blocked") || document.title.includes("Robot"),
+        hasPerimeterX:
+          document.body?.textContent?.includes("PerimeterX") || false,
+        isBlocked:
+          window.location.href.includes("/blocked") ||
+          document.title.includes("Robot"),
       }
     })
 
@@ -365,26 +386,32 @@ export async function POST(req: NextRequest) {
 
     // If PerimeterX blocked us on product page, wait for challenge to complete
     if (pageInfo.isBlocked || pageInfo.hasPerimeterX) {
-      console.log("Product page blocked by PerimeterX, waiting for challenge...")
-      
+      console.log(
+        "Product page blocked by PerimeterX, waiting for challenge..."
+      )
+
       // Wait for redirect away from blocked page (up to 60 seconds)
       try {
         await page.waitForFunction(
-          () => !window.location.href.includes("/blocked") && !document.title.includes("Robot"),
+          () =>
+            !window.location.href.includes("/blocked") &&
+            !document.title.includes("Robot"),
           { timeout: 60000 }
         )
         console.log("PerimeterX challenge completed on product page")
-        
+
         // Wait for the actual product page to load
         await page.waitForTimeout(5000)
-        
+
         // Re-check if we're still blocked
         const newPageInfo = await page.evaluate(() => ({
           title: document.title,
           url: window.location.href,
-          isBlocked: window.location.href.includes("/blocked") || document.title.includes("Robot"),
+          isBlocked:
+            window.location.href.includes("/blocked") ||
+            document.title.includes("Robot"),
         }))
-        
+
         if (newPageInfo.isBlocked) {
           throw new Error(
             "Página aún bloqueada por PerimeterX después de esperar. Intenta con headless: false para completar el desafío manualmente."
@@ -405,7 +432,7 @@ export async function POST(req: NextRequest) {
       window.scrollTo(0, document.body.scrollHeight / 2)
     })
     await page.waitForTimeout(2000)
-    
+
     await page.evaluate(() => {
       window.scrollTo(0, 0)
     })
@@ -452,22 +479,33 @@ export async function POST(req: NextRequest) {
     if (!buttonFound) {
       // Wait a bit more and try again
       await page.waitForTimeout(3000)
-      
+
       // Debug: Get all button texts
       const allButtonTexts = await page.evaluate(() => {
-        const buttons = Array.from(document.querySelectorAll("button, a[role='button']"))
-        return buttons.map(btn => ({
-          text: (btn.textContent || "").trim(),
-          ariaLabel: btn.getAttribute("aria-label") || "",
-          className: btn.className || "",
-          visible: btn.getBoundingClientRect().width > 0 && btn.getBoundingClientRect().height > 0
-        })).filter(b => b.text.length > 0 || b.ariaLabel.length > 0)
+        const buttons = Array.from(
+          document.querySelectorAll("button, a[role='button']")
+        )
+        return buttons
+          .map((btn) => ({
+            text: (btn.textContent || "").trim(),
+            ariaLabel: btn.getAttribute("aria-label") || "",
+            className: btn.className || "",
+            visible:
+              btn.getBoundingClientRect().width > 0 &&
+              btn.getBoundingClientRect().height > 0,
+          }))
+          .filter((b) => b.text.length > 0 || b.ariaLabel.length > 0)
       })
-      
-      console.log("Found buttons on page:", JSON.stringify(allButtonTexts, null, 2))
-      
+
+      console.log(
+        "Found buttons on page:",
+        JSON.stringify(allButtonTexts, null, 2)
+      )
+
       const buttonFoundRetry = await page.evaluate(() => {
-        const buttons = Array.from(document.querySelectorAll("button, a[role='button']"))
+        const buttons = Array.from(
+          document.querySelectorAll("button, a[role='button']")
+        )
         for (const btn of buttons) {
           const text = (btn.textContent || "").toLowerCase().trim()
           const ariaLabel = (btn.getAttribute("aria-label") || "").toLowerCase()
@@ -489,8 +527,10 @@ export async function POST(req: NextRequest) {
 
       if (!buttonFoundRetry) {
         // Take a screenshot for debugging
-        await page.screenshot({ path: "lider-debug.png", fullPage: true }).catch(() => {})
-        
+        await page
+          .screenshot({ path: "lider-debug.png", fullPage: true })
+          .catch(() => {})
+
         // Get more page info for debugging
         const debugInfo = await page.evaluate(() => {
           return {
@@ -503,7 +543,7 @@ export async function POST(req: NextRequest) {
             hasScripts: document.querySelectorAll("script").length,
           }
         })
-        
+
         throw new Error(
           `No se encontró el botón Agregar. Debug: ${JSON.stringify(debugInfo)}, Botones: ${JSON.stringify(allButtonTexts.slice(0, 10))}`
         )
@@ -512,12 +552,14 @@ export async function POST(req: NextRequest) {
 
     // Now try to click using JavaScript evaluation (most reliable)
     const clicked = await page.evaluate(() => {
-      const buttons = Array.from(document.querySelectorAll("button, a[role='button'], [onclick]"))
+      const buttons = Array.from(
+        document.querySelectorAll("button, a[role='button'], [onclick]")
+      )
       for (const btn of buttons) {
         const text = (btn.textContent || "").toLowerCase().trim()
         const ariaLabel = (btn.getAttribute("aria-label") || "").toLowerCase()
         const className = (btn.className || "").toLowerCase()
-        
+
         // Check if this looks like an add to cart button
         if (
           text.includes("agregar") ||
@@ -595,8 +637,14 @@ export async function POST(req: NextRequest) {
 
     for (const resp of graphqlResponses) {
       if (resp.status >= 200 && resp.status < 300) {
-        const data = resp.data as { data?: { mergeAndGetCart?: { id?: string }; updateItems?: { id?: string } } }
-        cartId = data?.data?.mergeAndGetCart?.id || data?.data?.updateItems?.id || null
+        const data = resp.data as {
+          data?: {
+            mergeAndGetCart?: { id?: string }
+            updateItems?: { id?: string }
+          }
+        }
+        cartId =
+          data?.data?.mergeAndGetCart?.id || data?.data?.updateItems?.id || null
         if (cartId) {
           cartResponse = resp.data
           break
@@ -615,16 +663,17 @@ export async function POST(req: NextRequest) {
 
     const ms = Date.now() - started
 
-    const success = graphqlResponses.some(
-      (r) => r.status >= 200 && r.status < 300
-    ) || afterCount > beforeCount
+    const success =
+      graphqlResponses.some((r) => r.status >= 200 && r.status < 300) ||
+      afterCount > beforeCount
 
     // Construct cart URL - Lider uses standard cart URL, cartId is in cookies
-    const cartUrl = success && cartId 
-      ? `https://www.lider.cl/cart`
-      : success 
-        ? `https://www.lider.cl/cart` // Even without cartId, try the cart URL
-        : null
+    const cartUrl =
+      success && cartId
+        ? `https://www.lider.cl/cart`
+        : success
+          ? `https://www.lider.cl/cart` // Even without cartId, try the cart URL
+          : null
 
     const payload = {
       success,
@@ -667,4 +716,3 @@ export async function POST(req: NextRequest) {
     )
   }
 }
-

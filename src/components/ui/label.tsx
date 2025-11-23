@@ -9,7 +9,8 @@ const labelVariants = cva(
     variants: {
       variant: {
         default: "text-foreground",
-        required: "text-foreground after:content-['*'] after:ml-0.5 after:text-destructive",
+        required:
+          "text-foreground after:content-['*'] after:ml-0.5 after:text-destructive",
       },
     },
     defaultVariants: {
@@ -36,4 +37,3 @@ const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
 Label.displayName = "Label"
 
 export { Label, labelVariants }
-

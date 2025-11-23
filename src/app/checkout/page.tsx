@@ -6,7 +6,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { CartItem, StoreName } from "@/types"
 import { formatCurrency } from "@/utils/cartUtils"
-import { CreditCard, Lock, Mail, MapPin, Phone, Shield, ShoppingBag } from "lucide-react"
+import {
+  CreditCard,
+  Lock,
+  Mail,
+  MapPin,
+  Phone,
+  Shield,
+  ShoppingBag,
+} from "lucide-react"
 import { useState } from "react"
 
 const mockCartItems: CartItem[] = [
@@ -65,7 +73,13 @@ const subtotal = mockCartItems.reduce(
 const shipping = 0
 const total = subtotal + shipping
 
-function SectionHeader({ title, icon: Icon }: { title: string; icon?: React.ElementType }) {
+function SectionHeader({
+  title,
+  icon: Icon,
+}: {
+  title: string
+  icon?: React.ElementType
+}) {
   return (
     <div className="relative -mx-2 mb-6">
       <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-gray-50/80 to-white/50 px-4 py-3 backdrop-blur-sm">
@@ -345,7 +359,7 @@ export default function CheckoutPage() {
                         />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-text-main line-clamp-2">
+                        <p className="line-clamp-2 text-sm font-semibold text-text-main">
                           {item.name}
                         </p>
                         <p className="mt-1 text-xs text-text-muted">
@@ -410,4 +424,3 @@ export default function CheckoutPage() {
     </div>
   )
 }
-

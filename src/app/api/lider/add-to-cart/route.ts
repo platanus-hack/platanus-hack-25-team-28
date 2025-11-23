@@ -14,7 +14,8 @@ type Body = {
 }
 
 const LIDER_GRAPHQL_ENDPOINT = "https://www.lider.cl/orchestra/graphql"
-const LIDER_CART_GRAPHQL_ENDPOINT = "https://www.lider.cl/orchestra/cartxo/graphql"
+const LIDER_CART_GRAPHQL_ENDPOINT =
+  "https://www.lider.cl/orchestra/cartxo/graphql"
 const LIDER_BASE_URL = "https://www.lider.cl"
 
 interface CookieJar {
@@ -136,10 +137,11 @@ async function initializeCart(cookieJar: CookieJar): Promise<CookieJar> {
     "x-o-vertical": "EA",
     "x-enable-server-timing": "1",
     "x-latency-trace": "1",
-    "device_profile_ref_id": "4lybqbq3ewor_zzmw4vfw_2h2ha7zl83aonw",
-    "wm_mp": "true",
-    "wm_page_url": "https://www.lider.cl/",
-    "sec-ch-ua": '"Chromium";v="142", "Google Chrome";v="142", "Not_A Brand";v="99"',
+    device_profile_ref_id: "4lybqbq3ewor_zzmw4vfw_2h2ha7zl83aonw",
+    wm_mp: "true",
+    wm_page_url: "https://www.lider.cl/",
+    "sec-ch-ua":
+      '"Chromium";v="142", "Google Chrome";v="142", "Not_A Brand";v="99"',
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": '"macOS"',
     "sec-fetch-dest": "empty",
@@ -408,10 +410,11 @@ async function addItemToCart(
     "x-o-vertical": "EA",
     "x-enable-server-timing": "1",
     "x-latency-trace": "1",
-    "device_profile_ref_id": "4lybqbq3ewor_zzmw4vfw_2h2ha7zl83aonw",
-    "wm_mp": "true",
-    "wm_page_url": "https://www.lider.cl/",
-    "sec-ch-ua": '"Chromium";v="142", "Google Chrome";v="142", "Not_A Brand";v="99"',
+    device_profile_ref_id: "4lybqbq3ewor_zzmw4vfw_2h2ha7zl83aonw",
+    wm_mp: "true",
+    wm_page_url: "https://www.lider.cl/",
+    "sec-ch-ua":
+      '"Chromium";v="142", "Google Chrome";v="142", "Not_A Brand";v="99"',
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": '"macOS"',
     "sec-fetch-dest": "empty",
@@ -465,7 +468,10 @@ async function addItemToCart(
         offerId: offerId,
         productId: productId,
       }
-      console.error("addItemToCart failed:", JSON.stringify(errorDetails, null, 2))
+      console.error(
+        "addItemToCart failed:",
+        JSON.stringify(errorDetails, null, 2)
+      )
     }
 
     if (!response.ok) {
@@ -606,7 +612,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "offerId is required. Please provide it or a productUrl to fetch it automatically.",
+          error:
+            "offerId is required. Please provide it or a productUrl to fetch it automatically.",
           ms: Date.now() - started,
         },
         { status: 400 }
@@ -628,13 +635,17 @@ export async function POST(req: NextRequest) {
     if (!initialCookieJar.cartId) {
       const cartInitialized = await initializeCart(initialCookieJar)
       initialCookieJar.cookies = cartInitialized.cookies
-      initialCookieJar.cartId = cartInitialized.cartId || initialCookieJar.cartId
+      initialCookieJar.cartId =
+        cartInitialized.cartId || initialCookieJar.cartId
 
       // Log cart initialization result
       if (!initialCookieJar.cartId) {
-        console.warn("Cart initialization did not return a cartId, will try updateItems without cartId", {
-          hasCookies: !!initialCookieJar.cookies,
-        })
+        console.warn(
+          "Cart initialization did not return a cartId, will try updateItems without cartId",
+          {
+            hasCookies: !!initialCookieJar.cookies,
+          }
+        )
       }
     }
 
@@ -648,9 +659,10 @@ export async function POST(req: NextRequest) {
 
     const ms = Date.now() - started
 
-    const beforeCount = result.success && result.lineItems.length > 0
-      ? result.lineItems.length - 1
-      : 0
+    const beforeCount =
+      result.success && result.lineItems.length > 0
+        ? result.lineItems.length - 1
+        : 0
     const afterCount = result.lineItems.length
 
     const response = NextResponse.json({
