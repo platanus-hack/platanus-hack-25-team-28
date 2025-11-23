@@ -77,13 +77,6 @@ export default function NavBar() {
     }
   }, [])
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-    }
-  }
-
   return (
     <nav
       ref={navRef}
@@ -114,26 +107,6 @@ export default function NavBar() {
           </span>
         </div>
 
-        <div className="hidden items-center gap-8 md:flex">
-          <button
-            onClick={() => scrollToSection("precios")}
-            className="text-sm font-medium text-text-muted transition-colors hover:text-text-main"
-          >
-            Precios
-          </button>
-          <button
-            onClick={() => scrollToSection("recursos")}
-            className="text-sm font-medium text-text-muted transition-colors hover:text-text-main"
-          >
-            Recursos
-          </button>
-          <button
-            onClick={() => scrollToSection("comunidad")}
-            className="text-sm font-medium text-text-muted transition-colors hover:text-text-main"
-          >
-            Comunidad
-          </button>
-        </div>
         <NavBarAuth />
       </div>
     </nav>
