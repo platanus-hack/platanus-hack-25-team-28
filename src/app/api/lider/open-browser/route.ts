@@ -50,52 +50,53 @@ async function waitForProductPageReady(page: Page) {
   await page.waitForTimeout(2000)
 }
 
-async function findAddButton(page: Page) {
-  // Try multiple strategies to find the add to cart button
-  const selectors = [
-    "button:has-text('Agregar')",
-    "button:has-text('Añadir al carrito')",
-    "button:has-text('Añadir')",
-    "button:has-text('Agregar al carrito')",
-    "[data-testid='add-to-cart']",
-    "button[id*='add-to-cart']",
-    "button[aria-label*='agregar']",
-    "button[aria-label*='añadir']",
-    "button[class*='add-to-cart']",
-    "button[class*='addToCart']",
-    // Generic button that might be the add button
-    "button:has-text('carrito')",
-  ]
-
-  for (const sel of selectors) {
-    try {
-      const loc = page.locator(sel).first()
-      if (await loc.isVisible({ timeout: 2000 }).catch(() => false)) {
-        return loc
-      }
-    } catch {}
-  }
-
-  // Last resort: try to find any button that looks like an add button
-  try {
-    const allButtons = await page.locator("button").all()
-    for (const btn of allButtons) {
-      const text = (await btn.textContent()) || ""
-      const lowerText = text.toLowerCase()
-      if (
-        lowerText.includes("agregar") ||
-        lowerText.includes("añadir") ||
-        lowerText.includes("carrito")
-      ) {
-        if (await btn.isVisible({ timeout: 1000 }).catch(() => false)) {
-          return btn
-        }
-      }
-    }
-  } catch {}
-
-  return null
-}
+// Unused function - kept for potential future use
+// async function findAddButton(page: Page) {
+//   // Try multiple strategies to find the add to cart button
+//   const selectors = [
+//     "button:has-text('Agregar')",
+//     "button:has-text('Añadir al carrito')",
+//     "button:has-text('Añadir')",
+//     "button:has-text('Agregar al carrito')",
+//     "[data-testid='add-to-cart']",
+//     "button[id*='add-to-cart']",
+//     "button[aria-label*='agregar']",
+//     "button[aria-label*='añadir']",
+//     "button[class*='add-to-cart']",
+//     "button[class*='addToCart']",
+//     // Generic button that might be the add button
+//     "button:has-text('carrito')",
+//   ]
+//
+//   for (const sel of selectors) {
+//     try {
+//       const loc = page.locator(sel).first()
+//       if (await loc.isVisible({ timeout: 2000 }).catch(() => false)) {
+//         return loc
+//       }
+//     } catch {}
+//   }
+//
+//   // Last resort: try to find any button that looks like an add button
+//   try {
+//     const allButtons = await page.locator("button").all()
+//     for (const btn of allButtons) {
+//       const text = (await btn.textContent()) || ""
+//       const lowerText = text.toLowerCase()
+//       if (
+//         lowerText.includes("agregar") ||
+//         lowerText.includes("añadir") ||
+//         lowerText.includes("carrito")
+//       ) {
+//         if (await btn.isVisible({ timeout: 1000 }).catch(() => false)) {
+//           return btn
+//         }
+//       }
+//     }
+//   } catch {}
+//
+//   return null
+// }
 
 async function getCartFromPage(page: Page) {
   // Try to get cart info from the page
@@ -181,7 +182,13 @@ export async function POST(req: NextRequest) {
       })
 
       // Mock chrome object
-      ;(window as any).chrome = {
+      interface ChromeMock {
+        runtime: Record<string, unknown>
+        loadTimes: () => void
+        csi: () => void
+        app: Record<string, unknown>
+      }
+      ;(window as unknown as { chrome: ChromeMock }).chrome = {
         runtime: {},
         loadTimes: function () {},
         csi: function () {},
@@ -189,14 +196,23 @@ export async function POST(req: NextRequest) {
       }
 
       // Mock permissions
-      const originalQuery = (window.navigator as any).permissions?.query
+      type NavigatorWithPermissions = Navigator & {
+        permissions?: {
+          query: (parameters: { name: string }) => Promise<PermissionStatus>
+        }
+      }
+      const nav = window.navigator as NavigatorWithPermissions
+      const originalQuery = nav.permissions?.query
       if (originalQuery) {
-        ;(window.navigator as any).permissions.query = (parameters: any) =>
-          parameters.name === "notifications"
-            ? Promise.resolve({
-                state: Notification.permission,
-              } as PermissionStatus)
-            : originalQuery(parameters)
+        nav.permissions = {
+          ...nav.permissions,
+          query: (parameters: { name: string }) =>
+            parameters.name === "notifications"
+              ? Promise.resolve({
+                  state: Notification.permission,
+                } as PermissionStatus)
+              : originalQuery(parameters),
+        }
       }
 
       // Mock plugins
@@ -301,7 +317,7 @@ export async function POST(req: NextRequest) {
         )
         console.log("PerimeterX challenge completed automatically!")
         await page.waitForTimeout(5000)
-      } catch (error) {
+      } catch {
         // If still blocked after 90 seconds, try one more navigation
         console.log(
           "Challenge didn't complete automatically, trying direct navigation..."
@@ -417,7 +433,7 @@ export async function POST(req: NextRequest) {
             "Página aún bloqueada por PerimeterX después de esperar. Intenta con headless: false para completar el desafío manualmente."
           )
         }
-      } catch (error) {
+      } catch {
         throw new Error(
           "Página bloqueada por PerimeterX. Intenta con headless: false para completar el desafío manualmente la primera vez. Después las cookies persistirán."
         )
@@ -444,16 +460,6 @@ export async function POST(req: NextRequest) {
 
     // Try to find add button using JavaScript evaluation (more reliable)
     const buttonFound = await page.evaluate(() => {
-      // Try multiple strategies to find the button
-      const selectors = [
-        'button:contains("Agregar")',
-        'button:contains("Añadir")',
-        'button[aria-label*="agregar"]',
-        'button[aria-label*="añadir"]',
-        '[data-testid*="add"]',
-        'button[class*="add"]',
-      ]
-
       // Get all buttons and check their text
       const buttons = Array.from(document.querySelectorAll("button"))
       for (const btn of buttons) {

@@ -1,7 +1,6 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { CartItem, StoreName } from "@/types"
@@ -15,6 +14,7 @@ import {
   Shield,
   ShoppingBag,
 } from "lucide-react"
+import Image from "next/image"
 import { useState } from "react"
 
 const mockCartItems: CartItem[] = [
@@ -352,9 +352,11 @@ export default function CheckoutPage() {
                       } hover:border-gray-200 hover:bg-gray-50/50`}
                     >
                       <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-white p-1 shadow-sm">
-                        <img
+                        <Image
                           src={item.imageUrl}
                           alt={item.name}
+                          width={64}
+                          height={64}
                           className="h-full w-full object-contain"
                         />
                       </div>

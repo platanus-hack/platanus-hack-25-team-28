@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server"
 import { extractProductIdFromUrl, isLiderUrl } from "@/utils/liderUtils"
+import { NextRequest, NextResponse } from "next/server"
 
 type Body = {
   productUrl?: string
@@ -14,8 +14,6 @@ type Body = {
 }
 
 const LIDER_GRAPHQL_ENDPOINT = "https://www.lider.cl/orchestra/graphql"
-const LIDER_CART_GRAPHQL_ENDPOINT =
-  "https://www.lider.cl/orchestra/cartxo/graphql"
 const LIDER_BASE_URL = "https://www.lider.cl"
 
 interface CookieJar {
