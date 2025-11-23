@@ -1,6 +1,5 @@
 "use client"
 
-import Footer from "@/components/Footer"
 import { CartItem, StoreName } from "@/types"
 import { useCallback, useEffect, useRef, useState } from "react"
 import CartDrawer from "./_components/CartDrawer"
@@ -439,8 +438,6 @@ export default function Home() {
                 />
               </div>
             )}
-            {/* Footer inside the main content column */}
-            <Footer />
           </div>
           {/* Desktop Sidebar Column */}
           <div className="relative hidden w-[450px] shrink-0 lg:mr-0 lg:block">
