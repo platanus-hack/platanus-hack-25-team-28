@@ -99,7 +99,7 @@ export const addMultipleProductsToCart = action({
 
 export const openJumboCart = action({
   args: {},
-  handler: async (ctx, args) => {
+  handler: async (_ctx, _args) => {
     const cartUrl = "https://www.jumbo.cl"
 
     const response = await fetch(OPEN_BROWSER_API, {
