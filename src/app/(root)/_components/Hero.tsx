@@ -122,19 +122,17 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
 
           <div className="hero-text-element inline-block rounded-2xl bg-white/80 px-6 py-4 shadow-sm backdrop-blur-sm">
             <h1 className="text-5xl leading-[1.1] font-bold tracking-tight text-text-main md:text-7xl">
-              Arma tu carro de <br className="hidden md:block" />
-              <span className="text-accent-primary">supermercado</span> con{" "}
+              Pide tus compras <br className="hidden md:block" />
+              <span className="text-accent-primary">sin pensar</span> en{" "}
               <br className="hidden md:block" />
-              solo una frase.
+              segundos.
             </h1>
           </div>
 
           <div className="hero-text-element inline-block max-w-xl rounded-2xl bg-white/80 px-6 py-4 shadow-sm backdrop-blur-sm">
             <p className="text-xl leading-relaxed text-text-muted">
-              {/* eslint-disable-next-line react/no-unescaped-entities */}
-              Escribe lo que necesitas — por ejemplo "Quiero armar un asado para
-              6 personas con 40.000 CLP&quot; — y dejamos que la magia se
-              encargue del resto.
+              Dile a nuestra IA qué necesitas y te armamos el mejor carro
+              comparando varios supermercados. Tú solo pagas.
             </p>
           </div>
 

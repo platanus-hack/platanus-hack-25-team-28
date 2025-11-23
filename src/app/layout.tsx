@@ -15,9 +15,17 @@ const robotoMono = Roboto_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Carrito IA - Tu compra de supermercado en segundos",
-  description:
-    "Arma tu carro de supermercado con solo una frase. Powered by AI (Demo).",
+  title: "SuperTracker - Tu compra de supermercado en segundos",
+  description: "Pide tus compras sin pensar en segundos. Powered by AI (Demo).",
+  icons: {
+    icon: [
+      { url: "/images/favicon.png", sizes: "32x32", type: "image/png" },
+      { url: "/images/favicon.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [
+      { url: "/images/favicon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 }
 
 export default function RootLayout({

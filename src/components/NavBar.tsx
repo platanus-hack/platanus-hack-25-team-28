@@ -2,7 +2,7 @@
 
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { ShoppingCart } from "lucide-react"
+import Image from "next/image"
 import { useEffect, useRef } from "react"
 import NavBarAuth from "./NavBarAuth"
 
@@ -21,8 +21,8 @@ export default function NavBar() {
     // Initial State
     gsap.set(nav, {
       boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-      paddingTop: "1.5rem",
-      paddingBottom: "1.5rem",
+      paddingTop: "1rem",
+      paddingBottom: "1rem",
       backgroundColor: "rgba(255, 255, 255, 0.85)",
       backdropFilter: "blur(4px)",
     })
@@ -39,8 +39,8 @@ export default function NavBar() {
     tl.to(
       nav,
       {
-        paddingTop: "0.75rem",
-        paddingBottom: "0.75rem",
+        paddingTop: "0.5rem",
+        paddingBottom: "0.5rem",
         boxShadow:
           "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
         backgroundColor: "rgba(255, 255, 255, 0.85)",
@@ -68,47 +68,55 @@ export default function NavBar() {
   return (
     <nav
       ref={navRef}
-      className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-transparent px-6 transition-colors duration-300 md:px-12"
+      className="fixed top-0 right-0 left-0 z-50 border-b border-transparent px-6 transition-colors duration-300 md:px-12"
       style={{
         backgroundColor: "rgba(255, 255, 255, 0.85)",
         backdropFilter: "blur(4px)",
         boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
       }}
     >
-      <div
-        ref={logoRef}
-        className="flex cursor-pointer items-center gap-2"
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      >
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-primary text-white">
-          <ShoppingCart size={18} strokeWidth={2.5} />
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between">
+        <div
+          ref={logoRef}
+          className="flex cursor-pointer items-center gap-2"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        >
+          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg">
+            <Image
+              src="/images/logo.png"
+              alt="SuperTracker Logo"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+          <span className="text-xl font-bold tracking-tight text-text-main">
+            SuperTracker
+          </span>
         </div>
-        <span className="text-xl font-bold tracking-tight text-text-main">
-          carrito IA
-        </span>
-      </div>
 
-      <div className="hidden items-center gap-8 md:flex">
-        <button
-          onClick={() => scrollToSection("experiencia")}
-          className="text-sm font-medium text-text-muted transition-colors hover:text-text-main"
-        >
-          Experiencia
-        </button>
-        <button
-          onClick={() => scrollToSection("como-funciona")}
-          className="text-sm font-medium text-text-muted transition-colors hover:text-text-main"
-        >
-          Cómo funciona
-        </button>
-        <button
-          onClick={() => scrollToSection("futuro-ia")}
-          className="text-sm font-medium text-text-muted transition-colors hover:text-text-main"
-        >
-          Futuro IA
-        </button>
+        <div className="hidden items-center gap-8 md:flex">
+          <button
+            onClick={() => scrollToSection("precios")}
+            className="text-sm font-medium text-text-muted transition-colors hover:text-text-main"
+          >
+            Precios
+          </button>
+          <button
+            onClick={() => scrollToSection("recursos")}
+            className="text-sm font-medium text-text-muted transition-colors hover:text-text-main"
+          >
+            Recursos
+          </button>
+          <button
+            onClick={() => scrollToSection("comunidad")}
+            className="text-sm font-medium text-text-muted transition-colors hover:text-text-main"
+          >
+            Comunidad
+          </button>
+        </div>
+        <NavBarAuth />
       </div>
-      <NavBarAuth />
     </nav>
   )
 }
