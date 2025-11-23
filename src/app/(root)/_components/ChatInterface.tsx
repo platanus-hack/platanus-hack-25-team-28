@@ -98,7 +98,8 @@ export default function ChatInterface({
       userPrompt: input,
       conversationHistory: history,
     })
-      .then((result) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .then((result: any) => {
         const aiMsg: Message = {
           id: (Date.now() + 1).toString(),
           role: "assistant",
