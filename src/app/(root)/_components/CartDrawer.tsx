@@ -58,7 +58,10 @@ export default function CartDrawer({
 
         <CartSidebar
           items={cart}
-          total={cart.reduce((acc, item) => acc + item.price * item.quantity, 0)}
+          total={cart.reduce(
+            (acc, item) => acc + item.price * item.quantity,
+            0
+          )}
           isOpen={isOpen}
           onClose={onClose}
           ref={sidebarRef}

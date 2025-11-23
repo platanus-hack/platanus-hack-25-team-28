@@ -4,7 +4,13 @@ import { CartItem } from "@/types"
 import { formatCurrency } from "@/utils/cartUtils"
 import gsap from "gsap"
 import { Minus, Plus, ShoppingCart, X } from "lucide-react"
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react"
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react"
 
 export interface CartSidebarRef {
   getDestinationRect: (index: number) => DOMRect | null
@@ -31,7 +37,7 @@ const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
         // Find the item element by data attribute (traverse nested category structure)
         const list = listRef.current
         const allElements: HTMLElement[] = []
-        
+
         // Traverse all children (category sections) and their children (items)
         Array.from(list.children).forEach((categorySection) => {
           Array.from(categorySection.children).forEach((child) => {
@@ -124,9 +130,7 @@ const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
 
       items.forEach((item) => {
         const category =
-          item.category && item.category.trim() !== ""
-            ? item.category
-            : "Otros"
+          item.category && item.category.trim() !== "" ? item.category : "Otros"
         if (!groups[category]) {
           groups[category] = []
         }
@@ -208,10 +212,7 @@ const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
           </div>
 
           {/* List */}
-          <div
-            className="min-h-0 flex-1 overflow-y-auto p-4"
-            ref={listRef}
-          >
+          <div className="min-h-0 flex-1 overflow-y-auto p-4" ref={listRef}>
             {items.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-text-muted opacity-50">
                 <ShoppingCart size={48} className="mb-4" />
@@ -243,7 +244,7 @@ const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
                                   <div className="h-1.5 w-1.5 rounded-full bg-accent-primary shadow-sm" />
                                 </div>
                               </div>
-                              <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-text-main">
+                              <h3 className="text-xs font-bold tracking-[0.15em] text-text-main uppercase">
                                 {category}
                               </h3>
                               <div className="relative">
