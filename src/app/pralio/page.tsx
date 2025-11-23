@@ -30,7 +30,9 @@ export default function PralioTestPage() {
         const itemCount = data.cart?.items?.length || 0
         setCartInfo({ ready: itemCount > 0, count: itemCount })
       }
-    } catch (e) {}
+    } catch {
+      // Silently ignore errors when checking cart status
+    }
   }
 
   const checkJobStatus = async (jobId: string) => {

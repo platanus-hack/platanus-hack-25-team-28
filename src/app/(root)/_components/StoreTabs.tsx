@@ -19,13 +19,13 @@ export default function StoreTabs({
   jumboCartCount,
 }: StoreTabsProps) {
   const stores: Array<{ name: StoreName; label: string; count: number }> = [
+    { name: "Jumbo", label: "Jumbo", count: jumboCartCount },
     { name: "Lider", label: "Lider", count: liderCartCount },
     { name: "Unimarc", label: "Unimarc", count: unimarcCartCount },
-    { name: "Jumbo", label: "Jumbo", count: jumboCartCount },
   ]
 
   return (
-    <div className="flex border-b border-gray-200 bg-white">
+    <div className="m-0 flex border-b border-gray-200 bg-white">
       {stores.map((store) => {
         const isActive = activeStore === store.name
         let activeColorClass = "text-accent-primary"
