@@ -1,6 +1,6 @@
 "use client"
 
-import { CartItem } from "@/types"
+import { CartItem, StoreName } from "@/types"
 import { formatCurrency } from "@/utils/cartUtils"
 import gsap from "gsap"
 import { Minus, Plus, ShoppingCart, X } from "lucide-react"
@@ -22,10 +22,11 @@ interface CartSidebarProps {
   isOpen: boolean // for mobile
   onClose: () => void // for mobile
   onUpdateQuantity?: (sku: string, quantity: number) => void
+  activeStore?: StoreName
 }
 
 const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
-  ({ items = [], total, isOpen, onClose, onUpdateQuantity }, ref) => {
+  ({ items = [], total, isOpen, onClose, onUpdateQuantity, activeStore = "Lider" }, ref) => {
     const listRef = useRef<HTMLDivElement>(null)
     const totalRef = useRef<HTMLSpanElement>(null)
     const [pendingRemoval, setPendingRemoval] = useState<string | null>(null)
@@ -200,7 +201,7 @@ const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
                 </span>
               </h2>
               <p className="mt-1 text-xs text-text-muted">
-                Esta es una simulación usando productos reales de Lider.
+                Esta es una simulación usando productos reales de {activeStore}.
               </p>
             </div>
             <button
@@ -373,7 +374,7 @@ const CartSidebar = forwardRef<CartSidebarRef, CartSidebarProps>(
               </span>
             </div>
             <div className="mt-4 text-center text-[10px] text-gray-400">
-              Precios de referencia · Solo Lider · Demo sin compra real
+              Precios de referencia · {activeStore} · Demo sin compra real
             </div>
             <button className="mt-4 w-full rounded-xl bg-black py-3.5 font-bold text-white shadow-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-xl active:scale-95">
               Ir a pagar (Demo)

@@ -1,3 +1,5 @@
+export type StoreName = "Lider" | "Unimarc" | "Jumbo"
+
 export interface LiderProduct {
   name: string
   sku: string
@@ -5,7 +7,7 @@ export interface LiderProduct {
   price: number
   imageUrl: string
   category: string
-  store: string
+  store: StoreName
   date: string
 }
 

@@ -33,11 +33,12 @@ export default function SmartShoppingGrid({
   React.useEffect(() => {
     if (!items.length || !cartListRef.current || !canStart) return
 
-    const ctx = gsap.context(() => {
+    const ctx = gsap.context((self) => {
       const tl = gsap.timeline({
         defaults: { ease: "power3.out" },
         delay: 0.5, // Small delay after scroll
         onComplete: () => {
+          clearTimeout(fallbackTimer)
           if (onAnimationComplete) {
             onAnimationComplete()
           }
@@ -49,10 +50,13 @@ export default function SmartShoppingGrid({
       // We create a parallel timeline or just use a timeout in real React world, but here in GSAP context:
       /* eslint-disable @typescript-eslint/no-unused-vars */
       const fallbackTimer = setTimeout(() => {
-        items.forEach((item) => onItemAdded(item)) // Potentially duplicate calls if we don't check state?
-        // Wait, we rely on onItemAdded to update state. If we call it twice, we get duplicates.
-        // Better: Rely on the animation loop being robust.
+        items.forEach((item) => onItemAdded(item))
       }, 10000)
+
+      // Add cleanup to the context
+      self.add(() => {
+        return () => clearTimeout(fallbackTimer)
+      })
       // Actually, let's not do a global timeout that might cause race conditions.
       // Instead, lets make the loop more robust.
 
