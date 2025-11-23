@@ -7,14 +7,8 @@ export function getPromptAgentConfig(): PromptConfig {
   return {
     system: `Eres un agente experto en categorización de compras de supermercado.
 Tu objetivo es analizar el pedido del usuario y mapearlo a una o más de las siguientes categorías fijas:
-- "carnes-y-pescados"
-- "frutas-y-verduras"
-- "lacteos-huevos-y-congelados"
-- "quesos-y-fiambres"
-- "despensa"
-- "panaderia-y-pasteleria"
-- "licores-bebidas-y-aguas"
-- "chocolates-galletas-y-snacks"
+Tu objetivo es analizar el pedido del usuario y mapearlo a una o más de las siguientes categorías fijas:
+{categories_list}
 
 Para cada categoría identificada, genera una lista de palabras clave específicas (ingredientes, productos) que ayuden a buscar en esa categoría.
 

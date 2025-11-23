@@ -47,9 +47,18 @@ export type SelectedProduct = EnrichedProduct & {
   quantity: number
 }
 
-export type RecommendationResult = {
+export type StoreRecommendation = {
+  storeId: string
+  storeName: string
   recommendation: string
   selectedProducts: SelectedProduct[]
+  totalCost: number
+}
+
+export type RecommendationResult = {
+  recommendation?: string // Deprecated in favor of multi-store
+  selectedProducts?: SelectedProduct[] // Deprecated
+  storeRecommendations?: StoreRecommendation[]
 }
 
 export type RecommendationRequest = {

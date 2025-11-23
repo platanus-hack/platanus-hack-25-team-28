@@ -16,11 +16,13 @@ export class SelectionAgent {
 
   async generateRecommendation(
     userQuery: string,
-    products: EnrichedProduct[]
+    products: EnrichedProduct[],
+    storeName?: string
   ): Promise<RecommendationResult> {
     const promptConfig = getRecommendationPromptConfig()
     const systemPrompt =
       promptConfig.system +
+      (storeName ? `\nEres un asistente de compras para el supermercado "${storeName}". ` : "") +
       "\nIMPORTANT: When selecting products, you MUST specify the quantity for each product based on the user's request. If not specified, default to 1. Your response for selectedProductIds must be an array of objects: { id: string, quantity: number }."
 
     const productsContext = products
@@ -47,7 +49,7 @@ export class SelectionAgent {
       // Fallback if JSON parsing fails
       return {
         recommendation: content,
-        selectedProducts: products,
+        selectedProducts: products.map((p) => ({ ...p, quantity: 1 })),
       }
     }
 
@@ -63,7 +65,7 @@ export class SelectionAgent {
         if (typeof item === "string") {
           return { id: item, quantity: 1 }
         }
-        return { id: item.id, quantity: item.quantity || 1 }
+        return { id: item.id, quantity: Number(item.quantity) || 1 }
       })
 
       const selectedProducts = products
