@@ -48,7 +48,7 @@ export default function SmartShoppingGrid({
       // Force fallback trigger just in case everything else fails
       // This ensures cart is populated even if animation crashes/skips
       // We create a parallel timeline or just use a timeout in real React world, but here in GSAP context:
-      /* eslint-disable @typescript-eslint/no-unused-vars */
+       
       const fallbackTimer = setTimeout(() => {
         items.forEach((item) => onItemAdded(item))
       }, 10000)

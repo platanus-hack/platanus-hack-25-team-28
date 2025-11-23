@@ -1,11 +1,7 @@
 import { ChatAnthropic } from "@langchain/anthropic"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
-import {
-  EnrichedProduct,
-  RecommendationResult,
-  SelectedProduct,
-} from "../types"
 import { StoreName } from "../storeConfig"
+import { RecommendationResult, SelectedProduct } from "../types"
 
 export type StoreRecommendation = {
   storeName: StoreName
@@ -122,6 +118,7 @@ Genera un mensaje unificado para el usuario.`
       ])
       unifiedMessage = (response.content as string).trim()
     } catch (error) {
+      console.error("Error generating unified message", error)
       // Fallback to simple concatenation
       unifiedMessage = `He encontrado productos en ${storeRecommendations.length} supermercados. ${storeRecommendations.map((sr) => `${sr.storeName}: ${sr.recommendation.recommendation}`).join(" ")}`
     }

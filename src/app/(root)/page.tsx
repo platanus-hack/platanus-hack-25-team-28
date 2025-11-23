@@ -69,6 +69,7 @@ export default function Home() {
 
       results.forEach((storeResult) => {
         const storeName = storeResult.storeName
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const items = storeResult.selectedProducts.map((p: any) => ({
           id: p.id,
           sku: p.id, // Use id as sku for now (products from API use id)

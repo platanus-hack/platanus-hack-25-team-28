@@ -87,8 +87,7 @@ Reglas generales:
 
   async analyze(
     userMessage: string,
-    history: ConversationMessage[] = [],
-    availableCategories: string[] = []
+    history: ConversationMessage[] = []
   ): Promise<PromptAnalysis> {
     const promptConfig = getPromptAgentConfig()
     const systemPrompt = this.getSystemPrompt()
@@ -130,6 +129,7 @@ Reglas generales:
         }
       } else {
         // Legacy format: array of category objects or strings
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         categories = parsed.categories.map((cat: any) => {
           if (typeof cat === "string") {
             return { category: cat, keywords: parsed.keywords || [] }
