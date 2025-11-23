@@ -5,6 +5,12 @@ type Job = {
   result?: unknown
   error?: string
   startedAt: number
+  progress?: {
+    current: number
+    total: number
+    cartReady?: boolean
+    currentCartCount?: number
+  }
 }
 
 const jobs = new Map<string, Job>()
@@ -27,6 +33,12 @@ export async function POST(req: NextRequest) {
       jobs.set(jobId, {
         ...jobs.get(jobId)!,
         status: "running",
+        progress: {
+          current: 0,
+          total: body.products?.length || body.productUrls?.length || 0,
+          cartReady: false,
+          currentCartCount: 0,
+        }
       })
 
       try {
@@ -37,7 +49,10 @@ export async function POST(req: NextRequest) {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(body),
+            body: JSON.stringify({
+              ...body,
+              onProgress: jobId,
+            }),
           }
         )
 
@@ -48,6 +63,7 @@ export async function POST(req: NextRequest) {
           result: response.ok ? result : undefined,
           error: response.ok ? undefined : result.error || "Unknown error",
           startedAt: jobs.get(jobId)!.startedAt,
+          progress: jobs.get(jobId)!.progress,
         })
       } catch (error) {
         jobs.set(jobId, {
@@ -101,5 +117,6 @@ export async function GET(req: NextRequest) {
     result: job.result,
     error: job.error,
     elapsedMs: Date.now() - job.startedAt,
+    progress: job.progress,
   })
 }

@@ -8,6 +8,7 @@ export default function PralioTestPage() {
   const [urls, setUrls] = useState("")
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
+  const [cartInfo, setCartInfo] = useState<{ready: boolean, count: number} | null>(null)
   const [result, setResult] = useState<{
     success: boolean
     totalProducts: number
@@ -18,22 +19,66 @@ export default function PralioTestPage() {
   } | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const checkCartStatus = async () => {
+    try {
+      const response = await fetch("/api/jumbo/get-cart")
+      if (response.ok) {
+        const data = await response.json()
+        const itemCount = data.cart?.items?.length || 0
+        setCartInfo({ ready: itemCount > 0, count: itemCount })
+      }
+    } catch (e) {
+    }
+  }
+
   const checkJobStatus = async (jobId: string) => {
     const response = await fetch(`/api/jumbo/add-multiple-async?jobId=${jobId}`)
     const data = await response.json()
 
     if (data.status === "completed") {
       setResult(data.result)
+      setStatus("Products added! Waiting for browser to close...")
+      
+      await new Promise(resolve => setTimeout(resolve, 3000))
+      
+      setStatus("Proceeding to checkout...")
+      
+      try {
+        const purchaseResponse = await fetch("/api/jumbo/complete-purchase", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ headless: false }),
+        })
+
+        const purchaseData = await purchaseResponse.json()
+
+        if (purchaseData.success) {
+          setStatus("Purchase completed successfully!")
+        } else {
+          setError(`Checkout failed: ${purchaseData.error}`)
+        }
+      } catch (err) {
+        setError(`Checkout error: ${err instanceof Error ? err.message : "Unknown error"}`)
+      }
+
       setLoading(false)
       setStatus(null)
+      setCartInfo(null)
       return true
     } else if (data.status === "failed") {
       setError(data.error || "Job failed")
       setLoading(false)
       setStatus(null)
+      setCartInfo(null)
       return true
     } else if (data.status === "running") {
-      setStatus("Adding products to cart...")
+      await checkCartStatus()
+      
+      const cartStatus = cartInfo && cartInfo.ready
+        ? `🛒 Cart ready (${cartInfo.count} items)`
+        : "⏳ Preparing cart..."
+      
+      setStatus(`${cartStatus} - Adding products...`)
       return false
     } else {
       setStatus("Starting job...")

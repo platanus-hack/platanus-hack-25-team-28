@@ -239,11 +239,27 @@ async function addProductToCart(
     const plusButton = page
       .locator('button.add[data-cnstrc-btn="add_to_cart"]')
       .first()
-    for (let i = 1; i < quantity; i++) {
-      const isVisible = await plusButton.isVisible().catch(() => false)
-      if (isVisible) {
-        await plusButton.click({ timeout: 5000 })
-        await page.waitForTimeout(800)
+    const currentQuantityInput = page.locator('input[type="number"]').first()
+    
+    const currentQtyStr = await currentQuantityInput.inputValue().catch(() => "1")
+    const currentQty = parseInt(currentQtyStr) || 1
+    
+    if (currentQty > quantity) {
+      const minusButton = page.locator('button.minus').first()
+      for (let i = currentQty; i > quantity; i--) {
+        const isVisible = await minusButton.isVisible().catch(() => false)
+        if (isVisible) {
+          await minusButton.click({ timeout: 5000 })
+          await page.waitForTimeout(800)
+        }
+      }
+    } else if (currentQty < quantity) {
+      for (let i = currentQty; i < quantity; i++) {
+        const isVisible = await plusButton.isVisible().catch(() => false)
+        if (isVisible) {
+          await plusButton.click({ timeout: 5000 })
+          await page.waitForTimeout(800)
+        }
       }
     }
   }

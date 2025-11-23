@@ -11,6 +11,7 @@ export default authkitMiddleware({
       "/api/jumbo/add-multiple",
       "/api/jumbo/add-multiple-async",
       "/api/jumbo/open-browser",
+      "/api/jumbo/complete-purchase",
       "/pralio",
     ],
   },
