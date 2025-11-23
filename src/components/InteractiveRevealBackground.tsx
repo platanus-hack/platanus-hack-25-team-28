@@ -35,7 +35,7 @@ export function InteractiveRevealBackground({
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d", { alpha: false })
+    const ctx = canvas.getContext("2d")
     if (!ctx) return
 
     const container = containerRef.current
@@ -46,7 +46,7 @@ export function InteractiveRevealBackground({
         const rect = container.getBoundingClientRect()
         canvas.width = rect.width
         canvas.height = rect.height
-        
+
         // Draw initial white background immediately after resize
         ctx.fillStyle = "#f5f5f7"
         ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -253,26 +253,29 @@ export function InteractiveRevealBackground({
   }, [revealRadius, testMode])
 
   return (
-    <div ref={containerRef} className="relative min-h-screen overflow-hidden bg-bg-page">
-      {/* Background image layer */}
+    <div
+      ref={containerRef}
+      className="relative min-h-screen overflow-hidden"
+    >
+      {/* Background image layer - LOWEST z-index */}
       <div
-        className="absolute inset-0 z-0 hidden bg-cover bg-center lg:block"
+        className="absolute inset-0 -z-20 hidden bg-cover bg-center lg:block"
         style={{ backgroundImage: `url(${backgroundImageUrl})` }}
         aria-hidden="true"
       />
 
-      {/* Canvas overlay - covers background, reveals it when moving */}
+      {/* Canvas overlay - punches holes to reveal background */}
       <canvas
         ref={canvasRef}
-        className="pointer-events-none absolute inset-0 z-10 hidden bg-bg-page lg:block"
+        className="pointer-events-none absolute inset-0 -z-10 hidden lg:block"
         aria-hidden="true"
       />
 
-      {/* Fallback for mobile */}
-      <div className="absolute inset-0 z-0 bg-bg-page lg:hidden" />
+      {/* Fallback white background for mobile */}
+      <div className="absolute inset-0 -z-10 bg-bg-page lg:hidden" />
 
-      {/* Content layer - must be above canvas */}
-      <div className="relative z-20">{children}</div>
+      {/* Content layer - HIGHEST z-index */}
+      <div className="relative z-10">{children}</div>
     </div>
   )
 }
