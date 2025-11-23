@@ -13,7 +13,7 @@ export default authkitMiddleware({
       "/api/jumbo/open-browser",
       "/api/jumbo/complete-purchase",
       "/pralio",
-      "/checkout"
+      "/checkout",
     ],
   },
 })
