@@ -21,6 +21,7 @@ import NavBar from "@/components/NavBar"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
 import { useAction, useMutation, useQuery } from "convex/react"
+import { Route } from "next"
 import { useRouter } from "next/navigation"
 
 // Ensure plugins are registered
@@ -83,7 +84,7 @@ export default function Home() {
             if (result?.cartId) {
               sessionStorage.removeItem("pendingCheckout")
               sessionStorage.setItem("checkoutCartId", result.cartId)
-              router.push("/checkout")
+              router.push("/checkout" as Route)
             }
           } catch (error) {
             console.error("Error creating cart from pending checkout:", error)
@@ -331,7 +332,7 @@ export default function Home() {
 
       if (result?.cartId) {
         sessionStorage.setItem("checkoutCartId", result.cartId)
-        router.push("/checkout")
+        router.push("/checkout" as Route)
       } else {
         throw new Error("No se recibió un ID de carrito")
       }
