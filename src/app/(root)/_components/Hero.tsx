@@ -17,6 +17,8 @@ interface HeroProps {
 
 export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
   const [prompt, setPrompt] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const prevIsLoadingRef = useRef(isLoading)
   const containerRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLFormElement>(null)
@@ -44,9 +46,22 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
     }
   }, [transcript])
 
+  // Reset isSubmitting when parent loading completes
+  useEffect(() => {
+    // Only reset if isLoading transitioned from true to false and we're still submitting
+    if (prevIsLoadingRef.current && !isLoading && isSubmitting) {
+      setIsSubmitting(false)
+    }
+    prevIsLoadingRef.current = isLoading
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!prompt.trim() || isLoading) return
+    if (!prompt.trim() || isLoading || isSubmitting) return
+
+    // Set loading state immediately
+    setIsSubmitting(true)
 
     // Pulse animation
     gsap.to(inputRef.current, {
@@ -58,6 +73,7 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
 
       onComplete: () => {
         onFillCart(prompt)
+        // isSubmitting will be reset when parent's isLoading becomes false
       },
     })
   }
@@ -125,7 +141,7 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Quiero armar un carro para un asado para 6 personas..."
                 className="flex-1 border-none bg-transparent py-3 text-lg text-text-main placeholder:text-gray-400 focus:outline-none"
-                disabled={isLoading}
+                disabled={isLoading || isSubmitting}
               />
               <div className="flex items-center gap-2">
                 {isSupported && (
@@ -139,7 +155,7 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
                         startListening()
                       }
                     }}
-                    disabled={isLoading}
+                    disabled={isLoading || isSubmitting}
                     className={`rounded-lg p-2 transition-colors ${
                       isListening
                         ? "animate-pulse bg-red-500 text-white hover:bg-red-600"
@@ -156,11 +172,11 @@ export default function Hero({ onFillCart, isLoading = false }: HeroProps) {
                 )}
                 <Button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || isSubmitting}
                   variant={"default"}
                   className="flex transform items-center justify-center gap-2 rounded-xl bg-accent-primary py-3 font-semibold text-slate-100 transition-colors duration-100 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-80"
                 >
-                  {isLoading ? (
+                  {isLoading || isSubmitting ? (
                     <>
                       <Spinner />
                       <span className="hidden sm:inline">Pensando...</span>
